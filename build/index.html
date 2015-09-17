@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>Galaxies Engine Test</title>
+<link href="css/style.css" type="text/css" rel="stylesheet">
+
+</head>
+<body onload="init()" style="background-color: #000000; margin: 0; padding: 0;overflow: hidden;">
+
+<!-- hud -->
+<div style="position:absolute; width:200px; height: 200px; color: #fff; font-size: 40px;">
+    <div id="level" >1</div>
+    <div id="score">0</div>
+    <div id="life">3</div>
+</div>
+
+
+<!-- audio visualizer -->
+<div id="audio" style="position:absolute; width: 120px; height: 120px; right:0; top:0; color: #fff; border: 1px solid #fff;">
+    <div id="fl" class="speaker" style="position: absolute; left:0; top:0;">fl</div>
+    <div id="fr" class="speaker" style="position: absolute; right:0; top:0;">fr</div>
+    <div id="c" class="speaker" style="position: absolute; left:50%; top:0;">c</div>
+    <div id="sl" class="speaker" style="position: absolute; left:0; bottom:0;">sl</div>
+    <div id="sr" class="speaker" style="position: absolute; right:0; bottom:0;">sr</div>
+    <div id="bearing" style="position: absolute; left: 50%; top: 50%;">bearing</div>
+</div>
+
+<!-- debug controls -->
+<div id="debug" style="position:absolute; width: 200px; height: 200px; left: 0px; bottom: 0; color: #fff;">
+    <form id="debugForm">
+        <input type="checkbox" name="audio" style="color:#fff;" value="audioState" checked>
+        <label for="audio">UFO</label><br>
+        <input type="checkbox" name="soundField" style="color:#fff;" value="something" checked>
+        <label for="soundField">Sound Field</label>
+    </form>
+</div>
+
+<div style="padding:0; margin:0;" id="container"></div> 
+
+<script src="lib/three.min.js"></script>
+<script src="lib/tweenjs-0.6.1.min.js"></script>
+<script src="js/engine.js"></script>
+
+
+
+</body>
+</html>

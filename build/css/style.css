@@ -1,0 +1,14 @@
+/* line 1, ../../source/css/style.scss */
+.combo {
+  position: absolute;
+  z-index: 10;
+  /* to appear above THREE canvas */
+  color: #fff;
+  font-size: 20px;
+  text-align: center;
+}
+
+/* line 10, ../../source/css/style.scss */
+.speaker {
+  border: 1px solid #fff;
+}
