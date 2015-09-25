@@ -36,6 +36,7 @@ module.exports = function(grunt) {
         options: {              // Target options
           sassDir: '<%=dirs.src %>/css',
           cssDir: '<%=dirs.dest %>/css',
+          specify: '<%=dirs.src %>/css/style.scss',
           environment: 'development'//'production'
         }
       }

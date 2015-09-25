@@ -1,4 +1,10 @@
 "use strict";
+this.galaxies = this.galaxies || {};
+
+var invulnerable = false;
+
+var animationFrameRequest;
+var gameInitialized = false;
 
 var windowHalfX = 0;
 var windowHalfY = 0;
@@ -11,10 +17,11 @@ var rootRotationSpeed = 0.05;
 
 var score;
 var level;
+var startLevel = 1;
 var playerLife;
 
 var levelTimer = 0;
-var levelTime = 30;
+var levelTime;
 var levelComplete = false;
 var PI_2 = Math.PI * 2;
 
@@ -38,7 +45,7 @@ var PROJ_START_Y = 1.25;
 var CONE_SLOPE = Math.tan( coneAngle*Math.PI/360 );
 var CAMERA_SLOPE = Math.tan( cameraViewAngle*Math.PI/360 );
 var OBSTACLE_VISIBLE_RADIUS = cameraZ * CONE_SLOPE * CAMERA_SLOPE/ (CONE_SLOPE + CAMERA_SLOPE);
-var OBSTACLE_START_RADIUS = OBSTACLE_VISIBLE_RADIUS * 1.2;
+var OBSTACLE_START_RADIUS = OBSTACLE_VISIBLE_RADIUS * 2;//OBSTACLE_VISIBLE_RADIUS * 1.2;
 
 var PROJECTILE_LIFE = (OBSTACLE_VISIBLE_RADIUS - PROJ_START_Y)/projectileSpeed;
 
@@ -78,14 +85,13 @@ function onDocumentTouchMove( event ) {
         
 }
 
-            
 var textureURLs = [  // URLs of the six faces of the cube map 
-        "images/spacesky_right1.png",   // Note:  The order in which
-        "images/spacesky_left2.png",   //   the images are listed is
-        "images/spacesky_top3.png",   //   important!
-        "images/spacesky_bottom4.png",  
-        "images/spacesky_front5.png",   
-        "images/spacesky_back6.png"
+        "images/spacesky_right1.jpg",   // Note:  The order in which
+        "images/spacesky_left2.jpg",   //   the images are listed is
+        "images/spacesky_top3.jpg",   //   important!
+        "images/spacesky_bottom4.jpg",  
+        "images/spacesky_front5.jpg",   
+        "images/spacesky_back6.jpg"
    ];
 
 var camera, scene, renderer, clock;
@@ -112,6 +118,10 @@ function init() {
   // three.js clock for delta time
   clock = new THREE.Clock();
   
+  galaxies.ui.init();
+}
+function initGame() {
+  
   var container, mesh;
 
   container = document.getElementById( 'container' );
@@ -130,6 +140,7 @@ function init() {
   light.position.set( 30, 20, 50 );
   rootObject.add( light );
   
+  /*
   // TEST OBJECT
   var geometry = new THREE.SphereGeometry( 0.1, 12, 6 );
   var material = new THREE.MeshBasicMaterial( {
@@ -141,8 +152,17 @@ function init() {
   test.position.copy( testPosition );
   
   rootObject.add( test );
+  */
 
-  var texture = THREE.ImageUtils.loadTextureCube( textureURLs );
+  //var texture = THREE.ImageUtils.loadTextureCube( textureURLs );
+  var texture = new THREE.CubeTexture([
+                    queue.getResult('skyboxright1'),
+                    queue.getResult('skyboxleft2'),
+                    queue.getResult('skyboxtop3'),
+                    queue.getResult('skyboxbottom4'),
+                    queue.getResult('skyboxfront5'),
+                    queue.getResult('skyboxback6') ] );
+  texture.needsUpdate = true;
   
   /* Set up a material that uses a cubemap texture.  This material uses
      custom vertex and fragment shaders that are defined in three.js as
@@ -171,9 +191,42 @@ function init() {
   rootObject.add( planet );
   
   characterRotator = new THREE.Object3D();
-  planet.add( characterRotator );
+  rootObject.add( characterRotator );
   
-  var characterMap = THREE.ImageUtils.loadTexture( "images/lux.png" );
+  //var characterMap = THREE.ImageUtils.loadTexture( "images/lux.png" );
+  //characterMap.minFilter = THREE.LinearFilter;
+  
+  /*
+  var test = document.createElement( 'img' );
+  //test.src = 'images/lux.png';
+  test.src = queue.getResult('lux').src;
+  document.getElementById('menuHolder').appendChild(test);
+  */
+  
+  
+  var characterMap = new THREE.Texture( queue.getResult('lux'), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
+  characterMap.needsUpdate = true;
+  
+  /*
+  var loader = new THREE.ImageLoader();
+  //loader.crossOrigin = this.crossOrigin;
+  loader.load( 'images/lux.png', function ( image ) {
+    console.log(image);
+
+    document.getElementById('menuHolder').appendChild(image);
+    //characterMap.image = image;
+    //characterMap.needsUpdate = true;
+    //if ( onLoad ) onLoad( texture );
+  }, undefined, function ( event ) {
+
+      if ( onError ) onError( event );
+
+  } );
+  */
+  
+  console.log( queue.getResult('lux') );
+  console.log( characterMap.image );
+  
   var characterMaterial = new THREE.SpriteMaterial( { map: characterMap, color: 0xffffff, fog: true } );
   character = new THREE.Sprite( characterMaterial );
   character.position.set( 0, CHARACTER_Y, 0 );
@@ -187,7 +240,7 @@ function init() {
   //renderer.setSize( 640, 480 );
   container.appendChild( renderer.domElement );
   
-  
+  // Capture events on document to prevent ui from blocking clicks
   document.addEventListener( 'mousedown', onDocumentMouseDown, false );
   document.addEventListener( 'mouseup', onDocumentMouseUp, false );
   document.addEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -199,6 +252,7 @@ function init() {
 
   //
 
+  /*
   document.addEventListener( 'dragover', function ( event ) {
 
       event.preventDefault();
@@ -233,40 +287,60 @@ function init() {
 
       document.body.style.opacity = 1;
 
-  }, false );
+  }, false );*/
 
   var debugFormElement = document.getElementById("debugForm");
   var audioToggle = debugFormElement.querySelector("input[name='audio']");
   audioToggle.addEventListener('click', function(event) { toggleAudio( audioToggle.checked ); } );
   var soundFieldToggle = debugFormElement.querySelector("input[name='soundField']");
   soundFieldToggle.addEventListener('click', function(event) { toggleSoundField( soundFieldToggle.checked ); } );
+  var surroundToggle = debugFormElement.querySelector("input[name='surround']");
+  surroundToggle.addEventListener('click', function(event) { toggleTargetMix( surroundToggle.checked ); } );
+  debugFormElement.querySelector("button[name='restart']").addEventListener('click', manualRestart );
   
-  
-  var soundLoader = new SoundLoader( startGame );
+  initAudio( startGame );
 }
 function startGame() {
   
-  ufo = new Ufo();
-  
   // audio
+  // Set initial mix to 6-channel surround.
+  // TODO - detect this automagically
+  toggleTargetMix( true );
+  
+  // configure listener (necessary for correct panner behavior when mixing for stereo)
   listenerObject = camera;
-  var testSource = new DirectionalSource( getSound('ufo'), ufo.object );
-  directionalSources.push( testSource );
+  listener.setOrientation(0,0,-1,0,1,0);
+  listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
   soundField = new SoundField( getSound('music') );
   //
+  
+  ufo = new Ufo();
   
   resetGame();
   initLevel();
 
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();
+
+  gameInitialized = true;
+  
+  animate();
+
+  
+}
+
+function restartGame() {
+  resetGame();
+  
+  //planetTransition(); // for testing purposes
+  initLevel();
   
   animate();
 }
 
 function initLevel() {
-  updateLevelNumber();
+  galaxies.ui.updateLevel( level );
   
   levelTime = 25;// + (5*level);
   levelTimer = 0;
@@ -283,7 +357,7 @@ function initLevel() {
   
   speedScale = THREE.Math.mapLinear(planetLevel, 0, 2, planetFirstSpeed, planetLastSpeed );
   //console.log( planetFirstSpeed, planetLastSpeed, speedScale );
-  
+  /*
   for ( var i=1; i<20; i++ ) {
     var planetLevel = ((i-1) % LEVELS_PER_PLANET); // level progress on planet
     var planet = Math.floor( i/LEVELS_PER_PLANET ); // Planet number
@@ -291,7 +365,7 @@ function initLevel() {
     var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planet*2));
     
     console.log( i, THREE.Math.mapLinear(planetLevel, 0, 2, planetFirstSpeed, planetLastSpeed ) );
-  }
+  }*/
   
   
   
@@ -319,9 +393,58 @@ function initLevel() {
   }*/
   
   initRootRotation();
+  
+
 }
 function nextLevel() {
   level++;
+  
+  if (( (level-1) % LEVELS_PER_PLANET ) == 0) {
+    planetTransition();
+  } else {
+    initLevel();
+  }
+  
+}
+
+
+function planetTransition() {
+  // Reset the level timer, so the game state doesn't look like we've finished a level during the transition
+  levelComplete = false;
+  levelTimer = 0;
+  
+  // hide the character
+  characterRotator.remove(character);
+  
+  // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
+  THREE.SceneUtils.detach (planet, rootObject, scene);
+  // Set outbound end position and inbound starting position for planet
+  var outPosition = rootObject.localToWorld(new THREE.Vector3(0,0,-100) );
+  var inPosition = rootObject.localToWorld(new THREE.Vector3(0,-100,0) );
+  
+  // Tween!
+  createjs.Tween.get( planet.position ).to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, 4000, createjs.Ease.quadInOut).
+    to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0).
+    to({x:0, y:0, z:0}, 4000, createjs.Ease.quadInOut);
+  
+  // Swing the world around
+  //createjs.Tween.get( camera.rotation ).to({x:PI_2, y:PI_2}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
+  var targetX = rootObject.rotation.x + Math.PI/2;
+  createjs.Tween.get( rootObject.rotation ).to({x:targetX}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
+  
+  // Stop drifting in the x-axis to prevent drift rotation from countering transition.
+  // This ensures planet will move off-screen during transition.
+  rootAxis.x = 0;
+  rootAxis.normalize();
+  //rootAxis.set(0,0,0);
+}
+function planetTransitionComplete() {
+  // reattach the planet to the rootObject
+  THREE.SceneUtils.attach( planet, rootObject, scene );
+  
+  // put the character back
+  characterRotator.add(character);
+  
   initLevel();
 }
 
@@ -363,12 +486,15 @@ function addObstacle( type ) {
   var tumble = false;
   var spiral = 0;
   var points;
+  var explodeSound = 'fpo';
+  var passSound = null;
   switch(type) {
     case "asteroid":
       speed = 0.2;
       geometry = new THREE.BoxGeometry(radius, radius, radius);
       tumble = true;
       points = 100;
+      explodeSound = 'asteroidexplode';
       break;
     case "satellite":
       speed = 0.5;
@@ -381,12 +507,15 @@ function addObstacle( type ) {
       spiral = 1;
       geometry = new THREE.DodecahedronGeometry(radius);
       points = 500;
+      explodeSound = 'cometexplode';
+      passSound = 'cometloop';
       break;
       
   }
   
-  var obstacle = new Asteroid( speed, spiral, geometry, tumble, points );
+  var obstacle = new Asteroid( speed, spiral, geometry, tumble, points, explodeSound, passSound );
   obstacles.push( obstacle );
+  
 }
 
 
@@ -427,14 +556,15 @@ function shoot() {
     
     
     // play sound
-    playSound( getSound('shoot',false), rootPosition(character), 2 );
+    new PositionedSound( getSound('shoot',false), rootPosition(character), 10 );
+    //playSound( getSound('shoot',false), rootPosition(character), 10 );
     
 }
 
 
 function animate() {
 
-	requestAnimationFrame( animate );
+	animationFrameRequest = requestAnimationFrame( animate );
 	update();
 
 }
@@ -613,31 +743,50 @@ function initRootRotation() {
 function hitPlayer() {
   
   playerLife--;
-  if (playerLife<=0) {
+  if ((!invulnerable) && (playerLife<=0)) {
     gameOver();
     return;
   }
-  updateLife();
+  galaxies.ui.updateLife( playerLife );
   
   if ( !createjs.Tween.hasActiveTweens(character.position) ) {
     createjs.Tween.get(character.position).to({y:2.5}, 250, createjs.Ease.quadOut).to({y:1.75}, 250, createjs.Ease.quadOut);
   }
 }
 
-function gameOver() {
-  resetGame();
-  initLevel();
+function pauseGame() {
+  if ( animationFrameRequest != null ) {
+    clock.stop();
+    window.cancelAnimationFrame(animationFrameRequest);
+  }
 }
+function resumeGame() {
+  clock.start();
+  animate();
+}
+
+
+function gameOver() {
+  if ( animationFrameRequest != null ) {
+    window.cancelAnimationFrame(animationFrameRequest);
+  }
+  
+  galaxies.ui.showMenu();
+  
+  resetGame();
+  clearLevel();
+  
+}
+
 function resetGame() {
   // reset game
-  level = 1;
+  level = startLevel;
   score = 0;
   playerLife = 3;
   
-  updateLevelNumber();
-  updateLife();
-  updateScore();
-  
+  galaxies.ui.updateLevel( level );
+  galaxies.ui.updateLife( playerLife );
+  galaxies.ui.updateScore( score );
 }
 function clearLevel() {
   // clear all actors
@@ -674,7 +823,7 @@ function showCombo( value, obj ) {
   window.setTimeout( removeCombo, 1000, divElem );
   
   score += value;
-  updateScore();
+  galaxies.ui.updateScore( score );
     
 }
 
@@ -682,18 +831,7 @@ function removeCombo( element ) {
   element.remove();
 }
 
-function updateScore() {
-  document.getElementById("score").innerHTML = score.toString();
-}
 
-function updateLevelNumber() {
-  var levelElement = document.getElementById("level");
-  levelElement.innerHTML = level.toString();
-}
-function updateLife() {
-  var element = document.getElementById("life");
-  element.innerHTML = playerLife.toString();
-}
 
 
 
@@ -706,8 +844,11 @@ function flatLengthSqr(vector ) {
 
 function rootPosition( object ) {
   var foo = object.position.clone();
-   
-  return rootObject.worldToLocal( object.parent.localToWorld( foo ) );
+  if ( object.parent == null ) {
+    return foo;
+  } else {
+    return rootObject.worldToLocal( object.parent.localToWorld( foo ) );
+  }
 
 }
 
@@ -715,18 +856,31 @@ function rootPosition( object ) {
 
 // DEBUG
 function toggleAudio( value ) {
-  console.log("toggleAudio", value);
+  //console.log("toggleAudio", value);
   if ( value ) {
-    directionalSources[0].volume = 1;
+    ufo.ufoSound.sound.muteVolume.gain.value = 1;
   } else {
-    directionalSources[0].volume = 0;
+    ufo.ufoSound.sound.muteVolume.gain.value = 0;
   }
 }
 function toggleSoundField( value ) {
   if ( value ) {
-    soundField.volume = 0.5;
+    soundField.setVolume(0.24);
   } else {
-    soundField.volume = 0;
+    soundField.setVolume(0);
   }
 }
+
+function manualRestart() {
+  var debugFormElement = document.getElementById("debugForm");
+  var levelNumber = parseInt( debugFormElement.querySelector("input[name='startLevel']").value );
+  if ( isNaN(levelNumber) ) {
+    levelNumber = 1;
+  }
+  
+  startLevel = levelNumber;
+  
+  gameOver();
+}
+
 

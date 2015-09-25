@@ -1,22 +1,85 @@
 <!DOCTYPE html>
 <head>
+<!-- Typekit font include -->
+<script src="https://use.typekit.net/bum0tfh.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+
 <meta charset="UTF-8">
 <title>Galaxies Engine Test</title>
+
+<link href="fonts/MyFontsWebfontsKit.css" type="text/css" rel="stylesheet">
 <link href="css/style.css" type="text/css" rel="stylesheet">
 
 </head>
+
+
 <body onload="init()" style="background-color: #000000; margin: 0; padding: 0;overflow: hidden;">
 
-<!-- hud -->
-<div style="position:absolute; width:200px; height: 200px; color: #fff; font-size: 40px;">
-    <div id="level" >1</div>
-    <div id="score">0</div>
-    <div id="life">3</div>
+
+<!-- ui elements, each child here is absolutely positioned -->
+<div id="menuHolder" class="fullscreen menu-holder">
+    <div class="loading fullscreen">
+        <div class="progress-title-holder">
+            <div class="progress-title"></div>
+        </div>
+        
+        <div class="play-place">
+            <div class="progress-ring">
+                <div class="half-ring-white" style="transform: rotate(0deg);"></div>
+                <div class="half-ring-blue progress-fill-a" style="transform: rotate(-180deg);"></div>
+                <div class="half-ring-white" style="transform: rotate(180deg);"></div>
+                <div class="half-ring-blue progress-fill-b hidden" style="transform: rotate(0deg);"></div>
+                
+                <div class="progress-holder">
+                    <div class="progress vertical-center"></div>
+                </div>
+                <div class="progress-holder">
+                    <div class="play-symbol vertical-center"></div>
+                </div>
+            </div>
+            <div class="play-button hidden"></div>
+        </div>
+        
+        <div class="invisible"><div class="bg1 fullscreen"></div></div>
+        <div class="invisible"><div class="bg2 fullscreen"></div></div>
+    </div>
+    
+    <div class="game-ui fullscreen hidden">
+        <div class="pause-button"></div>
+        <div class="game-logo"></div>
+        <div class="level-display" ></div>
+        <div class="score-display"></div>
+        <div class="life-display"></div>
+    </div>
+    
+    <div class="pause-overlay fullscreen hidden"></div>
+    
+    <div class="pause-menu hidden">
+        <div class="pause-title">PAUSED</div>
+        <div class="resume-button"></div>
+        <div class="restart-button"></div>
+        <div class="quit-button"></div>
+    </div>
+    
+    <div class="mute-button hidden"></div>
+    
+
+    
+    
+</div>
+    
 </div>
 
 
+<div style="padding:0; margin:0;" id="container"></div>
+
+
+
+
+<!-- DEV ITEMS -->
+
 <!-- audio visualizer -->
-<div id="audio" style="position:absolute; width: 120px; height: 120px; right:0; top:0; color: #fff; border: 1px solid #fff;">
+<div id="audio" class="hidden" style="position:absolute; width: 120px; height: 120px; right:0; top:50%; color: #fff; border: 1px solid #fff;">
     <div id="fl" class="speaker" style="position: absolute; left:0; top:0;">fl</div>
     <div id="fr" class="speaker" style="position: absolute; right:0; top:0;">fr</div>
     <div id="c" class="speaker" style="position: absolute; left:50%; top:0;">c</div>
@@ -26,19 +89,48 @@
 </div>
 
 <!-- debug controls -->
-<div id="debug" style="position:absolute; width: 200px; height: 200px; left: 0px; bottom: 0; color: #fff;">
+<div id="debug" style="position:absolute; width: 200px; height: 200px; left: 0px; top: 50%; color: #fff;">
     <form id="debugForm">
         <input type="checkbox" name="audio" style="color:#fff;" value="audioState" checked>
         <label for="audio">UFO</label><br>
         <input type="checkbox" name="soundField" style="color:#fff;" value="something" checked>
-        <label for="soundField">Sound Field</label>
+        <label for="soundField">Sound Field</label><br>
+        <input type="checkbox" name="surround" style="color:#fff;" value="something" checked>
+        <label for="surround">5.1 Channel Surround Mix (turn off for stereo)</label><br>
+        <button type="button" name="restart">Start at Level</button>
+        <input type="text" name="startLevel" size="2" maxlength="2" value="1">
     </form>
 </div>
 
-<div style="padding:0; margin:0;" id="container"></div> 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- THREE -->
 <script src="lib/three.min.js"></script>
+<script src="lib/OBJLoader.js"></script>
+
+<!-- ShaderParticles -->
+<script src="lib/ShaderParticleUtils.js"></script>
+<script src="lib/ShaderParticleEmitter.js"></script>
+<script src="lib/ShaderParticleGroup.js"></script>
+
+<!-- create js -->
+<script src="lib/preloadjs-0.6.1.min.js"></script>
 <script src="lib/tweenjs-0.6.1.min.js"></script>
+<script src="lib/CSSPlugin.js"></script>
+
+<!-- Galaxies -->
 <script src="js/engine.js"></script>
 
 

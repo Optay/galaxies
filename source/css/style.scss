@@ -1,3 +1,24 @@
+@import "config.scss";
+@import "buttons.scss";
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+.fade-in {
+  animation-name: fadein;
+  animation-duration: 3s;
+  animation-iteration-count: 1;
+}
+@keyframes fadein {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 .combo {
   position: absolute;
   z-index: 10;  /* to appear above THREE canvas */
@@ -10,3 +31,250 @@
 .speaker {
   border: 1px solid #fff;
 }
+
+
+/**************************************************
+  UI
+*/
+
+.loading {}
+.game-ui {}
+
+
+
+
+/* Pause menu is above all elements except the in-game logo */
+.pause-menu {
+  position: absolute;
+  bottom: 50%;
+  width: 400px;
+  height: 200px;
+  
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  
+  z-index: 25;
+  text-align: center;
+}
+.pause-overlay {
+  background: #000;
+  opacity: 0.5;
+  z-index: 20;
+}
+.pause-title {
+  color: #fff;
+  font-size: 120px;
+  font-family: 'HorizonBT-Regular';
+}
+
+
+.fullscreen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+
+.bg1 {
+  background-image: url("../images/loader_background.jpg");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  z-index: -2;
+  animation-name: bgscroll1;
+  animation-duration: 40s;
+  animation-iteration-count: infinite;
+}
+
+.bg2 {
+  background-image: url("../images/stars_tile.png");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  z-index: -1;
+  animation-name: bgscroll2;
+  animation-duration: 32s;
+  animation-iteration-count: infinite;
+}
+
+.bg1, .bg2 {
+  animation-timing-function: linear;
+  -webkit-animation-timing-function: linear;
+}
+
+/* keyframes are adjusted in js to match scaled size of background */
+@keyframes bgscroll1 {
+  0% { background-position: 0; }
+  100% { background-position: -100%; }
+}
+@keyframes bgscroll2 {
+  0% { background-position: 0; }
+  100% { background-position: -100%; }
+}
+
+.menu-holder {
+  text-align: center;
+}
+
+.play-place {
+  position: absolute;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY( -50% );
+  z-index: 10;
+  transition: transform 1s ease-in-out;
+}
+
+.play-final-layout {
+  transform: translateY( 10px );
+}
+
+
+.half-ring-blue, .half-ring-white {
+  background-size: 100%;
+  width: 46px;
+  height: 92px;
+  transform-origin: 0 50%;
+  position: absolute;
+  left: 50%;
+}
+.half-ring-blue {
+  background-image:url('../images/button_circle_half_blue.png');
+}
+.half-ring-white {
+  background-image:url('../images/button_circle_half_white.png');
+}
+
+
+
+
+.progress-ring {
+  width: 92px;
+  height: 92px;
+  /*background: url('../images/button_circle_large.png');
+  background-size: 100%;
+  background-repeat: no-repeat;*/
+}
+
+.progress-holder {
+  position: absolute;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  width: 52px;
+  height: 92px;
+  overflow: hidden;
+}
+
+.progress {
+  position: relative;
+  color: #fff;
+  margin: 0 auto;
+  font-size: 30px;
+  font-family: "futura-pt-condensed";
+  text-align: center;
+  width: 52px;
+}
+.play-symbol {
+  position: relative;
+  margin: 0 auto;
+  left: -52px;
+  width: 52px;
+  height: 52px;
+  background: url('../images/button_play_large_no_circle.png');
+  background-size: 92px 92px;
+  background-position: 50% 50%;
+}
+
+.progress-title-holder {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  bottom: 50%;
+  z-index: 11;
+}
+.progress-title {
+  position: absolute;
+  bottom: 46px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  background: url('../images/logo_feisty_galaxies.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position-y: 100%;
+  
+  transition: bottom, width, height;
+  transition-duration: 1s;
+  transition-timing-function: ease-in-out;
+}
+.logo-loading-layout {
+  width: 141px;
+  height: 96px;
+}
+.logo-final-layout {
+  width: 282px;
+  height: 192px;
+  bottom: 0;
+}
+
+
+.vertical-center {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+
+/*****************
+ * in-game
+ *****************/
+.level-display, .score-display {
+  margin: 20px;
+  
+  color: #F0F485;
+  border: 4px solid #88895C;
+  border-radius: 25px;
+  min-width: 120px;
+  height: 35px;
+  
+  font-family: 'HorizonBT-Regular';
+  font-size: 28px;
+  line-height: 32px;
+}
+
+.level-display {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.score-display {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.life-display {
+}
+
+.game-logo {
+  position: absolute;
+  top: 5px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  width: 141px;
+  height: 96px;
+  background: url('../images/logo_feisty_galaxies.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  z-index: 30;
+}
+

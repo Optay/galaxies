@@ -1,18 +1,23 @@
 'use strict'
 
-var AudioContext = window.AudioContext || window.webkitAudioContext;
-var audioCtx = new AudioContext();
+var audioCtx;
+
+// TODO - set up detection and/or hook to menu control
+// use surround when true, fallback to stereo mix when false
+var surroundMix = true;
+
 var AUDIBLE_RANGE = 10;
 var DISTANCE_ATTENUATION = 0.1;//0.05;
+var DISTANCE_REF = 2;
+var DISTANCE_ROLL = 1;
 var DIRECTION_FOCUS = 1; // How much sounds spread to neighboring speakers: higher values produces sharper spatialization, lower values spread sound more evenly
 var DOPPLER_FACTOR = 70; // Higher numbers result in less doppler shift.
 
-var listener = audioCtx.listener;
+var listener;
 var listenerObject;
 
 var soundField;
 
-listener.setOrientation(0,0,-1,0,1,0);
 
 // collection of AudioBuffer objects
 var loadedSounds = {};
@@ -31,11 +36,94 @@ function getSound( id, loop ) {
   return source;
 }
 
+/*
 var sounds = {
-  'shoot': ['Beep Ping-SoundBible.com-217088958.mp3', 'Robot_blip-Marianne_Gagnon-120342607.mp3', 'Robot_blip_2-Marianne_Gagnon-299056732.mp3'],
+  'shoot': ['shuttlecock_release_01.ogg', 'shuttlecock_release_02.ogg', 'shuttlecock_release_03.ogg', 'shuttlecock_release_04.ogg', 'shuttlecock_release_05.ogg'],
+  'asteroidexplode': ['asteroid_explode_01.ogg', 'asteroid_explode_02.ogg', 'asteroid_explode_03.ogg'],
+  'cometexplode': ['comet_explode_01.ogg'],
+  'cometloop': ['comet_fire_loop.ogg'],
+  'fpo': ['Beep Ping-SoundBible.com-217088958.mp3', 'Robot_blip-Marianne_Gagnon-120342607.mp3', 'Robot_blip_2-Marianne_Gagnon-299056732.mp3'],
   'ufo': ['ufo_engine_loop_01.ogg'],
-  'music': ['5.1 Test_music.ogg']
-};
+  'music': ['5.1 Test_music.ogg'],
+  'ufohit': ['ufo_hit_01.ogg', 'ufo_hit_02.ogg'],
+  'ufoshoot': ['UFO_laser_fire.ogg']
+};*/
+
+var sounds = {
+  'shoot': ['shoot1', 'shoot2', 'shoot3', 'shoot4', 'shoot5'],
+  'asteroidexplode': ['asteroidexplode1', 'asteroidexplode2', 'asteroidexplode3'],
+  'cometexplode': ['cometexplode'],
+  'cometloop': ['cometloop'],
+  'fpo': ['fpo1', 'fpo2', 'fpo3'],
+  'ufo': ['ufo'],
+  'music': ['music'],
+  'ufohit': ['ufohit1', 'ufohit2'],
+  'ufoshoot': ['ufoshoot']
+}
+
+// Decode and package loaded audio data into exhaustive array objects.
+function initAudio( complete ) {
+  
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioContext();
+  listener = audioCtx.listener;
+  //audioCtx.destination.maxChannelCount = 6;
+  console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
+  console.log( 0 !== null );
+
+  var onComplete = complete;
+
+  var soundIds = Object.keys(sounds);
+  
+  var remaining = 0;
+  for( var i=0; i<soundIds.length; i++ ) {
+    remaining += sounds[ soundIds[i] ].length;
+  }
+  
+
+  for( var i=0; i<soundIds.length; i++ ) {
+    loadedSounds[ soundIds[i] ] = new ExhaustiveArray();
+    for ( var j=0; j<sounds[ soundIds[i] ].length; j++ ) {
+      //console.log( sounds[soundIds[i]][j] );
+      //console.log( queue.getResult( sounds[soundIds[i]][j]) );
+      decodeFile( soundIds[i], sounds[soundIds[i]][j] );
+    }
+  }
+  
+  function decodeFile( soundId, fileId ) {
+    var loadedId = soundId;
+    audioCtx.decodeAudioData( queue.getResult( fileId, true ),
+      function(buffer) {
+        //console.log("decoded", loadedId );
+        loadedSounds[ loadedId ].add( buffer );  
+        fileComplete();
+      },
+      function() {
+        console.log( "Error decoding audio file.", loadedId );
+        fileComplete();
+      } );
+  }
+
+  function fileComplete() {
+    remaining --;
+    if ( remaining <= 0 ) {
+      loadComplete();
+    }
+  }
+  
+  function loadComplete() {
+    // perform initial shuffle on exhaustive arrays
+    var soundIds = Object.keys(loadedSounds);
+    for( var i=0; i<soundIds.length; i++ ) {
+      loadedSounds[ soundIds[i] ].init();
+    }
+    
+    // fire callback
+    onComplete();
+  }
+  
+  
+}
 
 
 function SoundLoader( complete ) {
@@ -43,7 +131,11 @@ function SoundLoader( complete ) {
   
   var audioPath = 'audio/';
   var soundIds = Object.keys(sounds);
-  var remaining = soundIds.length;
+  
+  var remaining = 0;
+  for( var i=0; i<soundIds.length; i++ ) {
+    remaining += sounds[ soundIds[i] ].length;
+  }
   
   for( var i=0; i<soundIds.length; i++ ) {
     loadedSounds[ soundIds[i] ] = new ExhaustiveArray();
@@ -67,18 +159,26 @@ function SoundLoader( complete ) {
     request.onload = function() {
       var audioData = request.response;
   
-      audioCtx.decodeAudioData(audioData, function(buffer) {
+      audioCtx.decodeAudioData(audioData,
+        function(buffer) {
           loadedSounds[ loadedId ].add( buffer );
-          remaining --;
-          if ( remaining <= 0 ) {
-            loadComplete();
-          }
+          fileComplete();
         },
   
-        function(e){"Error with decoding audio data" + e.err});
+        function() {
+          console.log( "Error decoding audio file.", loadedId );
+          fileComplete();
+        } );
     }
   
     request.send();
+  }
+  
+  function fileComplete() {
+    remaining --;
+    if ( remaining <= 0 ) {
+      loadComplete();
+    }
   }
   
   function loadComplete() {
@@ -150,6 +250,7 @@ var channelAngles = [
 
 var directionalSources = [];
 
+/*
 /// Start a mono source mixed for a fixed location. No reference will be kept,
 /// sound will play once and expire. Provided position should be relative to root object.
 function playSound( source, position, volume ) {
@@ -189,34 +290,272 @@ function playSound( source, position, volume ) {
   combiner.connect(audioCtx.destination);
   source.start(0);
 }
+*/
 
-/// A mono source that is mixed based on its position in space relative to the
-/// listener object.
-/// Object exposes a collection of gain nodes.
-function DirectionalSource( source, object ) {
-  this.object = object;
+/// Creates a sound that is mixed based on its position in 3D space.
+function PositionedSound( source, position, baseVolume ) {
   this.source = source;
+  this.toSource = new THREE.Vector3(); // vector from listener to source
+  
+  this.muteVolume = audioCtx.createGain();
+  this.source.connect( this.muteVolume );
+  
+  this.preAmp = audioCtx.createGain();
+  this.muteVolume.connect( this.preAmp );
+  Object.defineProperty(this, "volume", { set:
+    function (value) {
+      this._volume = value;
+      this.preAmp.gain.value = this._volume;
+    }
+  });
+  if ( typeof( baseVolume ) ==='undefined' ) { baseVolume = 1; }
+  this.volume = baseVolume;
+  
+  // 6-channel mix
   this.bearing = 0;
   this.distance = 0;
   this.inPlaneWeight = 0;
+  var combiner;
+  this.channels = [];
+  
+  // stereo mix
+  var panner;
+  
+  this.init = function() {
+    // init can be called more than once to change mix scheme, so first we must
+    // clear any channels or panners if they are already set.
+    for (var i=0; i<this.channels.length; i++ ) {
+      this.preAmp.disconnect( this.channels[i] );
+      this.channels[i].disconnect(this.combiner);
+    }
+    this.channels = [];
+    if ( this.combiner != null ) {
+      this.combiner.disconnect( audioCtx.destination );
+      this.combiner = null;
+    }
+    if ( this.panner!=null ) {
+      this.preAmp.disconnect( this.panner );
+      this.panner.disconnect( audioCtx.destination );
+      this.panner = null;
+    }
+    //
+    
+    if ( surroundMix ) {
+      // initialize 6-channel mix
+      this.combiner = audioCtx.createChannelMerger();
+      for ( var i=0; i<6; i++ ) {
+        var newGainNode = audioCtx.createGain();
+        newGainNode.gain.value = 0;   // start silent to avoid loud playback before initial mix call
+        this.preAmp.connect( newGainNode );
+        newGainNode.connect( this.combiner, 0, i );
+        this.channels[i] = newGainNode;
+      }
+      this.combiner.connect(audioCtx.destination);
+    } else { 
+      // initialize stereo mix
+      this.panner = audioCtx.createPanner();
+      this.panner.panningModel = 'HRTF';
+      this.panner.distanceModel = 'inverse';
+      this.panner.refDistance = 2;
+      this.panner.maxDistance = 10000;
+      this.panner.rolloffFactor = 1;
+      this.panner.coneInnerAngle = 360;
+      this.panner.coneOuterAngle = 0;
+      this.panner.coneOuterGain = 0;
+      this.preAmp.connect( this.panner );
+      this.panner.connect( audioCtx.destination );
+    }
+  }
+  
+  this.updatePosition = function( newPosition ) {
+    // TODO - Evaluate this against the listener object direction for a more versatile system.
+    //        Transform the vector into the listener local space.
+    this.toSource.subVectors( newPosition, listenerObject.position );
+    this.distance = this.toSource.length();
+    
+    if ( surroundMix ) {
+      this.bearing = Math.atan2( -this.toSource.x, -this.toSource.z );
+      this.inPlaneWeight = 0;
+      if (this.distance > 0) { this.inPlaneWeight = Math.sqrt( Math.pow(this.toSource.x,2) + Math.pow(this.toSource.z,2) ) / this.distance; }
+      for(var iOutput = 0; iOutput<6; iOutput++ ) {
+        
+        // base level based on distance
+        var gain = DISTANCE_REF / (DISTANCE_REF + DISTANCE_ROLL * (this.distance - DISTANCE_REF)); // linear, to match panner algorithm in stereo mix
+        //var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION); // exponential
+        if ( channelAngles[iOutput] !== null ) {
+          // cosine falloff function
+          //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
+          
+          // exponential falloff function
+          // calculate short distance between the angles
+          var angleDifference = ((channelAngles[iOutput] - this.bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
+          var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
+          
+          gain =  (gain/2) * (1-this.inPlaneWeight) + 
+                  gain * (directionAttenuation) * this.inPlaneWeight;
+        }
+        this.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
+      }          
+    } else {
+      // exagerrate the horizontal position of the object in order to get better stereo separation
+      this.panner.setPosition( newPosition.x, newPosition.y, newPosition.z );
+    }
+  }
+  
+  this.init();
+  this.updatePosition( position ); // set initial mix
+  
+  this.source.start(0);
+}
+
+/// Object sound wraps a positioned sound, attaching the sound's position to an object.
+function ObjectSound( source, object, baseVolume ) {
+  this.object = object;
+  this.sound = new PositionedSound( source, rootPosition( object ), baseVolume );
+ 
+  // Doppler
+  this.lastDistance = 0;
+  this.velocity = 0;
+  
+  Object.defineProperty(this, "volume", { set:
+    function (value) {
+      //console.log("volume", value );
+      this._volume = value;
+      this.sound.preAmp.gain.value = this._volume;
+    }
+  });
+ 
+  this.update = function( delta ) {
+    this.sound.updatePosition( rootPosition( this.object ) );
+    
+    var deltaDistance = (this.lastDistance - this.sound.distance)/delta;
+    this.sound.source.playbackRate.value = 1 + (deltaDistance/DOPPLER_FACTOR);
+    this.lastDistance = this.sound.distance;
+  }
+/*
+  if ( !source.loop ) {
+    //console.log( "start", this.source, directionalSources.length );
+    var selfReference = this; // self reference
+    source.onended = function() { removeSource(selfReference); };
+  }*/
+}
+
+/*
+/// A mono source that is mixed based on its position in space relative to the
+/// listener object.
+function DirectionalSource( source, object, baseVolume ) {
+  this.object = object;
+  this.source = source;
   
   this.lastDistance = 0;
   this.velocity = 0;
   
-  this.volume = 1;
+  this.preAmp = audioCtx.createGain();
+  this.source.connect( this.preAmp );
+  if ( typeof( baseVolume ) ==='undefined' ) { baseVolume = 1; }
+  this.preAmp.gain.value = baseVolume;
   
-  var combiner = audioCtx.createChannelMerger();
   
+  // 6-channel mix
+  this.bearing = 0;
+  this.distance = 0;
+  this.inPlaneWeight = 0;
+  var combiner;
   this.channels = [];
-  for ( var i=0; i<6; i++ ) {
-    var newGainNode = audioCtx.createGain();
-    newGainNode.gain.value = 0;   // start silent to avoid loud playback before initial mix call
-    source.connect( newGainNode );
-    newGainNode.connect( combiner, 0, i );
-    this.channels[i] = newGainNode;
+  
+  // stereo mix
+  var panner;
+  
+  this.init = function() {
+    // init can be called more than once to change mix scheme, so first we must
+    // clear any channels or panners if they are already set.
+    for (var i=0; i<this.channels.length; i++ ) {
+      this.preAmp.disconnect( this.channels[i] );
+      this.channels[i].disconnect(this.combiner);
+    }
+    this.channels = [];
+    if ( this.combiner != null ) {
+      this.combiner.disconnect( audioCtx.destination );
+      this.combiner = null;
+    }
+    if ( this.panner!=null ) {
+      this.preAmp.disconnect( this.panner );
+      this.panner.disconnect( audioCtx.destination );
+      this.panner = null;
+    }
+    //
+    
+    if ( surroundMix ) {
+      // initialize 6-channel mix
+      this.combiner = audioCtx.createChannelMerger();
+      for ( var i=0; i<6; i++ ) {
+        var newGainNode = audioCtx.createGain();
+        newGainNode.gain.value = 0;   // start silent to avoid loud playback before initial mix call
+        this.preAmp.connect( newGainNode );
+        newGainNode.connect( this.combiner, 0, i );
+        this.channels[i] = newGainNode;
+      }
+      this.combiner.connect(audioCtx.destination);
+    } else { 
+      // initialize stereo mix
+      this.panner = audioCtx.createPanner();
+      this.panner.panningModel = 'HRTF';
+      this.panner.refDistance = 10;
+      this.panner.maxDistance = 10000;
+      this.panner.rolloffFactor = 1;
+      this.panner.coneInnerAngle = 360;
+      this.panner.coneOuterAngle = 0;
+      this.panner.coneOuterGain = 0;
+      this.preAmp.connect( this.panner );
+      this.panner.connect( audioCtx.destination );
+    }
   }
   
-  combiner.connect(audioCtx.destination);
+  this.update = function( delta ) {
+    // update listener position
+    if ( (this.object != null) && (this.object.parent != null) ) {
+      // TODO - Evaluate this against the listener object direction for a more versatile system.
+      //        Transform the vector into the listener local space.
+      var toSource = new THREE.Vector3();
+      var objectRootPosition = rootPosition( this.object );
+      toSource.subVectors( objectRootPosition, listenerObject.position );
+      
+      this.distance = toSource.length();
+      var deltaDistance = (this.lastDistance - this.distance)/delta;
+      this.source.playbackRate.value = 1 + (deltaDistance/DOPPLER_FACTOR);
+      this.lastDistance = this.distance;
+      
+      if ( surroundMix ) {
+        this.bearing = Math.atan2( -toSource.x, -toSource.z );
+        this.inPlaneWeight = 0;
+        if (this.distance > 0) { this.inPlaneWeight = Math.sqrt( Math.pow(toSource.x,2) + Math.pow(toSource.z,2) ) / this.distance; }
+        for(var iOutput = 0; iOutput<6; iOutput++ ) {
+          
+          // base level based on distance
+          var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION);
+          if ( channelAngles[iOutput] !== null ) {
+            // cosine falloff function
+            //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
+            
+            // exponential falloff function
+            // calculate short distance between the angles
+            var angleDifference = ((channelAngles[iOutput] - this.bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
+            var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
+            
+            gain =  (gain/2) * (1-this.inPlaneWeight) + 
+                    gain * (directionAttenuation) * this.inPlaneWeight;
+          }
+          this.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
+        }          
+      } else {
+        // exagerrate the horizontal position of the object in order to get better stereo separation
+        this.panner.setPosition( objectRootPosition.x * 20, objectRootPosition.y, objectRootPosition.z );
+      }
+    }
+  }
+  
+  this.init();
+  
   
   this.source.start(0);
   if ( !this.source.loop ) {
@@ -226,11 +565,15 @@ function DirectionalSource( source, object ) {
   }
   
 }
+*/
 
 /// Update the mix for directional sources.
 function mixChannels( delta ) {
   
   for( var i=0; i<directionalSources.length; i++ ) {
+    directionalSources[i].update( delta );
+    
+    /*
     var source = directionalSources[i];
     
     // update listener position
@@ -254,7 +597,7 @@ function mixChannels( delta ) {
     for(var iOutput = 0; iOutput<6; iOutput++ ) {
       
       // base level based on distance
-      var gain = source.volume * 1 / Math.exp(source.distance * DISTANCE_ATTENUATION);
+      var gain = 1 / Math.exp(source.distance * DISTANCE_ATTENUATION);
       if ( channelAngles[iOutput] !== null ) {
         // cosine falloff function
         //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
@@ -271,10 +614,10 @@ function mixChannels( delta ) {
       //gain *= 0.5; // global gain adjustment
       //console.log( iOutput, iSource, gain );
       source.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
-    }
+    }*/
   }
   
-  visualizeSource( directionalSources[0] );
+  //visualizeSource( directionalSources[0] );
   
 }
 
@@ -297,9 +640,10 @@ function visualizeSource( directionalSource ) {
   document.getElementById('bearing').innerHTML = directionalSource.bearing.toFixed(2);
 }
 
+/*
 function removeSource( source ) {
   directionalSources.splice( directionalSources.indexOf( source ), 1 );
-}
+}*/
 
 
 
@@ -319,11 +663,11 @@ function SoundField( source ) {
   this.angle = 0;
   this.angularVelocity = 1;
   
-  this.volume = 0.5;
-  
   // Add input
+  var volumeNode = audioCtx.createGain();
+  this.source.connect( volumeNode );
   var splitter = audioCtx.createChannelSplitter(6);
-  this.source.connect( splitter );
+  volumeNode.connect( splitter );
   var combiner = audioCtx.createChannelMerger(6);
   combiner.connect(audioCtx.destination);
   
@@ -345,7 +689,13 @@ function SoundField( source ) {
     }
   }
 
+  this.setVolume = function( value ) {
+    volumeNode.gain.value = value;
+  }
+  
+  this.setVolume(0.24);
   this.source.start(0);
+  
   
 }
 
@@ -355,10 +705,10 @@ function updateSoundField( delta ) {
   
   for( var iOutput = 0; iOutput<channelMap.length; iOutput++ ) {
     for(var iSource = 0; iSource<channelMap.length; iSource++ ) {
-      var gain = soundField.volume;
+      var gain;
       if ( channelAngles[channelMap[iSource]] !== null ) {
         //gain = soundField.volume * Math.pow( (Math.cos( channelAngles[iOutput] - (channelAngles[iSource] + soundField.angle) ) + 1)/2, 1);
-        gain = gain * (Math.cos( channelAngles[channelMap[iOutput]] - (channelAngles[channelMap[iSource]] + soundField.angle) ) + 1)/2;
+        gain = (Math.cos( channelAngles[channelMap[iOutput]] - (channelAngles[channelMap[iSource]] + soundField.angle) ) + 1)/2;
       }
       soundField.gains[iOutput][iSource].gain.value = gain; //  apply resulting gain to channel
     }
@@ -366,8 +716,31 @@ function updateSoundField( delta ) {
 }
 
 
+function toggleTargetMix( value ) {
+  surroundMix = value;
+  
+  // Re-initialize active sources using new mix
+  for( var i=0; i<obstacles.length; i++ ) {
+    if ( obstacles[i].passSound != null ) {
+      obstacles[i].passSound.sound.init();
+    }
+  }
+  if ( ufo!=null ) {
+    ufo.ufoSound.sound.init();
+  }
+  
+  // Set destination channel count to match
+  if ( ( surroundMix )  ) {
+    if ( audioCtx.destination.maxChannelCount >= 6 )  { audioCtx.destination.channelCount = 6; }
+  } else {
+    if ( audioCtx.destination.maxChannelCount >= 2 ) { audioCtx.destination.channelCount = 2; }
+  }
+}
 
 
+
+
+  
 
 
 
@@ -421,22 +794,34 @@ function Orbit() {
 function Ufo() {
   this.points = 1000;
   
+  /*
   var geometry = new THREE.CylinderGeometry( 0.4, 0.4, 0.25, 8, 1, false);
+  
   var objectColor = new THREE.Color( 1,1,1 );
   var material = new THREE.MeshLambertMaterial( {
       color: objectColor.getHex(),
       emissive: 0x333333,
       shading: THREE.SmoothShading } );
   
-  this.object = new THREE.Mesh( geometry, material );
-  this.object.rotation.set(0,0,Math.PI/2);
-                     
+  this.object = new THREE.Mesh( geometry, material );*/
+  
+  var objLoader = new THREE.OBJLoader();
+  this.object = objLoader.parse( queue.getResult('ufomodel') );
+  
+  this.object.scale.set(0.6, 0.6, 0.6);
+  this.object.rotation.set(Math.PI,0,-Math.PI/2);
+  
   var anchor = new THREE.Object3D();
   anchor.add( this.object );
   rootObject.add( anchor );
   
+  var state = 'idle'; // values for state: idle, in, out, orbit
+  var stepTimer = 0;
+  var stepTime = 0;
+  var transitionTime = 0;
+  
   var angle = Math.random() * PI_2; // random start angle
-  var angularSpeed = 0.7 * speedScale;
+  var angularSpeed = 0.7;
   var rotationAxis = new THREE.Vector3(0,1,0);
   
   /*
@@ -448,32 +833,156 @@ function Ufo() {
     new THREE.Vector3(0.5,0,41)
   ];
   */
-  var targetPositions = [
-    new THREE.Vector3(1,0,cameraZ + 10),
+  
+  // Sound!
+  this.ufoSound = new ObjectSound( getSound('ufo'), this.object, 0 );
+  //directionalSources.push( ufoSound );
+  
+  var idleZ = cameraZ + 10;
+  var idlePosition = new THREE.Vector3(1,0,idleZ);
+
+  var orbitPositions = [
     new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS,0,0),
     new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS * 0.9,0,0),
-    new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS * 0.75,0,0),
-    new THREE.Vector3(1,0,cameraZ + 10)
+    new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS * 0.75,0,0)
   ];
-  targetPositions[1].z = getConifiedDepth( targetPositions[1] );
-  targetPositions[2].z = getConifiedDepth( targetPositions[2] );
-  targetPositions[3].z = getConifiedDepth( targetPositions[3] );
+  orbitPositions[0].z = getConifiedDepth( orbitPositions[0] );
+  orbitPositions[1].z = getConifiedDepth( orbitPositions[1] );
+  orbitPositions[2].z = getConifiedDepth( orbitPositions[2] );
+  
+  var laserMaterial = new THREE.SpriteMaterial( {
+    color: 0xffffff,
+    fog: true,
+    opacity: 1,
+    transparent: true
+  } );
+  var laser = new THREE.Sprite( laserMaterial );
+  laser.position.set( OBSTACLE_VISIBLE_RADIUS * 0.75 + 1, 0, 0 );
+  laser.scale.set( OBSTACLE_VISIBLE_RADIUS * 1.5, 1, 1);
+  var laserHolder = new THREE.Object3D();
+  laserHolder.add( laser );
+  //rootObject.add( laserHolder );
+  
   
   var tween = createjs.Ease.quadInOut;
+  var inTween;
   
   var stepAngle = 0;
   var transitionAngle = 0;
-  var step = 1;
-  this.object.position.copy( targetPositions[0] );
-  var lastPosition = targetPositions[0];
+  var step = 0;
+  this.object.position.copy( idlePosition );
+  var lastPosition = idlePosition;
+  var targetPosition = idlePosition;
+  var lastAngle = 0;
+  var targetAngle = 0;
   
   this.isHittable = false;
   this.alive = true;
   
   this.update = function( delta ) {
-    angle += angularSpeed * delta;
+    stepTimer += delta;
+    
+    switch ( state ) {
+    case 'idle':
+      if ( stepTimer >= stepTime ) {
+        state = 'in';
+        stepTime = 4;
+        transitionTime = 4;
+        stepTimer = 0;
+        lastPosition = this.object.position.clone();
+        targetPosition = orbitPositions[0];
+        
+        // Starting angle is set so ufo stays to right or left as it flies in.
+        angle = Math.round(Math.random()) * Math.PI - Math.PI/4;
+        
+        var a = angularSpeed / (2*transitionTime);
+        var c = angle;
+        
+        inTween = function( t ) {
+          return a*t*t + c;
+        };
+        
+        /*
+        console.log( angle );
+        for (var i=0; i<transitionTime; i+=0.1 ) {
+          console.log( i, inTween(i).toFixed(2) );
+        }*/
+        
+        console.log( 'idle -> in' );
+      }
+      break;
+    case 'in':
+      angle = inTween( stepTimer );
+      
+      if ( stepTimer >= stepTime ) {
+        state = 'orbit';
+        stepTime = PI_2/angularSpeed;
+        transitionTime = stepTime/4;
+        stepTimer = 0;
+        step = 0;
+        this.isHittable = true;
+        lastPosition = this.object.position.clone();
+        targetPosition = orbitPositions[step];
+        console.log( 'in -> orbit' );
+      }
+      break;
+    case 'orbit':
+      angle += angularSpeed * delta;
+      
+      if ( stepTimer >= stepTime ) {
+        step++;
+        stepTimer = 0;
+        if ( step > 2 ) {
+          // fire
+          new PositionedSound( getSound('ufoshoot',false), rootPosition(this.object), 1 );
+          
+          rootObject.add( laserHolder );
+          laserHolder.rotation.set(0,0,angle);
+          laser.material.rotation = angle;
+          laser.material.opacity = 1;
+
+          createjs.Tween.get(laser.material).to({opacity:0}, 250, createjs.Ease.quadOut).call( function() {
+            rootObject.remove(laserHolder);
+          });
+          
+          //
+
+          this.leave();
+          break;
+        }
+        lastPosition = this.object.position.clone();
+        targetPosition = orbitPositions[step];
+        console.log( 'orbit step' );
+      }
+      
+      break;
+    case 'out':
+      angle = THREE.Math.mapLinear( stepTimer, 0, transitionTime/2, lastAngle, targetAngle );
+      //console.log( angle, stepTimer, lastAngle, targetAngle );
+      
+      if ( stepTimer >= stepTime ) {
+        console.log( 'orbit -> idle' );
+        this.reset();
+      }
+      
+      break;
+    }
+    
+    var transitionProgress = THREE.Math.clamp( stepTimer/transitionTime, 0, 1);
+    transitionProgress = tween( THREE.Math.clamp(transitionProgress,0,1) );
+    this.object.position.lerpVectors( lastPosition, targetPosition, transitionProgress );
+    
     anchor.rotation.set(0,0,angle);
     
+    
+    // engine sound level
+    this.ufoSound.update( delta );
+    var engineLevel = idleZ - this.object.position.z;
+    engineLevel = THREE.Math.clamp( engineLevel, 0, 1 );
+    this.ufoSound.volume = engineLevel;
+    //
+    
+    /*
     if ( angle > stepAngle ) {
       lastPosition = this.object.position.clone();
       step++;
@@ -497,43 +1006,77 @@ function Ufo() {
     
     if ( this.alive && !this.isHittable && (angle>transitionAngle) && (step==1) ) {
       this.isHittable = true;
-    }
+    }*/
     
   }
   
-  this.hit = function() {
-    if ( !this.isHittable || !this.alive ) { return; }
-    this.alive = false;
+  this.leave = function() {
+    state = 'out';
+    stepTimer = 0;
+    stepTime = 4;
+    transitionTime = 4;
     this.isHittable = false;
+    lastPosition = this.object.position.clone();
+    targetPosition = idlePosition;
+    
+    var shortAngle = ((angle) + Math.PI) % PI_2 - Math.PI;
+    angle = shortAngle;
+    lastAngle = angle;
+    if ( Math.abs( shortAngle ) < Math.PI/2 ) {
+      targetAngle = 0;
+    } else {
+      if ( shortAngle < 0 ) {
+        targetAngle = -Math.PI;
+      } else {
+        targetAngle = Math.PI;
+      }
+    }
+    
+    console.log( 'orbit -> out' );
+  }
+  
+  this.hit = function() {
+    this.leave();
     
     // score is scaled by how far away you hit the ufo.
-    showCombo( this.points * (4-step), this.object );
-    
-    step = (targetPositions.length -1);
-    lastPosition = this.object.position.clone();
-    stepAngle = angle + PI_2;
-    transitionAngle = angle + (Math.PI/2);
+    showCombo( this.points * (3-step), this.object );
     
     // play sound
-    playSound( getSound('shoot',false), rootPosition(this.object), 1 );
+    new PositionedSound( getSound('ufohit',false), rootPosition(this.object), 1 );
+    //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
     
   }
   
   // put object at step 0 and idle it for a random time
   this.reset = function() {
+    state = 'idle';
+    stepTimer = 0;
+    stepTime = Math.random() * 0 + 2; // 5-10 second interval
+    this.isHittable = false;
+    
+    lastPosition = idlePosition;
+    targetPosition = idlePosition;
+    this.object.position.copy( idlePosition );
+    
+    // silence it!
+    this.ufoSound.volume=0;
+    
+    /*
     step = 0;
     transitionAngle = angle + Math.random() * 3 * Math.PI;
     stepAngle = transitionAngle;
     this.alive = true;
     lastPosition = targetPositions[0];
     this.object.position.copy( targetPositions[0] );
+    */
   }
   
   this.reset();
 
 }
 
-function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
+/// Rename this 'Obstacle'
+function Asteroid( _speed, _spiral, _geometry, _tumble, _points, _explodeSound, _passSoundId ) {
   var PLANET_DISTANCE = 1.25;
   var RICOCHET_SPEED = 0.35;
   
@@ -564,10 +1107,11 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
   this.state = 'waiting';
   this.isActive = false; // will the object accept interactions
   
+  /*
   var geometry = _geometry;
   if ( typeof(_geometry)==='undefined' ) {
     geometry = new THREE.BoxGeometry( 0.7, 0.7, 0.7 );
-  }
+  }*/
   // Ghetto color difference between objects (didn't want to pass in another parameter)
   var objectColor = new THREE.Color( this.points/500, this.points/500, this.points/500 );
   var material = new THREE.MeshLambertMaterial( {
@@ -577,7 +1121,24 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
       emissive: 0x555555,
       shading: THREE.FlatShading } );
   
-  this.object = new THREE.Mesh( geometry, material );
+  //this.object = new THREE.Mesh( geometry, material );
+  
+  var objLoader = new THREE.OBJLoader();
+  this.object = objLoader.parse( queue.getResult('asteroidmodel') );
+  this.object.material = material;
+  this.object.scale.set(0.5, 0.5, 0.5);
+  
+  
+  // Sound
+  var explodeSound = _explodeSound;
+  this.passSound = null;
+  if ( _passSoundId != null ) {
+    //console.log(_passSoundId);
+    this.passSound = new ObjectSound( getSound( _passSoundId, true), this.object, 0 );
+    //directionalSources.push(passSound);
+  }
+  
+  
   
   this.resetPosition= function() {
       angle = Math.random()*Math.PI*2;
@@ -622,7 +1183,6 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
       angle = targetAngle - (Math.PI/2);
       //while ( targetAngle<angle) { targetAngle += (Math.PI * 2); }
       
-      
       // Time-based spiral
       fallTimer+=delta;
       fallTimer = THREE.Math.clamp( fallTimer, 0, spiralTime);
@@ -648,6 +1208,26 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
       }
       if ( radius < OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
       this.object.position.add( velocity );
+      
+      /*
+      // clamp vertical position
+      if ( this.object.position.y < -OBSTACLE_START_RADIUS ) { this.object.position.setY( -OBSTACLE_START_RADIUS ); }
+      if ( this.object.position.y > OBSTACLE_START_RADIUS ) { this.object.position.setY( OBSTACLE_START_RADIUS ); }
+      */
+      
+      
+      // idle sound level
+      if ( this.passSound !== null ) {
+        this.passSound.update( delta );
+        var soundLevel = 2 - Math.abs(this.object.position.z - cameraZ)/10;
+        soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
+        //console.log( soundLevel );
+        this.passSound.volume = soundLevel;
+      }
+      //
+      
+      
+      
       break;
     case 'waiting':
       /*
@@ -682,18 +1262,32 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
     
   } 
   
+  this.removePassSound = function() {
+    if ( this.passSound !== null ) {
+      this.passSound.source.stop();
+      //removeSource( this.passSound );
+      this.passSound = null;
+    }
+  }
+  
   this.hit = function( hitPosition, ricochet ) {
     //if ( this.ricochet ) {
-    
-    // play sound
-    playSound( getSound('shoot',false), rootPosition(this.object), 1 );
+    if ( this.passSound !== null ) {
+      this.passSound.volume = 0;
+    }
     
     if ( this.state === 'ricocheting' ) {
       showCombo( (this.ricochetCount * this.points), this.object );
+      new PositionedSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
+      //playSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
       this.destroy();
       return;
     }
+    
+    new PositionedSound( getSound('fpo',false), rootPosition(this.object), 1 );
+    //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
     this.state= 'ricocheting';
+    
     //this.ricochet = true;
     
     if ( typeof(ricochet) === 'undefined' ) {
@@ -715,14 +1309,21 @@ function Asteroid( _speed, _spiral, _geometry, _tumble, _points ) {
   }
   
   this.destroy = function() {
+    if ( this.passSound !== null ) { this.passSound.volume = 0; }
     this.state = 'inactive';
     this.remove();
     //this.resetPosition();
   }
+  
   this.remove = function() {
     if ( this.object.parent!=null) {
       this.object.parent.remove(this.object);
     }
+  }
+  
+  this.destruct = function() {
+    this.removePassSound();
+    this.remove();
   }
   
   this.resetPosition();
@@ -763,6 +1364,12 @@ function Projectile( object, direction ) {
 }
 
 "use strict";
+this.galaxies = this.galaxies || {};
+
+var invulnerable = false;
+
+var animationFrameRequest;
+var gameInitialized = false;
 
 var windowHalfX = 0;
 var windowHalfY = 0;
@@ -775,10 +1382,11 @@ var rootRotationSpeed = 0.05;
 
 var score;
 var level;
+var startLevel = 1;
 var playerLife;
 
 var levelTimer = 0;
-var levelTime = 30;
+var levelTime;
 var levelComplete = false;
 var PI_2 = Math.PI * 2;
 
@@ -802,7 +1410,7 @@ var PROJ_START_Y = 1.25;
 var CONE_SLOPE = Math.tan( coneAngle*Math.PI/360 );
 var CAMERA_SLOPE = Math.tan( cameraViewAngle*Math.PI/360 );
 var OBSTACLE_VISIBLE_RADIUS = cameraZ * CONE_SLOPE * CAMERA_SLOPE/ (CONE_SLOPE + CAMERA_SLOPE);
-var OBSTACLE_START_RADIUS = OBSTACLE_VISIBLE_RADIUS * 1.2;
+var OBSTACLE_START_RADIUS = OBSTACLE_VISIBLE_RADIUS * 2;//OBSTACLE_VISIBLE_RADIUS * 1.2;
 
 var PROJECTILE_LIFE = (OBSTACLE_VISIBLE_RADIUS - PROJ_START_Y)/projectileSpeed;
 
@@ -842,14 +1450,13 @@ function onDocumentTouchMove( event ) {
         
 }
 
-            
 var textureURLs = [  // URLs of the six faces of the cube map 
-        "images/spacesky_right1.png",   // Note:  The order in which
-        "images/spacesky_left2.png",   //   the images are listed is
-        "images/spacesky_top3.png",   //   important!
-        "images/spacesky_bottom4.png",  
-        "images/spacesky_front5.png",   
-        "images/spacesky_back6.png"
+        "images/spacesky_right1.jpg",   // Note:  The order in which
+        "images/spacesky_left2.jpg",   //   the images are listed is
+        "images/spacesky_top3.jpg",   //   important!
+        "images/spacesky_bottom4.jpg",  
+        "images/spacesky_front5.jpg",   
+        "images/spacesky_back6.jpg"
    ];
 
 var camera, scene, renderer, clock;
@@ -876,6 +1483,10 @@ function init() {
   // three.js clock for delta time
   clock = new THREE.Clock();
   
+  galaxies.ui.init();
+}
+function initGame() {
+  
   var container, mesh;
 
   container = document.getElementById( 'container' );
@@ -894,6 +1505,7 @@ function init() {
   light.position.set( 30, 20, 50 );
   rootObject.add( light );
   
+  /*
   // TEST OBJECT
   var geometry = new THREE.SphereGeometry( 0.1, 12, 6 );
   var material = new THREE.MeshBasicMaterial( {
@@ -905,8 +1517,17 @@ function init() {
   test.position.copy( testPosition );
   
   rootObject.add( test );
+  */
 
-  var texture = THREE.ImageUtils.loadTextureCube( textureURLs );
+  //var texture = THREE.ImageUtils.loadTextureCube( textureURLs );
+  var texture = new THREE.CubeTexture([
+                    queue.getResult('skyboxright1'),
+                    queue.getResult('skyboxleft2'),
+                    queue.getResult('skyboxtop3'),
+                    queue.getResult('skyboxbottom4'),
+                    queue.getResult('skyboxfront5'),
+                    queue.getResult('skyboxback6') ] );
+  texture.needsUpdate = true;
   
   /* Set up a material that uses a cubemap texture.  This material uses
      custom vertex and fragment shaders that are defined in three.js as
@@ -935,9 +1556,42 @@ function init() {
   rootObject.add( planet );
   
   characterRotator = new THREE.Object3D();
-  planet.add( characterRotator );
+  rootObject.add( characterRotator );
   
-  var characterMap = THREE.ImageUtils.loadTexture( "images/lux.png" );
+  //var characterMap = THREE.ImageUtils.loadTexture( "images/lux.png" );
+  //characterMap.minFilter = THREE.LinearFilter;
+  
+  /*
+  var test = document.createElement( 'img' );
+  //test.src = 'images/lux.png';
+  test.src = queue.getResult('lux').src;
+  document.getElementById('menuHolder').appendChild(test);
+  */
+  
+  
+  var characterMap = new THREE.Texture( queue.getResult('lux'), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
+  characterMap.needsUpdate = true;
+  
+  /*
+  var loader = new THREE.ImageLoader();
+  //loader.crossOrigin = this.crossOrigin;
+  loader.load( 'images/lux.png', function ( image ) {
+    console.log(image);
+
+    document.getElementById('menuHolder').appendChild(image);
+    //characterMap.image = image;
+    //characterMap.needsUpdate = true;
+    //if ( onLoad ) onLoad( texture );
+  }, undefined, function ( event ) {
+
+      if ( onError ) onError( event );
+
+  } );
+  */
+  
+  console.log( queue.getResult('lux') );
+  console.log( characterMap.image );
+  
   var characterMaterial = new THREE.SpriteMaterial( { map: characterMap, color: 0xffffff, fog: true } );
   character = new THREE.Sprite( characterMaterial );
   character.position.set( 0, CHARACTER_Y, 0 );
@@ -951,7 +1605,7 @@ function init() {
   //renderer.setSize( 640, 480 );
   container.appendChild( renderer.domElement );
   
-  
+  // Capture events on document to prevent ui from blocking clicks
   document.addEventListener( 'mousedown', onDocumentMouseDown, false );
   document.addEventListener( 'mouseup', onDocumentMouseUp, false );
   document.addEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -963,6 +1617,7 @@ function init() {
 
   //
 
+  /*
   document.addEventListener( 'dragover', function ( event ) {
 
       event.preventDefault();
@@ -997,40 +1652,60 @@ function init() {
 
       document.body.style.opacity = 1;
 
-  }, false );
+  }, false );*/
 
   var debugFormElement = document.getElementById("debugForm");
   var audioToggle = debugFormElement.querySelector("input[name='audio']");
   audioToggle.addEventListener('click', function(event) { toggleAudio( audioToggle.checked ); } );
   var soundFieldToggle = debugFormElement.querySelector("input[name='soundField']");
   soundFieldToggle.addEventListener('click', function(event) { toggleSoundField( soundFieldToggle.checked ); } );
+  var surroundToggle = debugFormElement.querySelector("input[name='surround']");
+  surroundToggle.addEventListener('click', function(event) { toggleTargetMix( surroundToggle.checked ); } );
+  debugFormElement.querySelector("button[name='restart']").addEventListener('click', manualRestart );
   
-  
-  var soundLoader = new SoundLoader( startGame );
+  initAudio( startGame );
 }
 function startGame() {
   
-  ufo = new Ufo();
-  
   // audio
+  // Set initial mix to 6-channel surround.
+  // TODO - detect this automagically
+  toggleTargetMix( true );
+  
+  // configure listener (necessary for correct panner behavior when mixing for stereo)
   listenerObject = camera;
-  var testSource = new DirectionalSource( getSound('ufo'), ufo.object );
-  directionalSources.push( testSource );
+  listener.setOrientation(0,0,-1,0,1,0);
+  listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
   soundField = new SoundField( getSound('music') );
   //
+  
+  ufo = new Ufo();
   
   resetGame();
   initLevel();
 
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();
+
+  gameInitialized = true;
+  
+  animate();
+
+  
+}
+
+function restartGame() {
+  resetGame();
+  
+  //planetTransition(); // for testing purposes
+  initLevel();
   
   animate();
 }
 
 function initLevel() {
-  updateLevelNumber();
+  galaxies.ui.updateLevel( level );
   
   levelTime = 25;// + (5*level);
   levelTimer = 0;
@@ -1047,7 +1722,7 @@ function initLevel() {
   
   speedScale = THREE.Math.mapLinear(planetLevel, 0, 2, planetFirstSpeed, planetLastSpeed );
   //console.log( planetFirstSpeed, planetLastSpeed, speedScale );
-  
+  /*
   for ( var i=1; i<20; i++ ) {
     var planetLevel = ((i-1) % LEVELS_PER_PLANET); // level progress on planet
     var planet = Math.floor( i/LEVELS_PER_PLANET ); // Planet number
@@ -1055,7 +1730,7 @@ function initLevel() {
     var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planet*2));
     
     console.log( i, THREE.Math.mapLinear(planetLevel, 0, 2, planetFirstSpeed, planetLastSpeed ) );
-  }
+  }*/
   
   
   
@@ -1083,9 +1758,58 @@ function initLevel() {
   }*/
   
   initRootRotation();
+  
+
 }
 function nextLevel() {
   level++;
+  
+  if (( (level-1) % LEVELS_PER_PLANET ) == 0) {
+    planetTransition();
+  } else {
+    initLevel();
+  }
+  
+}
+
+
+function planetTransition() {
+  // Reset the level timer, so the game state doesn't look like we've finished a level during the transition
+  levelComplete = false;
+  levelTimer = 0;
+  
+  // hide the character
+  characterRotator.remove(character);
+  
+  // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
+  THREE.SceneUtils.detach (planet, rootObject, scene);
+  // Set outbound end position and inbound starting position for planet
+  var outPosition = rootObject.localToWorld(new THREE.Vector3(0,0,-100) );
+  var inPosition = rootObject.localToWorld(new THREE.Vector3(0,-100,0) );
+  
+  // Tween!
+  createjs.Tween.get( planet.position ).to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, 4000, createjs.Ease.quadInOut).
+    to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0).
+    to({x:0, y:0, z:0}, 4000, createjs.Ease.quadInOut);
+  
+  // Swing the world around
+  //createjs.Tween.get( camera.rotation ).to({x:PI_2, y:PI_2}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
+  var targetX = rootObject.rotation.x + Math.PI/2;
+  createjs.Tween.get( rootObject.rotation ).to({x:targetX}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
+  
+  // Stop drifting in the x-axis to prevent drift rotation from countering transition.
+  // This ensures planet will move off-screen during transition.
+  rootAxis.x = 0;
+  rootAxis.normalize();
+  //rootAxis.set(0,0,0);
+}
+function planetTransitionComplete() {
+  // reattach the planet to the rootObject
+  THREE.SceneUtils.attach( planet, rootObject, scene );
+  
+  // put the character back
+  characterRotator.add(character);
+  
   initLevel();
 }
 
@@ -1127,12 +1851,15 @@ function addObstacle( type ) {
   var tumble = false;
   var spiral = 0;
   var points;
+  var explodeSound = 'fpo';
+  var passSound = null;
   switch(type) {
     case "asteroid":
       speed = 0.2;
       geometry = new THREE.BoxGeometry(radius, radius, radius);
       tumble = true;
       points = 100;
+      explodeSound = 'asteroidexplode';
       break;
     case "satellite":
       speed = 0.5;
@@ -1145,12 +1872,15 @@ function addObstacle( type ) {
       spiral = 1;
       geometry = new THREE.DodecahedronGeometry(radius);
       points = 500;
+      explodeSound = 'cometexplode';
+      passSound = 'cometloop';
       break;
       
   }
   
-  var obstacle = new Asteroid( speed, spiral, geometry, tumble, points );
+  var obstacle = new Asteroid( speed, spiral, geometry, tumble, points, explodeSound, passSound );
   obstacles.push( obstacle );
+  
 }
 
 
@@ -1191,14 +1921,15 @@ function shoot() {
     
     
     // play sound
-    playSound( getSound('shoot',false), rootPosition(character), 2 );
+    new PositionedSound( getSound('shoot',false), rootPosition(character), 10 );
+    //playSound( getSound('shoot',false), rootPosition(character), 10 );
     
 }
 
 
 function animate() {
 
-	requestAnimationFrame( animate );
+	animationFrameRequest = requestAnimationFrame( animate );
 	update();
 
 }
@@ -1377,31 +2108,50 @@ function initRootRotation() {
 function hitPlayer() {
   
   playerLife--;
-  if (playerLife<=0) {
+  if ((!invulnerable) && (playerLife<=0)) {
     gameOver();
     return;
   }
-  updateLife();
+  galaxies.ui.updateLife( playerLife );
   
   if ( !createjs.Tween.hasActiveTweens(character.position) ) {
     createjs.Tween.get(character.position).to({y:2.5}, 250, createjs.Ease.quadOut).to({y:1.75}, 250, createjs.Ease.quadOut);
   }
 }
 
-function gameOver() {
-  resetGame();
-  initLevel();
+function pauseGame() {
+  if ( animationFrameRequest != null ) {
+    clock.stop();
+    window.cancelAnimationFrame(animationFrameRequest);
+  }
 }
+function resumeGame() {
+  clock.start();
+  animate();
+}
+
+
+function gameOver() {
+  if ( animationFrameRequest != null ) {
+    window.cancelAnimationFrame(animationFrameRequest);
+  }
+  
+  galaxies.ui.showMenu();
+  
+  resetGame();
+  clearLevel();
+  
+}
+
 function resetGame() {
   // reset game
-  level = 1;
+  level = startLevel;
   score = 0;
   playerLife = 3;
   
-  updateLevelNumber();
-  updateLife();
-  updateScore();
-  
+  galaxies.ui.updateLevel( level );
+  galaxies.ui.updateLife( playerLife );
+  galaxies.ui.updateScore( score );
 }
 function clearLevel() {
   // clear all actors
@@ -1438,7 +2188,7 @@ function showCombo( value, obj ) {
   window.setTimeout( removeCombo, 1000, divElem );
   
   score += value;
-  updateScore();
+  galaxies.ui.updateScore( score );
     
 }
 
@@ -1446,18 +2196,7 @@ function removeCombo( element ) {
   element.remove();
 }
 
-function updateScore() {
-  document.getElementById("score").innerHTML = score.toString();
-}
 
-function updateLevelNumber() {
-  var levelElement = document.getElementById("level");
-  levelElement.innerHTML = level.toString();
-}
-function updateLife() {
-  var element = document.getElementById("life");
-  element.innerHTML = playerLife.toString();
-}
 
 
 
@@ -1470,8 +2209,11 @@ function flatLengthSqr(vector ) {
 
 function rootPosition( object ) {
   var foo = object.position.clone();
-   
-  return rootObject.worldToLocal( object.parent.localToWorld( foo ) );
+  if ( object.parent == null ) {
+    return foo;
+  } else {
+    return rootObject.worldToLocal( object.parent.localToWorld( foo ) );
+  }
 
 }
 
@@ -1479,18 +2221,389 @@ function rootPosition( object ) {
 
 // DEBUG
 function toggleAudio( value ) {
-  console.log("toggleAudio", value);
+  //console.log("toggleAudio", value);
   if ( value ) {
-    directionalSources[0].volume = 1;
+    ufo.ufoSound.sound.muteVolume.gain.value = 1;
   } else {
-    directionalSources[0].volume = 0;
+    ufo.ufoSound.sound.muteVolume.gain.value = 0;
   }
 }
 function toggleSoundField( value ) {
   if ( value ) {
-    soundField.volume = 0.5;
+    soundField.setVolume(0.24);
   } else {
-    soundField.volume = 0;
+    soundField.setVolume(0);
   }
 }
+
+function manualRestart() {
+  var debugFormElement = document.getElementById("debugForm");
+  var levelNumber = parseInt( debugFormElement.querySelector("input[name='startLevel']").value );
+  if ( isNaN(levelNumber) ) {
+    levelNumber = 1;
+  }
+  
+  startLevel = levelNumber;
+  
+  gameOver();
+}
+
+
+
+'use strict';
+
+this.galaxies = this.galaxies || {};
+
+var queue; // the preload queue and cache
+var assetManifest = [];
+
+
+// Add audio files
+// Note that audio files are added as binary data because they will need to be decoded by the web audio context object.
+// The context object will not be created until after preload is complete, so the binary data will simply be cached
+// by the preloader and handled later in the initialization.
+var audioItems = [
+  { id: 'shoot1', src: 'shuttlecock_release_01.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'shoot2', src: 'shuttlecock_release_02.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'shoot3', src: 'shuttlecock_release_03.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'shoot4', src: 'shuttlecock_release_04.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'shoot5', src: 'shuttlecock_release_05.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'asteroidexplode1', src: 'asteroid_explode_01.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'asteroidexplode2', src: 'asteroid_explode_02.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'asteroidexplode3', src: 'asteroid_explode_03.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'cometexplode', src: 'comet_explode_01.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'cometloop', src: 'comet_fire_loop.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'fpo1', src: 'Beep Ping-SoundBible.com-217088958.mp3', type: createjs.AbstractLoader.BINARY },
+  { id: 'fpo2', src: 'Robot_blip-Marianne_Gagnon-120342607.mp3', type: createjs.AbstractLoader.BINARY },
+  { id: 'fpo3', src: 'Robot_blip_2-Marianne_Gagnon-299056732.mp3', type: createjs.AbstractLoader.BINARY },
+  { id: 'ufo', src: 'ufo_engine_loop_01.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'music', src: 'music_5_1_loop.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'ufohit1', src: 'ufo_hit_01.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'ufohit2', src: 'ufo_hit_02.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'ufoshoot', src: 'UFO_laser_fire.ogg', type: createjs.AbstractLoader.BINARY }
+];
+for (var i=0; i< audioItems.length; i++ ) {
+  audioItems[i].src = 'audio/' + audioItems[i].src;
+}
+assetManifest = assetManifest.concat(audioItems);
+
+// add texture images
+var imageItems = [
+  { id: 'skyboxright1', src: 'spacesky_right1.jpg' },
+  { id: 'skyboxleft2', src: 'spacesky_left2.jpg' },
+  { id: 'skyboxtop3', src: 'spacesky_top3.jpg' },
+  { id: 'skyboxbottom4', src: 'spacesky_bottom4.jpg' },
+  { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
+  { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
+  { id: 'lux', src: 'lux.png' }
+];
+for (var i=0; i<imageItems.length; i++ ) {
+  imageItems[i].src = 'images/' + imageItems[i].src;
+}
+assetManifest = assetManifest.concat(imageItems);
+
+// add models
+assetManifest.push(
+  { id: 'ufomodel', src: 'models/ufo_v2.obj', type: createjs.AbstractLoader.TEXT },
+  { id: 'asteroidmodel', src: 'models/asteroid01.obj', type: createjs.AbstractLoader.TEXT }
+);
+
+
+
+
+
+galaxies.ui = (function() {
+  
+  // UI elements
+  var uiHolder = document.getElementById("menuHolder");
+  
+  // loading and title play button
+  var loadingHolder = uiHolder.querySelector(".loading");
+  var loadingLogo = uiHolder.querySelector(".progress-title");
+  var playSymbol = uiHolder.querySelector(".play-symbol");
+  var progressElement = uiHolder.querySelector(".progress");
+  var loadRing = uiHolder.querySelector(".progress-ring");
+  var playHolder = uiHolder.querySelector(".play-place");
+  var playButton = uiHolder.querySelector(".play-button");
+  
+  // mute button (always active after load)
+  var muteButton = uiHolder.querySelector(".mute-button");
+  
+  // in-game elements
+  var inGameHolder = uiHolder.querySelector(".game-ui");
+  var pauseButton = uiHolder.querySelector(".pause-button");
+  var levelDisplay = inGameHolder.querySelector(".level-display");
+  var lifeDisplay = inGameHolder.querySelector(".life-display");
+  var scoreDisplay = inGameHolder.querySelector(".score-display");
+  
+  
+  // pause menu
+  var pauseOverlay = uiHolder.querySelector(".pause-overlay");
+  var pauseHolder = uiHolder.querySelector(".pause-menu");
+  var resumeButton = pauseHolder.querySelector(".resume-button");
+  var restartButton = pauseHolder.querySelector(".restart-button");
+  var quitButton = pauseHolder.querySelector(".quit-button");
+  
+  // game element
+  var gameContainer = document.getElementById( 'container' );
+
+  var progressRing = (function() {
+    var elementA = playHolder.querySelector('.progress-fill-a');
+    var elementB = playHolder.querySelector('.progress-fill-b');
+    var secondHalf = false;
+    
+    var update = function(value) {
+      var angle = 360 * value - 180;
+      if (!secondHalf) {
+        var styleObject = elementA.style;
+        styleObject.left = angle;
+        styleObject.transform = "rotate(" + angle.toFixed(2) + "deg)";
+        //console.log( angle, styleObject.left, styleObject.transform);
+        if (value>=0.5) {
+          secondHalf = true;
+          styleObject.transform = "rotate(0deg)";
+          elementB.classList.remove('hidden');
+        }
+      } else {
+        var styleObject = elementB.style;
+        styleObject.transform = "rotate(" + angle + "deg)";
+      }
+    }
+    return {
+      update: update
+    }
+  })();
+
+  var init = function() {
+    createjs.CSSPlugin.install();
+    
+    
+    // Loading indicator transition, setup
+    // Create hidden background images and listen for them to complete loading,
+    // then add fade-in class to scrolling background elements.
+    var element2 = document.createElement("img");
+    element2.addEventListener('load', function() { imageLoaded('.bg2'); } );
+    element2.setAttribute('src', 'images/stars_tile.png');
+    
+    var element1 = document.createElement("img");
+    element1.addEventListener('load', function() { imageLoaded('.bg1'); } );
+    element1.setAttribute('src', 'images/loader_background.jpg');
+    
+    function imageLoaded( selector ) {
+      initBgKeyframes();
+      console.log("image loaded");
+      var holder = document.getElementById("menuHolder").querySelector(selector).parentNode;
+      holder.classList.add('fade-in');
+      holder.classList.remove('invisible');
+    }
+    //
+    
+    function logoAppear() {
+      loadingLogo.classList.add('logo-loading-layout');
+/*      logo.style.width = 0;
+      logo.style.height = 0;
+      createjs.Tween.get(logo).to({width: 141, height:93 }, 500);*/
+    }
+    
+    
+    
+    
+    // Create Loader
+    var handleComplete = function() {
+      transitionToMenu();
+      
+      //initGame();
+    }
+    var handleProgress = function( e ) {
+      progressElement.innerHTML = Math.round(e.progress * 100).toString();
+      // update ring
+      progressRing.update( e.progress );
+      //console.log( "Progress", e.progress );
+    }
+    var handleError = function( e ) {
+      console.log("Error loading.", e);
+    }
+    
+    
+    
+    // hook button elements
+    
+    playButton.addEventListener('click', onClickPlay );
+    
+    muteButton.addEventListener('click', onClickMute );
+    
+    pauseButton.addEventListener('click', onClickPause );
+    resumeButton.addEventListener('click', onClickResume );
+    restartButton.addEventListener('click', onClickRestart );
+    quitButton.addEventListener('click', onClickQuit );
+    
+    
+    
+    
+    
+    
+    
+  
+    queue = new createjs.LoadQueue(true);
+    queue.on("complete", handleComplete );
+    queue.on("error", handleError );
+    queue.on("progress", handleProgress );
+    queue.loadManifest( assetManifest );
+    
+    logoAppear();
+  
+    
+    // set background animation keyframe based on window size
+    // update this when window is resized
+  }
+  
+  var initBgKeyframes = function() {
+    
+    var bgWidth = 1024 * uiHolder.querySelector('.bg1').offsetHeight/512;
+    
+    var keyframes = findKeyframesRule("bgscroll1");
+    keyframes.deleteRule("100%");
+    keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
+    keyframes = findKeyframesRule("bgscroll2");
+    keyframes.deleteRule("100%");
+    keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
+    
+    // assign the animation to our element (which will cause the animation to run)
+    //document.getElementById('box').style.webkitAnimationName = anim;
+  }
+    
+  // search the CSSOM for a specific -webkit-keyframe rule
+  function findKeyframesRule(rule) {
+    // gather all stylesheets into an array
+    var ss = document.styleSheets;
+    
+    // loop through the stylesheets
+    for (var i = 0; i < ss.length; ++i) {
+      // loop through all the rules
+      if ( ss[i].cssRules == null ) { continue; }
+      for (var j = 0; j < ss[i].cssRules.length; ++j) {
+        
+        // find the rule whose name matches our passed over parameter and return that rule
+        if ((ss[i].cssRules[j].type == window.CSSRule.KEYFRAMES_RULE) && (ss[i].cssRules[j].name == rule)) {
+          return ss[i].cssRules[j];
+        }
+      }
+    }
+      
+    
+    // rule not found
+    return null;
+  }
+  
+  
+  var transitionToMenu = function() {
+    console.log("Transition loading layout to main menu.");
+    /*
+    var test = document.createElement( 'img' );
+    test.src = queue.getResult('lux').src;
+    document.getElementById('menuHolder').appendChild(test);
+    */
+    
+    // transition load indicator to play button
+    progressElement.style.left = 0;
+    createjs.Tween.get(progressElement).to({left:52}, 500, createjs.Ease.quadInOut).call( showPlayButton );
+    var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
+    playSymbol.style.left = start;
+    createjs.Tween.get(playSymbol).to({left:0}, 500, createjs.Ease.quadInOut);
+
+    // Show mute button
+    muteButton.classList.add("fade-in");
+    muteButton.classList.remove("hidden");
+    
+    // Resize title card and reposition
+    loadingLogo.classList.remove('logo-loading-layout');
+    loadingLogo.classList.add("logo-final-layout");
+    playHolder.classList.add("play-final-layout");
+    
+  }
+  var showPlayButton = function() {
+    loadRing.classList.add("hidden");
+    
+    playButton.classList.remove("hidden");
+  }
+  
+  var showMenu = function() {
+    gameContainer.classList.add('hidden');
+    inGameHolder.classList.add('hidden');
+    pauseHolder.classList.add('hidden');
+    pauseOverlay.classList.add('hidden');
+    
+    loadingHolder.classList.remove('hidden');
+    
+  }
+  
+  
+  
+
+  /// Start the game
+  var onClickPlay = function(e) {
+    loadingHolder.classList.add('hidden');
+    
+    gameContainer.classList.remove('hidden');
+    inGameHolder.classList.remove('hidden');
+    
+    if ( gameInitialized ) {
+      restartGame();
+    } else {
+      initGame();
+    }
+  }
+  
+  var onClickMute = function(e) {
+    console.log("Toggle mute");
+  }
+  
+  var onClickPause = function(e) {
+    pauseHolder.classList.remove('hidden');
+    pauseOverlay.classList.remove('hidden');
+    pauseGame();
+  }
+  var onClickResume = function(e) {
+    pauseHolder.classList.add('hidden');
+    pauseOverlay.classList.add('hidden');
+    resumeGame();
+  }
+  var onClickRestart = function(e) {
+    pauseHolder.classList.add('hidden');
+    pauseOverlay.classList.add('hidden');
+    restartGame();
+  }
+  var onClickQuit = function(e) {
+    gameOver();
+  }
+  
+  
+  var updateLevel = function( newLevelNumber ) {
+    levelDisplay.innerHTML = "LEVEL " + newLevelNumber.toString();
+  }
+  var updateScore = function( newScore ) {
+    scoreDisplay.innerHTML = newScore.toString();
+  }
+  var updateLife = function( newLifeValue ) {
+    lifeDisplay.innerHTML = newLifeValue.toString();
+  }
+
+  return {
+    init: init,
+    gameContainer: gameContainer,
+    showMenu: showMenu,
+    updateLevel: updateLevel,
+    updateScore: updateScore,
+    updateLife: updateLife
+  };
+  
+  
+}());
+
+
+
+
+
+
+
 

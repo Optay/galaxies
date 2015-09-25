@@ -1,0 +1,110 @@
+.button {
+  cursor: pointer;
+  
+  transition: width $button-transition-time, height $button-transition-time;
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.small-button {
+  @extend .button;
+  width: $small-button-size;
+  height: $small-button-size;
+}
+.small-button:active {
+  width: $small-button-size-down;
+  height: $small-button-size-down;
+}
+.large-button {
+  @extend .button;
+  width: $large-button-size;
+  height: $large-button-size;
+}
+.large-button:active {
+  width: $large-button-size-down;
+  height: $large-button-size-down;
+}
+
+
+
+.mute-button {
+  @extend .small-button;
+  
+  position: absolute;
+  bottom: 60px;
+  right: 60px;
+  transform: translateX( 50% ) translateY(50%);
+  
+  background-image: url('../images/button_audio_on.png');
+  z-index: 22; /* needs to be over pause overlay */
+}
+.mute-button:hover {
+  background-image: url('../images/button_audio_on_rollover.png');
+}
+
+.pause-button {
+  @extend .small-button;
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  transform: translateX( -50% ) translateY(50%);
+  
+  background-image: url('../images/button_pause_small.png');
+}
+.pause-button:hover {
+  background-image: url('../images/button_pause_small_rollover.png');
+}
+
+.play-button {
+  @extend .large-button;
+  
+  position: relative;
+  left: $large-button-size/2;
+  top: $large-button-size/2;
+  transform: translateX( -50% ) translateY(-50%);
+  
+  background-image: url('../images/button_play_large.png');
+}
+.play-button:hover {
+  background-image: url('../images/button_play_large_rollover.png');
+}
+
+.resume-button {
+  @extend .large-button;
+  
+  position: absolute;
+  bottom: 0;
+  left: 60px;
+  transform: translateX( -50% ) translateY(50%);
+  
+  background-image: url('../images/button_play_large.png');
+}
+.resume-button:hover {
+  background-image: url('../images/button_play_large_rollover.png');
+}
+.restart-button {
+  @extend .large-button;
+  
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX( -50% ) translateY(50%);
+  
+  background-image: url('../images/button_replay_large.png');
+}
+.restart-button:hover {
+  background-image: url('../images/button_replay_large_rollover.png');
+}
+.quit-button {
+  @extend .large-button;
+  
+  position: absolute;
+  bottom: 0;
+  right: 60px;
+  transform: translateX( 50% ) translateY(50%);
+
+  background-image: url('../images/button_home_large.png');
+}
+.quit-button:hover {
+  background-image: url('../images/button_home_large_rollover.png');
+}
