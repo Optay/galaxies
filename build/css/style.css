@@ -1,6 +1,6 @@
 /* Variables and such */
 /***** UI Buttons *****/
-/*****  *****/
+/***** UI *****/
 /* line 1, ../../source/css/buttons.scss */
 .button, .small-button, .mute-button, .pause-button, .large-button, .play-button, .resume-button, .restart-button, .quit-button {
   cursor: pointer;
@@ -50,6 +50,17 @@
 }
 
 /* line 45, ../../source/css/buttons.scss */
+.dolby-logo {
+  position: absolute;
+  width: 150px;
+  height: 31px;
+  bottom: 44.5px;
+  right: 93px;
+  background-image: url("../images/logo_dolby_digital_plus.png");
+  background-size: contain;
+}
+
+/* line 57, ../../source/css/buttons.scss */
 .pause-button {
   position: absolute;
   bottom: 60px;
@@ -58,12 +69,12 @@
   background-image: url("../images/button_pause_small.png");
 }
 
-/* line 54, ../../source/css/buttons.scss */
+/* line 66, ../../source/css/buttons.scss */
 .pause-button:hover {
   background-image: url("../images/button_pause_small_rollover.png");
 }
 
-/* line 58, ../../source/css/buttons.scss */
+/* line 70, ../../source/css/buttons.scss */
 .play-button {
   position: relative;
   left: 46px;
@@ -72,51 +83,126 @@
   background-image: url("../images/button_play_large.png");
 }
 
-/* line 68, ../../source/css/buttons.scss */
+/* line 80, ../../source/css/buttons.scss */
 .play-button:hover {
   background-image: url("../images/button_play_large_rollover.png");
 }
 
-/* line 72, ../../source/css/buttons.scss */
+/* line 84, ../../source/css/buttons.scss */
 .resume-button {
   position: absolute;
   bottom: 0;
-  left: 60px;
-  transform: translateX(-50%) translateY(50%);
   background-image: url("../images/button_play_large.png");
 }
 
-/* line 82, ../../source/css/buttons.scss */
+/* line 92, ../../source/css/buttons.scss */
 .resume-button:hover {
   background-image: url("../images/button_play_large_rollover.png");
 }
 
-/* line 85, ../../source/css/buttons.scss */
+/* line 95, ../../source/css/buttons.scss */
 .restart-button {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(50%);
   background-image: url("../images/button_replay_large.png");
 }
 
-/* line 95, ../../source/css/buttons.scss */
+/* line 103, ../../source/css/buttons.scss */
 .restart-button:hover {
   background-image: url("../images/button_replay_large_rollover.png");
 }
 
-/* line 98, ../../source/css/buttons.scss */
+/* line 106, ../../source/css/buttons.scss */
 .quit-button {
   position: absolute;
   bottom: 0;
-  right: 60px;
-  transform: translateX(50%) translateY(50%);
   background-image: url("../images/button_home_large.png");
 }
 
-/* line 108, ../../source/css/buttons.scss */
+/* line 114, ../../source/css/buttons.scss */
 .quit-button:hover {
   background-image: url("../images/button_home_large_rollover.png");
+}
+
+/* positioning */
+/* line 119, ../../source/css/buttons.scss */
+.pause-menu .resume-button {
+  left: 60px;
+  transform: translateX(-50%) translateY(50%);
+}
+
+/* line 123, ../../source/css/buttons.scss */
+.pause-menu .restart-button {
+  left: 50%;
+  transform: translateX(-50%) translateY(50%);
+}
+
+/* line 127, ../../source/css/buttons.scss */
+.pause-menu .quit-button {
+  right: 60px;
+  transform: translateX(50%) translateY(50%);
+}
+
+/* line 131, ../../source/css/buttons.scss */
+.game-over-menu .restart-button {
+  left: 40%;
+  transform: translateX(-50%) translateY(50%);
+}
+
+/* line 135, ../../source/css/buttons.scss */
+.game-over-menu .quit-button {
+  right: 40%;
+  transform: translateX(50%) translateY(50%);
+}
+
+/* line 140, ../../source/css/buttons.scss */
+.audio-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 120px auto;
+  top: 50%;
+  width: 300px;
+  text-align: center;
+}
+
+/* line 150, ../../source/css/buttons.scss */
+.stereo-button, .surround-button {
+  cursor: pointer;
+  display: inline-block;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  width: 131px;
+  height: 50px;
+}
+
+/* line 161, ../../source/css/buttons.scss */
+.stereo-button:hover, .surround-button:hover {
+  background-position: 0 -59px;
+  /*33%; 117*/
+}
+
+/* line 164, ../../source/css/buttons.scss */
+.stereo-button.active, .surround-button.active {
+  background-position: 0 -117px;
+  /*67%;234*/
+}
+
+/* line 167, ../../source/css/buttons.scss */
+.stereo-button.active:hover, .surround-button.active:hover {
+  background-position: 0 -175px;
+  /*100%;350*/
+}
+
+/* line 171, ../../source/css/buttons.scss */
+.stereo-button {
+  background-image: url("../images/button_stereo.png");
+}
+
+/* line 175, ../../source/css/buttons.scss */
+.surround-button {
+  background-image: url("../images/button_surround.png");
 }
 
 /* line 4, ../../source/css/style.scss */
@@ -145,16 +231,20 @@
   }
 }
 /* line 22, ../../source/css/style.scss */
-.combo {
+.points {
   position: absolute;
   z-index: 10;
   /* to appear above THREE canvas */
-  color: #fff;
-  font-size: 20px;
+  color: #F0F485;
+  font-family: 'HorizonBT-Regular';
+  font-size: 30px;
   text-align: center;
+  opacity: 1;
+  top: 0;
+  transition: top 2s linear, opacity 2s ease-in;
 }
 
-/* line 31, ../../source/css/style.scss */
+/* line 35, ../../source/css/style.scss */
 .speaker {
   border: 1px solid #fff;
 }
@@ -163,41 +253,50 @@
   UI
 */
 /* Pause menu is above all elements except the in-game logo */
-/* line 47, ../../source/css/style.scss */
+/* line 51, ../../source/css/style.scss */
 .pause-menu {
+  width: 400px;
+  z-index: 25;
+}
+
+/* line 55, ../../source/css/style.scss */
+.game-over-menu {
+  width: 600px;
+}
+
+/* line 58, ../../source/css/style.scss */
+.pause-menu, .game-over-menu {
   position: absolute;
   bottom: 50%;
-  width: 400px;
   height: 200px;
   left: 0;
   right: 0;
   margin: 0 auto;
-  z-index: 25;
   text-align: center;
 }
 
-/* line 60, ../../source/css/style.scss */
+/* line 69, ../../source/css/style.scss */
 .pause-overlay {
   background: #000;
   opacity: 0.5;
   z-index: 20;
 }
 
-/* line 65, ../../source/css/style.scss */
-.pause-title {
+/* line 74, ../../source/css/style.scss */
+.pause-title, .game-over-title {
   color: #fff;
   font-size: 120px;
   font-family: 'HorizonBT-Regular';
 }
 
-/* line 72, ../../source/css/style.scss */
+/* line 81, ../../source/css/style.scss */
 .fullscreen {
   position: absolute;
   width: 100%;
   height: 100%;
 }
 
-/* line 79, ../../source/css/style.scss */
+/* line 88, ../../source/css/style.scss */
 .bg1 {
   background-image: url("../images/loader_background.jpg");
   background-repeat: repeat-x;
@@ -208,7 +307,7 @@
   animation-iteration-count: infinite;
 }
 
-/* line 89, ../../source/css/style.scss */
+/* line 98, ../../source/css/style.scss */
 .bg2 {
   background-image: url("../images/stars_tile.png");
   background-repeat: repeat-x;
@@ -219,7 +318,7 @@
   animation-iteration-count: infinite;
 }
 
-/* line 99, ../../source/css/style.scss */
+/* line 108, ../../source/css/style.scss */
 .bg1, .bg2 {
   animation-timing-function: linear;
   -webkit-animation-timing-function: linear;
@@ -242,12 +341,12 @@
     background-position: -100%;
   }
 }
-/* line 114, ../../source/css/style.scss */
+/* line 123, ../../source/css/style.scss */
 .menu-holder {
   text-align: center;
 }
 
-/* line 118, ../../source/css/style.scss */
+/* line 127, ../../source/css/style.scss */
 .play-place {
   position: absolute;
   width: 92px;
@@ -261,12 +360,12 @@
   transition: transform 1s ease-in-out;
 }
 
-/* line 131, ../../source/css/style.scss */
+/* line 140, ../../source/css/style.scss */
 .play-final-layout {
   transform: translateY(10px);
 }
 
-/* line 136, ../../source/css/style.scss */
+/* line 145, ../../source/css/style.scss */
 .half-ring-blue, .half-ring-white {
   background-size: 100%;
   width: 46px;
@@ -276,17 +375,17 @@
   left: 50%;
 }
 
-/* line 144, ../../source/css/style.scss */
+/* line 153, ../../source/css/style.scss */
 .half-ring-blue {
   background-image: url("../images/button_circle_half_blue.png");
 }
 
-/* line 147, ../../source/css/style.scss */
+/* line 156, ../../source/css/style.scss */
 .half-ring-white {
   background-image: url("../images/button_circle_half_white.png");
 }
 
-/* line 154, ../../source/css/style.scss */
+/* line 163, ../../source/css/style.scss */
 .progress-ring {
   width: 92px;
   height: 92px;
@@ -295,7 +394,7 @@
   background-repeat: no-repeat;*/
 }
 
-/* line 162, ../../source/css/style.scss */
+/* line 171, ../../source/css/style.scss */
 .progress-holder {
   position: absolute;
   margin: 0 auto;
@@ -306,7 +405,7 @@
   overflow: hidden;
 }
 
-/* line 172, ../../source/css/style.scss */
+/* line 181, ../../source/css/style.scss */
 .progress {
   position: relative;
   color: #fff;
@@ -317,7 +416,7 @@
   width: 52px;
 }
 
-/* line 181, ../../source/css/style.scss */
+/* line 190, ../../source/css/style.scss */
 .play-symbol {
   position: relative;
   margin: 0 auto;
@@ -329,7 +428,7 @@
   background-position: 50% 50%;
 }
 
-/* line 192, ../../source/css/style.scss */
+/* line 201, ../../source/css/style.scss */
 .progress-title-holder {
   position: absolute;
   width: 100%;
@@ -338,7 +437,7 @@
   z-index: 11;
 }
 
-/* line 199, ../../source/css/style.scss */
+/* line 208, ../../source/css/style.scss */
 .progress-title {
   position: absolute;
   bottom: 46px;
@@ -356,20 +455,20 @@
   transition-timing-function: ease-in-out;
 }
 
-/* line 216, ../../source/css/style.scss */
+/* line 225, ../../source/css/style.scss */
 .logo-loading-layout {
   width: 141px;
   height: 96px;
 }
 
-/* line 220, ../../source/css/style.scss */
+/* line 229, ../../source/css/style.scss */
 .logo-final-layout {
   width: 282px;
   height: 192px;
   bottom: 0;
 }
 
-/* line 227, ../../source/css/style.scss */
+/* line 236, ../../source/css/style.scss */
 .vertical-center {
   position: relative;
   top: 50%;
@@ -379,34 +478,59 @@
 /*****************
  * in-game
  *****************/
-/* line 238, ../../source/css/style.scss */
+/* line 247, ../../source/css/style.scss */
 .level-display, .score-display {
   margin: 20px;
   color: #F0F485;
   border: 4px solid #88895C;
   border-radius: 25px;
-  min-width: 120px;
+  min-width: 140px;
+  width: 140px;
   height: 35px;
   font-family: 'HorizonBT-Regular';
   font-size: 28px;
   line-height: 32px;
 }
 
-/* line 252, ../../source/css/style.scss */
+/* line 262, ../../source/css/style.scss */
 .level-display {
   position: absolute;
   top: 0;
   right: 0;
 }
 
-/* line 258, ../../source/css/style.scss */
+/* line 268, ../../source/css/style.scss */
 .score-display {
   position: absolute;
   top: 0;
   left: 0;
 }
 
-/* line 267, ../../source/css/style.scss */
+/* line 274, ../../source/css/style.scss */
+.life-display {
+  position: absolute;
+  top: 0;
+  left: 180px;
+  margin-top: 27px;
+}
+
+/* line 280, ../../source/css/style.scss */
+.life-heart {
+  width: 28px;
+  height: 28px;
+  float: left;
+  margin-right: 5px;
+  background: url("../images/life_heart.png");
+  background-size: cover;
+  background-position: bottom;
+}
+
+/* line 291, ../../source/css/style.scss */
+.life-heart.empty {
+  background-position: top;
+}
+
+/* line 296, ../../source/css/style.scss */
 .game-logo {
   position: absolute;
   top: 5px;
@@ -419,4 +543,19 @@
   background-size: 100%;
   background-repeat: no-repeat;
   z-index: 30;
+}
+
+/* line 310, ../../source/css/style.scss */
+.title {
+  position: absolute;
+  width: 1000px;
+  height: 300px;
+  left: 0;
+  right: 0;
+  margin: 20px auto;
+  top: 50%;
+  color: #F0F485;
+  font-family: 'HorizonBT-Regular';
+  font-size: 60px;
+  line-height: 60px;
 }

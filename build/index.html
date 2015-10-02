@@ -42,6 +42,12 @@
         
         <div class="invisible"><div class="bg1 fullscreen"></div></div>
         <div class="invisible"><div class="bg2 fullscreen"></div></div>
+        
+        <div class="audio-controls hidden">
+            <div class="stereo-button"></div>
+            <div class="surround-button active"></div>
+        </div>
+        
     </div>
     
     <div class="game-ui fullscreen hidden">
@@ -49,7 +55,11 @@
         <div class="game-logo"></div>
         <div class="level-display" ></div>
         <div class="score-display"></div>
-        <div class="life-display"></div>
+        <div class="life-display">
+            <div class="life-heart"></div>
+            <div class="life-heart"></div>
+            <div class="life-heart"></div>
+        </div>
     </div>
     
     <div class="pause-overlay fullscreen hidden"></div>
@@ -61,8 +71,22 @@
         <div class="quit-button"></div>
     </div>
     
-    <div class="mute-button hidden"></div>
+    <div class="game-over-menu hidden">
+        <div class="game-over-title">GAME OVER</div>
+        <div class="restart-button"></div>
+        <div class="quit-button"></div>
+    </div>
     
+    <div class="title hidden">TEST TITLE</div>
+    
+    
+    
+    
+    
+    
+    
+    <div class="mute-button hidden"></div>
+    <div class="dolby-logo hidden"></div>
 
     
     
@@ -89,7 +113,7 @@
 </div>
 
 <!-- debug controls -->
-<div id="debug" style="position:absolute; width: 200px; height: 200px; left: 0px; top: 50%; color: #fff;">
+<div id="debug" class="hidden" style="position:absolute; width: 200px; height: 200px; left: 0px; top: 50%; color: #fff;">
     <form id="debugForm">
         <input type="checkbox" name="audio" style="color:#fff;" value="audioState" checked>
         <label for="audio">UFO</label><br>
@@ -121,9 +145,7 @@
 <script src="lib/OBJLoader.js"></script>
 
 <!-- ShaderParticles -->
-<script src="lib/ShaderParticleUtils.js"></script>
-<script src="lib/ShaderParticleEmitter.js"></script>
-<script src="lib/ShaderParticleGroup.js"></script>
+<script src="lib/ShaderParticles.min.js"></script>
 
 <!-- create js -->
 <script src="lib/preloadjs-0.6.1.min.js"></script>
@@ -133,6 +155,17 @@
 <!-- Galaxies -->
 <script src="js/engine.js"></script>
 
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11474884-21', 'auto');
+  ga('send', 'pageview');
+
+</script>
 
 
 </body>
