@@ -5,6 +5,8 @@ this.galaxies = this.galaxies || {};
 var queue; // the preload queue and cache
 var assetManifest = [];
 
+var ext = '.ogg';
+if ( canPlayEC3 ) { ext = '.ec3'; }
 
 // Add audio files
 // Note that audio files are added as binary data because they will need to be decoded by the web audio context object.
@@ -25,10 +27,12 @@ var audioItems = [
   { id: 'fpo2', src: 'Robot_blip-Marianne_Gagnon-120342607.mp3', type: createjs.AbstractLoader.BINARY },
   { id: 'fpo3', src: 'Robot_blip_2-Marianne_Gagnon-299056732.mp3', type: createjs.AbstractLoader.BINARY },
   { id: 'ufo', src: 'ufo_engine_loop_01.ogg', type: createjs.AbstractLoader.BINARY },
-  { id: 'music', src: 'music_5_1_loop.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'music', src: 'music_5_1_loop' + ext, type: createjs.AbstractLoader.BINARY },
   { id: 'ufohit1', src: 'ufo_hit_01.ogg', type: createjs.AbstractLoader.BINARY },
   { id: 'ufohit2', src: 'ufo_hit_02.ogg', type: createjs.AbstractLoader.BINARY },
-  { id: 'ufoshoot', src: 'UFO_laser_fire.ogg', type: createjs.AbstractLoader.BINARY }
+  { id: 'ufoshoot', src: 'UFO_laser_fire.ogg', type: createjs.AbstractLoader.BINARY },
+  { id: 'planetsplode', src: 'planet_explode.ogg', type: createjs.AbstractLoader.BINARY }
+  
 ];
 for (var i=0; i< audioItems.length; i++ ) {
   audioItems[i].src = 'audio/' + audioItems[i].src;
@@ -43,7 +47,18 @@ var imageItems = [
   { id: 'skyboxbottom4', src: 'spacesky_bottom4.jpg' },
   { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
   { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
-  { id: 'lux', src: 'lux.png' }
+  { id: 'lux', src: 'lux.png' },
+  { id: 'projhitparticle', src: 'hit_sprite.png' },
+  { id: 'asteroidcolor', src:'asteroid_color.jpg' },
+  { id: 'asteroidnormal', src:'asteroid_normal.jpg' },
+  { id: 'satellitecolor', src:'mercury_pod_color.jpg' },
+  { id: 'starparticle', src: 'star.png' },
+  { id: 'moonocclusion', src: 'moon_lores_occlusion.jpg' },
+  { id: 'moonnormal', src: 'moon_lores_normal.jpg' },
+  { id: 'laserbeam', src: 'laser_rippled_128x512.png' },
+  { id: 'ufocolor', src: 'ufo_col.jpg' },
+  { id: 'projcolor', src: 'shuttlecock_col.jpg' }
+  
 ];
 for (var i=0; i<imageItems.length; i++ ) {
   imageItems[i].src = 'images/' + imageItems[i].src;
@@ -52,8 +67,12 @@ assetManifest = assetManifest.concat(imageItems);
 
 // add models
 assetManifest.push(
-  { id: 'ufomodel', src: 'models/ufo_v2.obj', type: createjs.AbstractLoader.TEXT },
-  { id: 'asteroidmodel', src: 'models/asteroid01.obj', type: createjs.AbstractLoader.TEXT }
+  { id: 'ufomodel', src: 'models/ufo.obj', type: createjs.AbstractLoader.TEXT },
+  { id: 'asteroidmodel', src: 'models/asteroid01.obj', type: createjs.AbstractLoader.TEXT },
+  { id: 'projmodel', src: 'models/shuttlecock.obj', type: createjs.AbstractLoader.TEXT },
+  { id: 'satellitemodel', src: 'models/mercury_pod.obj', type: createjs.AbstractLoader.TEXT },
+  { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT }
+  
 );
 
 
@@ -74,14 +93,21 @@ galaxies.ui = (function() {
   var playHolder = uiHolder.querySelector(".play-place");
   var playButton = uiHolder.querySelector(".play-button");
   
+  // audio controls
+  var audioControls = loadingHolder.querySelector(".audio-controls");
+  var stereoButton = audioControls.querySelector(".stereo-button");
+  var surroundButton = audioControls.querySelector(".surround-button");
+  
   // mute button (always active after load)
   var muteButton = uiHolder.querySelector(".mute-button");
+  var dolbyLogo = uiHolder.querySelector(".dolby-logo");
   
   // in-game elements
   var inGameHolder = uiHolder.querySelector(".game-ui");
   var pauseButton = uiHolder.querySelector(".pause-button");
   var levelDisplay = inGameHolder.querySelector(".level-display");
   var lifeDisplay = inGameHolder.querySelector(".life-display");
+  var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
   var scoreDisplay = inGameHolder.querySelector(".score-display");
   
   
@@ -91,6 +117,14 @@ galaxies.ui = (function() {
   var resumeButton = pauseHolder.querySelector(".resume-button");
   var restartButton = pauseHolder.querySelector(".restart-button");
   var quitButton = pauseHolder.querySelector(".quit-button");
+  
+  // game over menu
+  var gameOverHolder = uiHolder.querySelector(".game-over-menu");
+  var restartButton2 = gameOverHolder.querySelector(".restart-button");
+  var quitButton2 = gameOverHolder.querySelector(".quit-button");
+  
+  // title
+  var title = uiHolder.querySelector(".title");
   
   // game element
   var gameContainer = document.getElementById( 'container' );
@@ -104,7 +138,6 @@ galaxies.ui = (function() {
       var angle = 360 * value - 180;
       if (!secondHalf) {
         var styleObject = elementA.style;
-        styleObject.left = angle;
         styleObject.transform = "rotate(" + angle.toFixed(2) + "deg)";
         //console.log( angle, styleObject.left, styleObject.transform);
         if (value>=0.5) {
@@ -124,7 +157,6 @@ galaxies.ui = (function() {
 
   var init = function() {
     createjs.CSSPlugin.install();
-    
     
     // Loading indicator transition, setup
     // Create hidden background images and listen for them to complete loading,
@@ -156,9 +188,11 @@ galaxies.ui = (function() {
     
     
     
-    // Create Loader
     var handleComplete = function() {
-      transitionToMenu();
+      // Initialize audio context before showing audio controls
+      initAudio( transitionToMenu );
+      
+      //transitionToMenu();
       
       //initGame();
     }
@@ -183,12 +217,13 @@ galaxies.ui = (function() {
     pauseButton.addEventListener('click', onClickPause );
     resumeButton.addEventListener('click', onClickResume );
     restartButton.addEventListener('click', onClickRestart );
+    restartButton2.addEventListener('click', onClickRestart );
     quitButton.addEventListener('click', onClickQuit );
+    quitButton2.addEventListener('click', onClickQuit );
     
     
-    
-    
-    
+    stereoButton.addEventListener('click', onClickStereo);
+    surroundButton.addEventListener('click', onClickSurround);
     
     
   
@@ -258,10 +293,19 @@ galaxies.ui = (function() {
     var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
     playSymbol.style.left = start;
     createjs.Tween.get(playSymbol).to({left:0}, 500, createjs.Ease.quadInOut);
+    
+    // Show mute button
+    audioControls.classList.add("fade-in");
+    audioControls.classList.remove("hidden");
+    
 
     // Show mute button
     muteButton.classList.add("fade-in");
     muteButton.classList.remove("hidden");
+    
+    // Show Dolby logo (TODO detect)
+    dolbyLogo.classList.add("fade-in");
+    dolbyLogo.classList.remove("hidden");
     
     // Resize title card and reposition
     loadingLogo.classList.remove('logo-loading-layout');
@@ -280,13 +324,54 @@ galaxies.ui = (function() {
     inGameHolder.classList.add('hidden');
     pauseHolder.classList.add('hidden');
     pauseOverlay.classList.add('hidden');
+    gameOverHolder.classList.add('hidden');
+    clearTitle();
     
     loadingHolder.classList.remove('hidden');
-    
   }
   
+  var showPauseButton = function() {
+    pauseButton.classList.remove('hidden');
+  }
+  var hidePauseButton = function() {
+    pauseButton.classList.add('hidden');
+  }
   
-  
+  var titleQueue = [];
+  var titleActive = false;
+  var showTitle = function( titleText, time ) {
+    var newTitle = {
+      text: titleText,
+      time: time * 1000
+    };
+    
+    titleQueue.push( newTitle );
+    
+    if ( !titleActive ) {
+      updateTitle();
+    }
+  }
+  var updateTitle = function() {
+    if ( titleQueue.length == 0 ) {
+      clearTitle();
+      return;
+    }
+    
+    titleActive = true;
+    var nextTitle = titleQueue.shift();
+    
+    title.innerHTML = nextTitle.text;
+    title.classList.remove('hidden');
+    
+    createjs.Tween.removeTweens( title );
+    createjs.Tween.get( title ).wait( nextTitle.time ).call( updateTitle );
+  }
+  var clearTitle = function() {
+    title.classList.add('hidden');
+    titleQueue = [];
+    
+    titleActive = false;
+  }
 
   /// Start the game
   var onClickPlay = function(e) {
@@ -294,6 +379,7 @@ galaxies.ui = (function() {
     
     gameContainer.classList.remove('hidden');
     inGameHolder.classList.remove('hidden');
+    showPauseButton();
     
     if ( gameInitialized ) {
       restartGame();
@@ -319,27 +405,60 @@ galaxies.ui = (function() {
   var onClickRestart = function(e) {
     pauseHolder.classList.add('hidden');
     pauseOverlay.classList.add('hidden');
+    
+    gameOverHolder.classList.add('hidden');
+    
     restartGame();
   }
   var onClickQuit = function(e) {
-    gameOver();
+    endGame();
+  }
+  
+  var onClickStereo = function(e) {
+    toggleTargetMix( false );
+    stereoButton.classList.add('active');
+    surroundButton.classList.remove('active');
+  }
+  var onClickSurround = function(e) {
+    toggleTargetMix( true );
+    stereoButton.classList.remove('active');
+    surroundButton.classList.add('active');
   }
   
   
-  var updateLevel = function( newLevelNumber ) {
-    levelDisplay.innerHTML = "LEVEL " + newLevelNumber.toString();
+  
+  
+  
+  var showGameOver = function() {
+    gameOverHolder.classList.remove('hidden');
+  }
+  
+  
+  var updateLevel = function( newPlanetNumber, roundNumber ) {
+    levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();;
   }
   var updateScore = function( newScore ) {
     scoreDisplay.innerHTML = newScore.toString();
   }
   var updateLife = function( newLifeValue ) {
-    lifeDisplay.innerHTML = newLifeValue.toString();
+    for ( var i=0; i<lifeHearts.length; i++ ) {
+      if ( (i+1)<=newLifeValue ) {
+        lifeHearts[i].classList.remove('empty');
+      } else {
+        lifeHearts[i].classList.add('empty');
+      }
+    }
   }
 
   return {
     init: init,
     gameContainer: gameContainer,
     showMenu: showMenu,
+    showGameOver: showGameOver,
+    showPauseButton: showPauseButton,
+    hidePauseButton: hidePauseButton,
+    showTitle: showTitle,
+    clearTitle: clearTitle,
     updateLevel: updateLevel,
     updateScore: updateScore,
     updateLife: updateLife

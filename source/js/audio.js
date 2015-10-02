@@ -28,6 +28,7 @@ function getSound( id, loop ) {
   
   if ( typeof( loadedSounds[id]) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
+    return;
   }
   var source = audioCtx.createBufferSource();
   source.buffer = loadedSounds[id].next();
@@ -49,6 +50,7 @@ var sounds = {
   'ufoshoot': ['UFO_laser_fire.ogg']
 };*/
 
+// This structure combines groups of sounds together for constructing exhaustive arrays.
 var sounds = {
   'shoot': ['shoot1', 'shoot2', 'shoot3', 'shoot4', 'shoot5'],
   'asteroidexplode': ['asteroidexplode1', 'asteroidexplode2', 'asteroidexplode3'],
@@ -58,11 +60,13 @@ var sounds = {
   'ufo': ['ufo'],
   'music': ['music'],
   'ufohit': ['ufohit1', 'ufohit2'],
-  'ufoshoot': ['ufoshoot']
+  'ufoshoot': ['ufoshoot'],
+  'planetsplode': ['planetsplode']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
 function initAudio( complete ) {
+  canPlayEC3 = galaxies.utils.supportsEC3();
   
   var AudioContext = window.AudioContext || window.webkitAudioContext;
   audioCtx = new AudioContext();
