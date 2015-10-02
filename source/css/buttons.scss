@@ -42,6 +42,18 @@
   background-image: url('../images/button_audio_on_rollover.png');
 }
 
+.dolby-logo {
+  position: absolute;
+  width: 150px;
+  height: 31px;
+  
+  bottom: 60px - (31px/2);
+  right: 60px + ($small-button-size/2) + 10px;
+  
+  background-image: url('../images/logo_dolby_digital_plus.png');
+  background-size: contain;
+}
+
 .pause-button {
   @extend .small-button;
   position: absolute;
@@ -74,8 +86,6 @@
   
   position: absolute;
   bottom: 0;
-  left: 60px;
-  transform: translateX( -50% ) translateY(50%);
   
   background-image: url('../images/button_play_large.png');
 }
@@ -87,8 +97,6 @@
   
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX( -50% ) translateY(50%);
   
   background-image: url('../images/button_replay_large.png');
 }
@@ -100,11 +108,70 @@
   
   position: absolute;
   bottom: 0;
-  right: 60px;
-  transform: translateX( 50% ) translateY(50%);
 
   background-image: url('../images/button_home_large.png');
 }
 .quit-button:hover {
   background-image: url('../images/button_home_large_rollover.png');
+}
+
+/* positioning */
+.pause-menu .resume-button {
+  left: 60px;
+  transform: translateX( -50% ) translateY(50%);
+}
+.pause-menu .restart-button {
+  left: 50%;
+  transform: translateX( -50% ) translateY(50%);
+}
+.pause-menu .quit-button {
+  right: 60px;
+  transform: translateX( 50% ) translateY(50%);
+}
+.game-over-menu .restart-button {
+  left: 40%;
+  transform: translateX( -50% ) translateY(50%);
+}
+.game-over-menu .quit-button {
+  right: 40%;
+  transform: translateX( 50% ) translateY(50%);
+}
+
+.audio-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 120px auto;
+  top: 50%;
+  width: 300px;
+  text-align: center;
+}
+
+.stereo-button, .surround-button {
+  cursor: pointer;
+  display: inline-block;
+  
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  
+  width: 131px;
+  height: 50px;
+}
+.stereo-button:hover, .surround-button:hover {
+  background-position: 0 -59px;/*33%; 117*/
+}
+.stereo-button.active, .surround-button.active {
+  background-position: 0 -117px;/*67%;234*/
+}
+.stereo-button.active:hover, .surround-button.active:hover {
+  background-position: 0 -175px;/*100%;350*/
+}
+
+.stereo-button {
+  background-image: url('../images/button_stereo.png');
+  
+}
+.surround-button {
+  background-image: url('../images/button_surround.png');
 }
