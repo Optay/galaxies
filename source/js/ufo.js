@@ -17,7 +17,15 @@ this.galaxies.Ufo = function() {
   this.object = new THREE.Mesh( geometry, material );*/
   
   this.object = new THREE.Object3D();
-  this.model = new THREE.Mesh( geometries['ufo'], materials['ufo'] );
+  this.model = geometries['ufo'];
+  /*new THREE.Mesh(
+    geometries['ufo'],
+    new THREE.MeshFaceMaterial( [ materials['ufo2'], materials['ufo'], materials['ufo3'] ] )
+  );
+  */
+  this.model.children[0].material = materials['ufo'];
+  this.model.children[1].material = materials['ufocanopy'];
+  
   
   this.model.scale.set(0.6, 0.6, 0.6);
   this.model.rotation.set(Math.PI,0,-Math.PI/2);
@@ -56,7 +64,7 @@ this.galaxies.Ufo = function() {
     alive: 1.0,
     duration: 0.5//0.1
   };
-  var texture = new THREE.Texture( queue.getResult('starparticle') );
+  var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
   texture.needsUpdate = true;
   var laserChargeGroup = new SPE.Group({
     texture: texture,
@@ -72,12 +80,12 @@ this.galaxies.Ufo = function() {
 
   var laserOrient = new THREE.Object3D();
   laserOrient.position.set(-0.5, 0, 0);
-  laserOrient.rotation.set(0,Math.PI + coneAngle,0);
-  //this.object.add( laserOrient );
+  laserOrient.rotation.set(0,2.03,0); // This angle set so beam of given length intersects with planet.
+  //this.object.add( laserOrient ); // For testing
 
   var laserGeometry = new THREE.PlaneGeometry( 5, 0.3 );
   var laserTexture = new THREE.Texture(
-    queue.getResult('laserbeam') );
+    galaxies.queue.getResult('laserbeam') );
   laserTexture.needsUpdate = true;
   var laserMaterial = new THREE.MeshBasicMaterial( {
     map: laserTexture,
@@ -177,6 +185,12 @@ this.galaxies.Ufo = function() {
         
         this.isHittable = true;
         
+        // Tip to attack posture
+        this.model.rotation.y = Math.PI/2;
+        createjs.Tween.removeTweens( this.model.rotation );
+        createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
+        
+        
         /*
         console.log( angle );
         for (var i=0; i<transitionTime; i+=0.1 ) {
@@ -217,6 +231,7 @@ this.galaxies.Ufo = function() {
   
           createjs.Tween.get(laserBeam.material).to({opacity:0}, 300, createjs.Ease.quadOut).call( function() {
             this.object.remove(laserOrient);
+            //laserBeam.material.opacity = 1; // for testing
           }, null, this );
           
           laserOrient.rotation.z = (Math.round( Math.random() )* 2 - 1) * Math.PI/16;
@@ -319,6 +334,10 @@ this.galaxies.Ufo = function() {
       }
     }
     
+    // Tip to show bubble
+    createjs.Tween.removeTweens( this.model.rotation );
+    createjs.Tween.get(this.model.rotation).to({y: Math.PI/2}, 2000, createjs.Ease.quadIn );
+    
     console.log( 'orbit -> out' );
   }
   
@@ -343,6 +362,7 @@ this.galaxies.Ufo = function() {
       this.deactivate();
       return;
     } else {
+      //stepTime = 0; // for testing
       stepTime = Math.random() * 15 + 10; // 10 to 25 second interval
     }
     

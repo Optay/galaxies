@@ -1,9 +1,6 @@
 "use strict";
 this.galaxies = this.galaxies || {};
 
-var canPlayEC3;
-
-
 var invulnerable = false;
 
 var animationFrameRequest;
@@ -14,9 +11,10 @@ var windowHalfY = 0;
 var mouseX = 0;
 var mouseY = 0;
 
-var rootObject;
-var rootAxis;
-var rootRotationSpeed = 0.05;
+var driftObject; // outer world container that rotates slowly to provide skybox motion
+var rootObject; // inner object container that contains all game objects
+var driftAxis;
+var driftSpeed = 0.05;
 
 var geometries = {};
 var materials = {};
@@ -41,7 +39,7 @@ var cameraViewAngle = 45; // Will be applied to smallest screen dimension, horiz
 var projectileSpeed = 3.0;
 var speedScale = 1;
 
-var LEVELS_PER_PLANET = 3;
+var ROUNDS_PER_PLANET = 3;
 
 var SHOOT_TIME = 0.4;
 var PROJ_HIT_THRESHOLD = 0.7;
@@ -132,137 +130,35 @@ function init() {
   
   galaxies.ui.init();
 }
-function initGame() {
-  
-  // Parse and cache loaded geometry.
-  var objLoader = new THREE.OBJLoader();
-  var parsed = objLoader.parse( queue.getResult('asteroidmodel') );
-  geometries['asteroid'] = parsed.children[0].geometry;
-  var projmodel = objLoader.parse( queue.getResult('projmodel') );
-  geometries['proj'] = projmodel.children[0].geometry;
-  var satmodel = objLoader.parse( queue.getResult('satellitemodel') );
-  geometries['satellite'] = satmodel.children[0].geometry;
-  var moonmodel = objLoader.parse( queue.getResult('moonmodel') );
-  geometries['moon'] = moonmodel.children[0].geometry;
-  var ufomodel = objLoader.parse( queue.getResult('ufomodel') );
-  geometries['ufo'] = ufomodel.children[0].geometry;
-  
-  
-  
-  // define materials
-  var asteroidColor = new THREE.Texture( queue.getResult('asteroidcolor'), THREE.UVMapping );
-  asteroidColor.needsUpdate = true;
-  var asteroidNormal = new THREE.Texture( queue.getResult('asteroidnormal'), THREE.UVMapping );
-  asteroidNormal.needsUpdate = true;
-  
-  materials['asteroid'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0x000000,
-      opacity: 0.4,
-      transparent: false,
-      map: asteroidColor,
-      normalMap: asteroidNormal,
-      shading: THREE.SmoothShading
-  } );
-  
-  var satColor = new THREE.Texture( queue.getResult('satellitecolor'), THREE.UVMapping );
-  satColor.needsUpdate = true;
-  
-  materials['satellite'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0x000000,
-      opacity: 0.4,
-      transparent: false,
-      map: satColor,
-      shading: THREE.SmoothShading
-  } );
-  
-  
-  var moonOcclusion = new THREE.Texture( queue.getResult('moonocclusion'), THREE.UVMapping );
-  moonOcclusion.needsUpdate = true;
-  var moonNormal = new THREE.Texture( queue.getResult('moonnormal'), THREE.UVMapping );
-  moonNormal.needsUpdate = true;
-  
-  materials['moon'] = new THREE.MeshPhongMaterial( {
-      color: 0xaaaaaa,
-      specular: 0x000000,
-      map: moonOcclusion,
-      normalMap: moonNormal,
-      shading: THREE.SmoothShading
-  } );
-  
-  var ufoColor = new THREE.Texture( queue.getResult('ufocolor') );
-  ufoColor.needsUpdate = true;
-  materials['ufo'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0xffaaaa,
-      shininess: 80,
-      transparent: false,
-      map: ufoColor,
-      shading: THREE.SmoothShading,
-      depthTest: false
-  } );  
 
-  var projColor = new THREE.Texture( queue.getResult('projcolor'), THREE.UVMapping );
-  projColor.needsUpdate = true;
-  
-  materials['proj'] = new THREE.MeshBasicMaterial( {
-      color: 0xcccccc,
-      
-      map: projColor,
-      shading: THREE.SmoothShading
-  } );
-  
-  
-  
-  
-  
-  
+// Create 3D scene, camera, light, skybox
+function initScene() {
   var container, mesh;
-
   container = document.getElementById( 'container' );
 
   scene = new THREE.Scene();
   
-  rootObject = new THREE.Object3D();
-  scene.add( rootObject );
+  driftObject = new THREE.Object3D();
+  scene.add( driftObject );
   
-  // camera FOV should be 45
+  rootObject = new THREE.Object3D();
+  driftObject.add( rootObject );
+  
   camera = new THREE.PerspectiveCamera( cameraViewAngle, window.innerWidth / window.innerHeight, 1, 1100 );
   camera.position.set(0,0,cameraZ);
   rootObject.add(camera);
   
-  /*
-  var light = new THREE.PointLight( 0xffffff, 1, 0 );
-  light.position.set( 30, 20, 50 );
-  rootObject.add( light );
-  */
   var light = new THREE.DirectionalLight( 0xffffff, 1 );
   light.position.set( 30, 20, 50 );
   rootObject.add( light );
   
-  /*
-  // TEST OBJECT
-  var geometry = new THREE.SphereGeometry( 0.1, 12, 6 );
-  var material = new THREE.MeshBasicMaterial( {
-    color: 0xff0000
-  } );
-  var test = new THREE.Mesh( geometry, material );
-  var testPosition = new THREE.Vector3( 0, OBSTACLE_VISIBLE_RADIUS, 0);
-  testPosition.z = getConifiedDepth( testPosition );
-  test.position.copy( testPosition );
-  
-  rootObject.add( test );
-  */
-
-  //var texture = THREE.ImageUtils.loadTextureCube( textureURLs );
   var texture = new THREE.CubeTexture([
-                    queue.getResult('skyboxright1'),
-                    queue.getResult('skyboxleft2'),
-                    queue.getResult('skyboxtop3'),
-                    queue.getResult('skyboxbottom4'),
-                    queue.getResult('skyboxfront5'),
-                    queue.getResult('skyboxback6') ] );
+                    galaxies.queue.getResult('skyboxright1'),
+                    galaxies.queue.getResult('skyboxleft2'),
+                    galaxies.queue.getResult('skyboxtop3'),
+                    galaxies.queue.getResult('skyboxbottom4'),
+                    galaxies.queue.getResult('skyboxfront5'),
+                    galaxies.queue.getResult('skyboxback6') ] );
   texture.needsUpdate = true;
   
   /* Set up a material that uses a cubemap texture.  This material uses
@@ -282,6 +178,121 @@ function initGame() {
   skyCube = new THREE.Mesh( new THREE.BoxGeometry( 200, 200, 200 ), material );
   rootObject.add(skyCube);
   
+  
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  //renderer.setSize( 640, 480 );
+  container.appendChild( renderer.domElement );
+  
+}
+
+function initGame() {
+  
+  // Parse and cache loaded geometry.
+  var objLoader = new THREE.OBJLoader();
+  var parsed = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
+  geometries['asteroid'] = parsed.children[0].geometry;
+  var projmodel = objLoader.parse( galaxies.queue.getResult('projmodel') );
+  geometries['proj'] = projmodel.children[0].geometry;
+  var satmodel = objLoader.parse( galaxies.queue.getResult('satellitemodel') );
+  geometries['satellite'] = satmodel.children[0].geometry;
+  var moonmodel = objLoader.parse( galaxies.queue.getResult('moonmodel') );
+  geometries['moon'] = moonmodel.children[0].geometry;
+  var ufomodel = objLoader.parse( galaxies.queue.getResult('ufomodel') );
+  //geometries['ufo'] = ufomodel.children[0].geometry;
+  geometries['ufo'] = ufomodel;
+  
+  /*
+  ufomodel.traverse( function ( child ) {
+    if ( child instanceof THREE.Mesh ) {
+      geoemetries['ufo'].push( child );
+    }
+  } );
+  */
+  
+  
+  
+  // define materials
+  var asteroidColor = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
+  asteroidColor.needsUpdate = true;
+  var asteroidNormal = new THREE.Texture( galaxies.queue.getResult('asteroidnormal'), THREE.UVMapping );
+  asteroidNormal.needsUpdate = true;
+  
+  materials['asteroid'] = new THREE.MeshPhongMaterial( {
+      color: 0xffffff,
+      specular: 0x000000,
+      opacity: 0.4,
+      transparent: false,
+      map: asteroidColor,
+      normalMap: asteroidNormal,
+      shading: THREE.SmoothShading
+  } );
+  
+  var satColor = new THREE.Texture( galaxies.queue.getResult('satellitecolor'), THREE.UVMapping );
+  satColor.needsUpdate = true;
+  
+  materials['satellite'] = new THREE.MeshPhongMaterial( {
+      color: 0xffffff,
+      specular: 0x202020,
+      shininess: 50,
+      opacity: 0.4,
+      transparent: false,
+      map: satColor,
+      shading: THREE.SmoothShading
+  } );
+  
+  
+  var moonOcclusion = new THREE.Texture( galaxies.queue.getResult('moonocclusion'), THREE.UVMapping );
+  moonOcclusion.needsUpdate = true;
+  var moonNormal = new THREE.Texture( galaxies.queue.getResult('moonnormal'), THREE.UVMapping );
+  moonNormal.needsUpdate = true;
+  
+  materials['moon'] = new THREE.MeshPhongMaterial( {
+      color: 0xaaaaaa,
+      specular: 0x000000,
+      map: moonOcclusion,
+      normalMap: moonNormal,
+      shading: THREE.SmoothShading
+  } );
+  
+  var ufoColor = new THREE.Texture( galaxies.queue.getResult('ufocolor') );
+  ufoColor.needsUpdate = true;
+  materials['ufo'] = new THREE.MeshPhongMaterial( {
+      color: 0xffffff,
+      specular: 0x661313,
+      shininess: 90,
+      transparent: false,
+      map: ufoColor,
+      shading: THREE.SmoothShading,
+      depthTest: true
+  } );
+  materials['ufocanopy'] = new THREE.MeshPhongMaterial( {
+    color: 0x222222,
+    specular: 0xffffff,
+    shininess: 100,
+    opacity: 0.9,
+    transparent: true,
+    shading: THREE.SmoothShading,
+    blending: THREE.AdditiveBlending
+  });
+
+  var projColor = new THREE.Texture( galaxies.queue.getResult('projcolor'), THREE.UVMapping );
+  projColor.needsUpdate = true;
+  
+  materials['proj'] = new THREE.MeshBasicMaterial( {
+      color: 0xcccccc,
+      
+      map: projColor,
+      shading: THREE.SmoothShading
+  } );
+  
+  
+  
+  
+  
+  
+
   /*
   var planetGeometry = new THREE.SphereGeometry(1, 32, 32);
   var planetMaterial = new THREE.MeshPhongMaterial( {
@@ -301,7 +312,7 @@ function initGame() {
   /*
   var test = document.createElement( 'img' );
   //test.src = 'images/lux.png';
-  test.src = queue.getResult('lux').src;
+  test.src = galaxies.queue.getResult('lux').src;
   document.getElementById('menuHolder').appendChild(test);
   */
   
@@ -323,8 +334,8 @@ function initGame() {
 
   } );
   */
-  //var characterMap = new THREE.Texture( queue.getResult('lux'), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
-  var characterMap = new THREE.Texture( queue.getResult('lux') );
+  //var characterMap = new THREE.Texture( galaxies.queue.getResult('lux'), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
+  var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
   characterAnimator = new galaxies.SpriteSheet(
     characterMap,
     [ [2,2,172,224,0,4,81.35],
@@ -342,12 +353,20 @@ function initGame() {
       [350,454,172,224,0,4,81.35],
       [524,454,172,224,0,4,81.35],
       [698,454,172,224,0,4,81.35],
-      [2,680,172,224,0,4,81.35] ],
+      [2,680,172,224,0,4,81.35]
+      
+      ], 
     30
     );
   characterMap.needsUpdate = true;
   
-  var characterMaterial = new THREE.SpriteMaterial( { map: characterMap, color: 0xffffff } );
+  var characterMaterial = new THREE.SpriteMaterial({
+    map: characterMap,
+    color: 0xffffff,
+    depthTest: false,
+    transparent: true,
+    opacity: 1.0
+  } );
   //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
   character = new THREE.Sprite( characterMaterial );
   character.position.set( CHARACTER_HEIGHT * 0.77 * 0.15, CHARACTER_POSITION, 0 ); // note that character is offset horizontally because sprites are not centered
@@ -356,14 +375,6 @@ function initGame() {
   characterRotator.add( character );
   
 
-  
-  
-  renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  //renderer.setSize( 640, 480 );
-  container.appendChild( renderer.domElement );
-  
   addInputListeners();
 
   //
@@ -434,10 +445,10 @@ function initGame() {
 var testObjects = [];
 function addTestObject() {
   /*
-  //var colorMap = new THREE.Texture( queue.getResult('asteriodColor'), THREE.UVMapping );
-  var colorMap = new THREE.Texture( queue.getResult('asteroidcolor'), THREE.UVMapping );
+  //var colorMap = new THREE.Texture( galaxies.queue.getResult('asteriodColor'), THREE.UVMapping );
+  var colorMap = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
   colorMap.needsUpdate = true;
-  var normalMap = new THREE.Texture( queue.getResult('asteroidnormal'), THREE.UVMapping );
+  var normalMap = new THREE.Texture( galaxies.queue.getResult('asteroidnormal'), THREE.UVMapping );
   normalMap.needsUpdate = true;
   
   var material = new THREE.MeshPhongMaterial( {
@@ -485,7 +496,7 @@ function addTestObject() {
       };
       
       var texture =  THREE.ImageUtils.loadTexture( 'images/hit_sprite.png' );
-//new THREE.Texture( queue.getResult('projhitparticle') );
+//new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
       texture.needsUpdate = true;
       var particleGroup1 = new SPE.Group({
         texture: texture,
@@ -588,7 +599,7 @@ function startGame() {
   listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
   soundField = new SoundField( getSound('music') );
-  soundField.setVolume(0.24); // 0.24
+  soundField.setVolume(0); // 0.24
   //
   
   ufo = new galaxies.Ufo();
@@ -610,9 +621,13 @@ function startGame() {
 function restartGame() {
   resetGame();
 
-  galaxies.ui.showPauseButton(); // is hidden by game over menu  
+  galaxies.ui.showPauseButton(); // is hidden by game over menu
+
+  // show permanent game objects
+  rootObject.add(planet);
+  rootObject.add( characterRotator );
   
-  //planetTransition(); // for testing purposes
+  planetTransition(); // for testing purposes
   initLevel();
   
   createjs.Ticker.paused = false;
@@ -632,8 +647,8 @@ function initLevel() {
   // Each planet gets a set number of levels, starting slow and speeding up.
   // NOTE: LEVEL, ROUND, AND PLANET NUMBERS ARE ALL 1-INDEXED
   // Sigmoid functions set bounds of speedScale based on planet number (absolute level number).
-  var planetRound = ((level-1) % LEVELS_PER_PLANET) + 1;      // Round number for this planet
-  var planet = Math.floor((level-1)/LEVELS_PER_PLANET) + 1;     // Planet number
+  var planetRound = ((level-1) % ROUNDS_PER_PLANET) + 1;      // Round number for this planet
+  var planet = Math.floor((level-1)/ROUNDS_PER_PLANET) + 1;     // Planet number
   
   var planetFirstSpeed = 1 + 1/(1+Math.exp(4-planet));    // Speed on first level for this planet
   var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planet/2)); // Speed on last level for this planet
@@ -642,8 +657,8 @@ function initLevel() {
   //console.log( planetFirstSpeed, planetLastSpeed, speedScale );
   /*
   for ( var i=1; i<20; i++ ) {
-    var planetLevel = ((i-1) % LEVELS_PER_PLANET); // level progress on planet
-    var planet = Math.floor( i/LEVELS_PER_PLANET ); // Planet number
+    var planetLevel = ((i-1) % ROUNDS_PER_PLANET); // level progress on planet
+    var planet = Math.floor( i/ROUNDS_PER_PLANET ); // Planet number
     var planetFirstSpeed = 1 + 1/(1+Math.exp(4-planet));
     var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planet*2));
     
@@ -698,7 +713,7 @@ function nextLevel() {
   
   clearLevel();
   
-  var roundNumber = ((level-1) % LEVELS_PER_PLANET ) + 1;
+  var roundNumber = ((level-1) % ROUNDS_PER_PLANET ) + 1;
   if ( roundNumber == 1 ) {
     planetTransition();
   } else {
@@ -713,31 +728,53 @@ function planetTransition() {
   levelComplete = false;
   levelTimer = 0;
   
+  // disable input
+  removeInputListeners();
+  
+  console.log("wait");
+  
+  galaxies.fx.showTeleportOut();
+  new PositionedSound( getSound('teleportout',false), rootPosition(character), 10 );
+  
+  createjs.Tween.get(character)
+    .wait(1500)
+    .call( startPlanetMove, null, this );
+}
+
+function startPlanetMove() {
+  console.log("start transition");
+  
   // hide the character
   characterRotator.remove(character);
   
   // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
   THREE.SceneUtils.detach (planet, rootObject, scene);
-  // Set outbound end position and inbound starting position for planet
-  var outPosition = rootObject.localToWorld(new THREE.Vector3(0,0,-100) );
-  var inPosition = rootObject.localToWorld(new THREE.Vector3(0,-100,0) );
   
+  // Set outbound end position and inbound starting position for planet
+  var outPosition = rootObject.localToWorld( new THREE.Vector3(0,0,-100) );
+  //var outPosition = new THREE.Vector3(0,0,-100);
+  var inPosition = rootObject.localToWorld( new THREE.Vector3(0,100,0) );
+  
+  var transitionTimeMilliseconds = 6500;
   // Tween!
-  createjs.Tween.get( planet.position ).to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, 4000, createjs.Ease.quadInOut).
-    to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0).
-    call(randomizePlanet, null, this).
-    to({x:0, y:0, z:0}, 4000, createjs.Ease.quadInOut);
+  createjs.Tween.get( planet.position )
+    .to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut)
+    .to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0)
+    .call(randomizePlanet, null, this)
+    .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
   
   // Swing the world around
   //createjs.Tween.get( camera.rotation ).to({x:PI_2, y:PI_2}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
   var targetX = rootObject.rotation.x + Math.PI/2;
-  createjs.Tween.get( rootObject.rotation ).to({x:targetX}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
+  createjs.Tween.get( rootObject.rotation )
+    .to({x:targetX}, transitionTimeMilliseconds, createjs.Ease.quadInOut )
+    .call(planetTransitionComplete);
   
   // Stop drifting in the x-axis to prevent drift rotation from countering transition.
   // This ensures planet will move off-screen during transition.
-  rootAxis.x = 0;
-  rootAxis.normalize();
-  //rootAxis.set(0,0,0);
+  driftAxis = driftObject.localToWorld( new THREE.Vector3(0,0,1) );
+  //driftAxis.normalize();
+  //driftSpeed = 0;
 }
 function planetTransitionComplete() {
   // reattach the planet to the rootObject
@@ -745,6 +782,10 @@ function planetTransitionComplete() {
   
   // put the character back
   characterRotator.add(character);
+  galaxies.fx.showTeleportIn();
+  new PositionedSound( getSound('teleportin',false), rootPosition(character), 10 );
+
+  addInputListeners();
   
   initLevel();
 }
@@ -795,6 +836,7 @@ function addObstacle( type ) {
   props.tumbleOnHit = true;
   props.spiral = 0;
   props.points = 100;
+  props.hitSound = 'fpo';
   props.explodeSound = 'fpo';
   props.passSound = null;
   props.orient = false;
@@ -839,6 +881,7 @@ function addObstacle( type ) {
       
       props.model = modelOrient;
       
+      props.hitSound = 'metalhit';
       /*
       var ref = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), new THREE.MeshLambertMaterial() );
       props.anchor.add( ref );
@@ -887,7 +930,7 @@ function addObstacle( type ) {
         duration: null
       };
       
-      var texture = new THREE.Texture( queue.getResult('starparticle') );
+      var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
       texture.needsUpdate = true;
       var particleGroup = new SPE.Group({
         texture: texture,
@@ -1073,7 +1116,7 @@ function update() {
   ufo.update(delta);
   
   // update world
-  rootObject.rotateOnAxis(rootAxis, rootRotationSpeed * delta );
+  driftObject.rotateOnAxis(driftAxis, driftSpeed * delta );
 
   // update fx
   galaxies.fx.update(delta);
@@ -1150,8 +1193,8 @@ function testUpdate( delta ) {
 
 
 function initRootRotation() {
-  rootAxis = new THREE.Vector3( Math.random()*2-1, Math.random()*2-1, Math.random()*2-1);
-  rootAxis.normalize;
+  driftAxis = new THREE.Vector3( Math.random()*2-1, Math.random()*2-1, Math.random()*2-1);
+  driftAxis.normalize;
   
 }
 
@@ -1192,7 +1235,7 @@ function resumeGame() {
 function gameOver() {
   isGameOver = true;
   galaxies.fx.showPlanetSplode();
-  galaxies.fx.shakeCamera(1);
+  galaxies.fx.shakeCamera(1.5, 2);
   
   
   removeInputListeners();
@@ -1218,9 +1261,13 @@ function endGame() {
     animationFrameRequest = null;
   }
   
-  galaxies.ui.showMenu();
-  
   resetGame();
+  
+  // clear permanent game objects
+  rootObject.remove(planet);
+  rootObject.remove( characterRotator );
+  
+  galaxies.ui.showMenu();
 }
 
 function resetGame() {

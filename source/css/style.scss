@@ -1,6 +1,11 @@
 @import "config.scss";
 @import "buttons.scss";
 
+#container {
+  padding:0;
+  margin:0;  
+}
+
 .hidden {
   display: none;
 }
@@ -132,12 +137,15 @@
   left: 0;
   right: 0;
   top: 50%;
+  -webkit-transform: translateY( -50% );
   transform: translateY( -50% );
   z-index: 10;
-  transition: transform 1s ease-in-out;
+  transition: -webkit-transform 1s ease-in-out,
+              transform 1s ease-in-out;
 }
 
 .play-final-layout {
+  -webkit-transform: translateY( 10px );
   transform: translateY( 10px );
 }
 
@@ -146,6 +154,7 @@
   background-size: 100%;
   width: 46px;
   height: 92px;
+  -webkit-transform-origin: 0 50%;
   transform-origin: 0 50%;
   position: absolute;
   left: 50%;
@@ -156,7 +165,14 @@
 .half-ring-white {
   background-image:url('../images/button_circle_half_white.png');
 }
-
+.rotate180 {
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.rotate-180 {
+  -webkit-transform: rotate(-180deg);
+  transform: rotate(-180deg);
+}
 
 
 
@@ -236,6 +252,7 @@
 .vertical-center {
   position: relative;
   top: 50%;
+  -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
 }
 

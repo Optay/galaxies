@@ -70,12 +70,13 @@ function Asteroid( props ) {
   this.object.scale.set( scale, scale, scale );
   /*
   var objLoader = new THREE.OBJLoader();
-  this.object = objLoader.parse( queue.getResult('asteroidmodel') );
+  this.object = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
   this.object.material = material;
   this.object.scale.set(0.5, 0.5, 0.5);*/
   
   
   // Sound
+  var hitSound = props.hitSound;
   var explodeSound = props.explodeSound;
   this.passSound = null;
   if ( props.passSound != null ) {
@@ -277,7 +278,7 @@ function Asteroid( props ) {
       return;
     }
     
-    new PositionedSound( getSound('fpo',false), rootPosition(this.object), 1 );
+    new PositionedSound( getSound(hitSound,false), rootPosition(this.object), 1 );
     //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
     this.state= 'ricocheting';
     

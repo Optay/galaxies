@@ -32,7 +32,7 @@ galaxies.fx = (function() {
                               this.object.position.y + this.velocity.y*delta,
                               this.object.position.z + this.velocity.z*delta );
     
-    this.object.material.opacity = (this.lifetime - this.lifeTimer);
+    this.object.material.opacity = (this.lifetime - this.lifeTimer)/this.lifetime;
     this.lifeTimer += delta;
     if ( this.lifeTimer >= this.lifetime ) {
       this.active = false;
@@ -42,10 +42,11 @@ galaxies.fx = (function() {
   Rubble.prototype.reset = function() {
     this.lifeTimer = 0;
     this.active = true;
+    this.lifetime = 2;
     rootObject.add( this.object );
   }
   
-  
+  // projectile hit particles
   var emitterSettings = {
     type: 'cube',
     positionSpread: new THREE.Vector3(0.1, 0.1, 0.1),
@@ -85,10 +86,12 @@ galaxies.fx = (function() {
   // Firework particle group for exploding comets
   var fireworksGroup;
   
+  var teleportEmitter, teleportGroup;
+  
   var init = function() {
     
     // Projectile hit particles
-    var texture = new THREE.Texture( queue.getResult('projhitparticle') );
+    var texture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
     texture.needsUpdate = true;
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
@@ -127,88 +130,112 @@ galaxies.fx = (function() {
         particleCount: 200,
         alive: 1.0,
         duration: 0.1
-      };
+    };
       
-      var cometTexture = new THREE.Texture( queue.getResult('starparticle') );
-      cometTexture.needsUpdate = true;
-      fireworksGroup = new SPE.Group({
-        texture: cometTexture,
-        maxAge: 1,
-        blending: THREE.AdditiveBlending
-      });
-      fireworksGroup.addPool( 3, cometParticleSettings, true );
-      
-      //fireworksGroup.mesh.rotation.x = Math.PI/2;
-      rootObject.add ( fireworksGroup.mesh );
+    var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
+    starTexture.needsUpdate = true;
+    fireworksGroup = new SPE.Group({
+      texture: starTexture,
+      maxAge: 1,
+      blending: THREE.AdditiveBlending
+    });
+    fireworksGroup.addPool( 3, cometParticleSettings, true );
     
-      // Planet splode
-      planetRubbleHolder = new THREE.Object3D();
-      planetRubbleHolder.scale.set(2,2,2);
-      rootObject.add( planetRubbleHolder );
-      
-      // Planet particle systems
-      var partsDust = {
-        type: 'sphere',
-        radius: 0.1,
-        speed: 12,
-        speedSpread: 10,
-        sizeStart: 0.6,
-        sizeStartSpread: 0.2,
-        sizeEnd: 0.6,
-        opacityStart: 0.5,
-        opacityStartSpread: 0.8,
-        opacityEnd: 0,
-        colorStart: new THREE.Color(0.500, 0.500, 0.500),
-        colorStartSpread: new THREE.Vector3(0.4, 0.4, 0.4),
-        particlesPerSecond: 10000,
-        particleCount: 1000,
-        alive: 0,
-        duration: 0.1
-      };
-      
-      var groupDust = new SPE.Group({
-        texture: texture,
-        maxAge: 2,
-        blending: THREE.NormalBlending
-      });
-      
-      groupDust.addEmitter( new SPE.Emitter( partsDust ) );
-      groupDust.mesh.position.set( 0,0,1 );
-      planetParticleGroups.push(groupDust);
-      
-      var partsFire = {
-        type: 'sphere',
-        radius: 0.1,
-        acceleration: new THREE.Vector3(0,0,-40),
-        speed: 10,
-        speedSpread: 6,
-        sizeStart: 8,
-        sizeStartSpread: 6,
-        sizeEnd: 6,
-        opacityStart: 0.5,
-        opacityStartSpread: 0.8,
-        opacityEnd: 0,
-        colorStart: new THREE.Color(0.800, 0.400, 0.100),
-        colorStartSpread: new THREE.Vector3(0.1, 0.2, 0.4),
-        colorEnd: new THREE.Color(0.5, 0.000, 0.000),
-        particlesPerSecond: 2000,
-        particleCount: 200,
-        alive: 0,
-        duration: 0.1
-      };
-      
-      var groupFire = new SPE.Group({
-        texture: texture,
-        maxAge: 1.5,
-        blending: THREE.AdditiveBlending
-      });
-      
-      groupFire.addEmitter( new SPE.Emitter( partsFire ) );
-      groupFire.mesh.position.set( 0,0,0.1 );
-      planetParticleGroups.push(groupFire);
-      
-      
-  }
+    //fireworksGroup.mesh.rotation.x = Math.PI/2;
+    rootObject.add ( fireworksGroup.mesh );
+  
+    // Planet splode
+    planetRubbleHolder = new THREE.Object3D();
+    planetRubbleHolder.scale.set(3,3,3);
+    rootObject.add( planetRubbleHolder );
+    
+    // Planet particle systems
+    var partsDust = {
+      type: 'sphere',
+      radius: 0.1,
+      speed: 12,
+      speedSpread: 10,
+      sizeStart: 0.6,
+      sizeStartSpread: 0.2,
+      sizeEnd: 0.6,
+      opacityStart: 0.5,
+      opacityStartSpread: 0.8,
+      opacityEnd: 0,
+      colorStart: new THREE.Color(0.500, 0.500, 0.500),
+      colorStartSpread: new THREE.Vector3(0.4, 0.4, 0.4),
+      particlesPerSecond: 10000,
+      particleCount: 1000,
+      alive: 0,
+      duration: 0.1
+    };
+    
+    var groupDust = new SPE.Group({
+      texture: texture,
+      maxAge: 2,
+      blending: THREE.NormalBlending
+    });
+    
+    groupDust.addEmitter( new SPE.Emitter( partsDust ) );
+    groupDust.mesh.position.set( 0,0,1 );
+    planetParticleGroups.push(groupDust);
+    
+    var partsFire = {
+      type: 'sphere',
+      radius: 0.1,
+      acceleration: new THREE.Vector3(0,0,-40),
+      speed: 10,
+      speedSpread: 6,
+      sizeStart: 8,
+      sizeStartSpread: 6,
+      sizeEnd: 6,
+      opacityStart: 0.5,
+      opacityStartSpread: 0.8,
+      opacityEnd: 0,
+      colorStart: new THREE.Color(0.800, 0.400, 0.100),
+      colorStartSpread: new THREE.Vector3(0.1, 0.2, 0.4),
+      colorEnd: new THREE.Color(0.5, 0.000, 0.000),
+      particlesPerSecond: 2000,
+      particleCount: 200,
+      alive: 0,
+      duration: 0.1
+    };
+    
+    var groupFire = new SPE.Group({
+      texture: texture,
+      maxAge: 1.5,
+      blending: THREE.AdditiveBlending
+    });
+    
+    groupFire.addEmitter( new SPE.Emitter( partsFire ) );
+    groupFire.mesh.position.set( 0,0,0.1 );
+    planetParticleGroups.push(groupFire);
+
+    var teleportParticles = {
+      type: 'sphere',
+      radius: 0.6,
+      speed: 1,
+      sizeStart: 1,
+      sizeStartSpread: 0,
+      sizeEnd: 1,
+      opacityStart: 1,
+      opacityEnd: 0,
+      colorStart: new THREE.Color(1.000, 0.800, 0.300),
+      colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
+      colorEnd: new THREE.Color(0.500, 0.500, 0.800),
+      particlesPerSecond: 100,
+      particleCount: 100,
+      alive: 0.0,
+      duration: 0.25
+    };
+    teleportGroup = new SPE.Group({
+      texture: starTexture,
+      maxAge: 0.5,
+      blending: THREE.AdditiveBlending
+    });
+    teleportEmitter = new SPE.Emitter( teleportParticles );
+    teleportGroup.addEmitter( teleportEmitter );
+    
+  } // init
   
   var showFireworks = function( position ) {
     // Reproduces functionality of ShaderParticleGroup triggerPoolEmitter method.
@@ -284,9 +311,10 @@ galaxies.fx = (function() {
       
       rObject.velocity.copy( rObject.object.position );
       rObject.velocity.normalize();
-      rObject.velocity.multiplyScalar(3);
+      rObject.velocity.multiplyScalar(2);
       
       rObject.reset();
+      rObject.lifetime = 6; // increase life for this effect
       planetRubbleHolder.add( rObject.object ); // move object to special holder that scales up the rubble
       
     }
@@ -319,6 +347,26 @@ galaxies.fx = (function() {
     
   }
   
+  var showTeleportOut = function() {
+    character.parent.add( teleportGroup.mesh );
+    
+    //character.material.blending = THREE.AdditiveBlending;
+    character.material.emissive = 0xffffff;
+    createjs.Tween.get( character.material )
+      .to({opacity: 0}, 1000);
+    
+    teleportGroup.mesh.position.copy( character.position );
+    teleportGroup.mesh.position.z += 1;
+    teleportGroup.mesh.position.y -= 0.5;
+    teleportEmitter.active = 1.0;
+    teleportEmitter.enable();
+  }
+  var showTeleportIn = function() {
+    createjs.Tween.get( character.material )
+      .to({opacity: 1}, 1000);
+  }
+  
+  
   
   var update = function( delta ) {
     for ( var i=0; i<projHitPoolSize; i++ ) {
@@ -340,18 +388,32 @@ galaxies.fx = (function() {
       character.material.rotation = character.rotation.z;
     }
     
+    // teleport particles
+    // TODO only update these when active
+    teleportGroup.tick(delta );
   }
   
-  var shakeCamera = function( magnitude ) {
+  var shakeCamera = function( magnitude, duration ) {
     // Make sure camera is reset before applying shake tween
     camera.rotation.x = 0; 
     camera.rotation.y = 0;
     
+    if ( typeof(duration)==='undefined' ) {
+      duration = 500;
+    } else {
+      duration = duration*1000;
+    }
+    
     magnitude = 0.01 * magnitude;
     
-    createjs.Tween.get(camera.rotation).to({x:magnitude, override:true }, 500, galaxies.utils.getShakeEase(29) ).
+    // Frequency is dependent on duration because easing function uses a normalized 0-1 value, not
+    // an elapsed time value. This keeps shake the same no matter the duration.
+    var freqX = duration/17;
+    var freqY = duration/18;
+    
+    createjs.Tween.get(camera.rotation).to({x:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqX) ).
       to( {x:0}, 0); // reset position
-    createjs.Tween.get(camera.rotation).to({y:magnitude, override:true }, 500, galaxies.utils.getShakeEase(27) ).
+    createjs.Tween.get(camera.rotation).to({y:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqY) ).
       to( {y:0}, 0); // reset position
     //createjs.Tween.get(camera.rotation).to({x:0}, 1000, createjs.Ease.quadOut );
   }
@@ -363,6 +425,8 @@ galaxies.fx = (function() {
     showFireworks: showFireworks,
     showRubble: showRubble,
     showPlanetSplode: showPlanetSplode,
+    showTeleportOut: showTeleportOut,
+    showTeleportIn: showTeleportIn,
     shakeCamera: shakeCamera
   };
 })();

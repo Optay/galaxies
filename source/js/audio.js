@@ -56,24 +56,27 @@ var sounds = {
   'asteroidexplode': ['asteroidexplode1', 'asteroidexplode2', 'asteroidexplode3'],
   'cometexplode': ['cometexplode'],
   'cometloop': ['cometloop'],
-  'fpo': ['fpo1', 'fpo2', 'fpo3'],
+  'fpo': ['fpo1'],
   'ufo': ['ufo'],
   'music': ['music'],
   'ufohit': ['ufohit1', 'ufohit2'],
   'ufoshoot': ['ufoshoot'],
-  'planetsplode': ['planetsplode']
+  'planetsplode': ['planetsplode'],
+  'teleportin': ['teleportin'],
+  'teleportout': ['teleportout'],
+  'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ]
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
 function initAudio( complete ) {
-  canPlayEC3 = galaxies.utils.supportsEC3();
-  
   var AudioContext = window.AudioContext || window.webkitAudioContext;
   audioCtx = new AudioContext();
   listener = audioCtx.listener;
   //audioCtx.destination.maxChannelCount = 6;
+  console.log("initAudio");
   console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
   console.log( 0 !== null );
+  
 
   var onComplete = complete;
 
@@ -89,23 +92,34 @@ function initAudio( complete ) {
     loadedSounds[ soundIds[i] ] = new ExhaustiveArray();
     for ( var j=0; j<sounds[ soundIds[i] ].length; j++ ) {
       //console.log( sounds[soundIds[i]][j] );
-      //console.log( queue.getResult( sounds[soundIds[i]][j]) );
+      //console.log( galaxies.queue.getResult( sounds[soundIds[i]][j]) );
       decodeFile( soundIds[i], sounds[soundIds[i]][j] );
     }
   }
   
   function decodeFile( soundId, fileId ) {
     var loadedId = soundId;
-    audioCtx.decodeAudioData( queue.getResult( fileId, true ),
-      function(buffer) {
-        //console.log("decoded", loadedId );
-        loadedSounds[ loadedId ].add( buffer );  
-        fileComplete();
-      },
-      function() {
-        console.log( "Error decoding audio file.", loadedId );
-        fileComplete();
-      } );
+    var result = galaxies.queue.getResult( fileId, true );
+    console.log( result );
+    if ( result != null ) {
+      audioCtx.decodeAudioData( result,
+        function(buffer) {
+          //console.log("decoded", loadedId );
+          loadedSounds[ loadedId ].add( buffer );  
+          fileComplete();
+        },
+        function() {
+          console.log( "Error decoding audio file.", loadedId );
+          
+          // Add an empty buffer to the cache to prevent errors when trying to play this sound.
+          loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+          fileComplete();
+        } );
+    } else {
+      // Add an empty buffer
+      loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );  
+      fileComplete();
+    }
   }
 
   function fileComplete() {
