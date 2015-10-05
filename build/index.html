@@ -25,10 +25,10 @@
         
         <div class="play-place">
             <div class="progress-ring">
-                <div class="half-ring-white" style="transform: rotate(0deg);"></div>
-                <div class="half-ring-blue progress-fill-a" style="transform: rotate(-180deg);"></div>
-                <div class="half-ring-white" style="transform: rotate(180deg);"></div>
-                <div class="half-ring-blue progress-fill-b hidden" style="transform: rotate(0deg);"></div>
+                <div class="half-ring-white" style="z-index: 1;"></div>
+                <div class="half-ring-blue progress-fill-a rotate-180" style="z-index: 2;"></div>
+                <div class="half-ring-white rotate180" style="z-index: 3;"></div>
+                <div class="half-ring-blue progress-fill-b hidden" style="z-index: 4;"></div>
                 
                 <div class="progress-holder">
                     <div class="progress vertical-center"></div>
@@ -40,8 +40,8 @@
             <div class="play-button hidden"></div>
         </div>
         
-        <div class="invisible"><div class="bg1 fullscreen"></div></div>
-        <div class="invisible"><div class="bg2 fullscreen"></div></div>
+        <div class="invisible hidden"><div class="bg1 fullscreen"></div></div>
+        <div class="invisible hidden"><div class="bg2 fullscreen"></div></div>
         
         <div class="audio-controls hidden">
             <div class="stereo-button"></div>
@@ -94,8 +94,8 @@
     
 </div>
 
-
-<div style="padding:0; margin:0;" id="container"></div>
+<!-- the game container -->
+<div id="container"></div>
 
 
 

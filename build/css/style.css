@@ -38,18 +38,39 @@
   position: absolute;
   bottom: 60px;
   right: 60px;
+  -webkit-transform: translateX(50%) translateY(50%);
   transform: translateX(50%) translateY(50%);
   background-image: url("../images/button_audio_on.png");
   z-index: 22;
   /* needs to be over pause overlay */
 }
 
-/* line 41, ../../source/css/buttons.scss */
+/* line 42, ../../source/css/buttons.scss */
 .mute-button:hover {
-  background-image: url("../images/button_audio_on_rollover.png");
+  background-position: 0 0;
 }
 
 /* line 45, ../../source/css/buttons.scss */
+.mute-button.mute-music {
+  background-position: 0 0;
+}
+
+/* line 48, ../../source/css/buttons.scss */
+.mute-button.mute-music:hover {
+  background-position: 0 0;
+}
+
+/* line 51, ../../source/css/buttons.scss */
+.mute-button.mute-all {
+  background-position: 0 0;
+}
+
+/* line 54, ../../source/css/buttons.scss */
+.mute-button.mute-all:hover {
+  background-position: 0 0;
+}
+
+/* line 70, ../../source/css/buttons.scss */
 .dolby-logo {
   position: absolute;
   width: 150px;
@@ -60,102 +81,109 @@
   background-size: contain;
 }
 
-/* line 57, ../../source/css/buttons.scss */
+/* line 82, ../../source/css/buttons.scss */
 .pause-button {
   position: absolute;
   bottom: 60px;
   left: 60px;
+  -webkit-transform: translateX(-50%) translateY(50%);
   transform: translateX(-50%) translateY(50%);
   background-image: url("../images/button_pause_small.png");
 }
 
-/* line 66, ../../source/css/buttons.scss */
+/* line 92, ../../source/css/buttons.scss */
 .pause-button:hover {
   background-image: url("../images/button_pause_small_rollover.png");
 }
 
-/* line 70, ../../source/css/buttons.scss */
+/* line 96, ../../source/css/buttons.scss */
 .play-button {
   position: relative;
   left: 46px;
   top: 46px;
+  -webkit-transform: translateX(-50%) translateY(-50%);
   transform: translateX(-50%) translateY(-50%);
   background-image: url("../images/button_play_large.png");
 }
 
-/* line 80, ../../source/css/buttons.scss */
+/* line 107, ../../source/css/buttons.scss */
 .play-button:hover {
   background-image: url("../images/button_play_large_rollover.png");
 }
 
-/* line 84, ../../source/css/buttons.scss */
+/* line 111, ../../source/css/buttons.scss */
 .resume-button {
   position: absolute;
   bottom: 0;
   background-image: url("../images/button_play_large.png");
 }
 
-/* line 92, ../../source/css/buttons.scss */
+/* line 119, ../../source/css/buttons.scss */
 .resume-button:hover {
   background-image: url("../images/button_play_large_rollover.png");
 }
 
-/* line 95, ../../source/css/buttons.scss */
+/* line 122, ../../source/css/buttons.scss */
 .restart-button {
   position: absolute;
   bottom: 0;
   background-image: url("../images/button_replay_large.png");
 }
 
-/* line 103, ../../source/css/buttons.scss */
+/* line 130, ../../source/css/buttons.scss */
 .restart-button:hover {
   background-image: url("../images/button_replay_large_rollover.png");
 }
 
-/* line 106, ../../source/css/buttons.scss */
+/* line 133, ../../source/css/buttons.scss */
 .quit-button {
   position: absolute;
   bottom: 0;
   background-image: url("../images/button_home_large.png");
 }
 
-/* line 114, ../../source/css/buttons.scss */
+/* line 141, ../../source/css/buttons.scss */
 .quit-button:hover {
   background-image: url("../images/button_home_large_rollover.png");
 }
 
 /* positioning */
-/* line 119, ../../source/css/buttons.scss */
+/* line 146, ../../source/css/buttons.scss */
 .pause-menu .resume-button {
   left: 60px;
+  -webkit-transform: translateX(-50%) translateY(50%);
   transform: translateX(-50%) translateY(50%);
 }
 
-/* line 123, ../../source/css/buttons.scss */
+/* line 151, ../../source/css/buttons.scss */
 .pause-menu .restart-button {
   left: 50%;
+  -webkit-transform: translateX(-50%) translateY(50%);
   transform: translateX(-50%) translateY(50%);
 }
 
-/* line 127, ../../source/css/buttons.scss */
+/* line 156, ../../source/css/buttons.scss */
 .pause-menu .quit-button {
   right: 60px;
+  -webkit-transform: translateX(50%) translateY(50%);
   transform: translateX(50%) translateY(50%);
 }
 
-/* line 131, ../../source/css/buttons.scss */
+/* line 161, ../../source/css/buttons.scss */
 .game-over-menu .restart-button {
   left: 40%;
+  -webkit-transform: translateX(-50%) translateY(50%);
   transform: translateX(-50%) translateY(50%);
 }
 
-/* line 135, ../../source/css/buttons.scss */
+/* line 166, ../../source/css/buttons.scss */
 .game-over-menu .quit-button {
   right: 40%;
+  -webkit-transform: translateX(50%) translateY(50%);
   transform: translateX(50%) translateY(50%);
 }
 
-/* line 140, ../../source/css/buttons.scss */
+/* line 172, ../../source/css/buttons.scss */
 .audio-controls {
   position: absolute;
   left: 0;
@@ -166,7 +194,7 @@
   text-align: center;
 }
 
-/* line 150, ../../source/css/buttons.scss */
+/* line 182, ../../source/css/buttons.scss */
 .stereo-button, .surround-button {
   cursor: pointer;
   display: inline-block;
@@ -177,45 +205,51 @@
   height: 50px;
 }
 
-/* line 161, ../../source/css/buttons.scss */
+/* line 193, ../../source/css/buttons.scss */
 .stereo-button:hover, .surround-button:hover {
   background-position: 0 -59px;
   /*33%; 117*/
 }
 
-/* line 164, ../../source/css/buttons.scss */
+/* line 196, ../../source/css/buttons.scss */
 .stereo-button.active, .surround-button.active {
   background-position: 0 -117px;
   /*67%;234*/
 }
 
-/* line 167, ../../source/css/buttons.scss */
+/* line 199, ../../source/css/buttons.scss */
 .stereo-button.active:hover, .surround-button.active:hover {
   background-position: 0 -175px;
   /*100%;350*/
 }
 
-/* line 171, ../../source/css/buttons.scss */
+/* line 203, ../../source/css/buttons.scss */
 .stereo-button {
   background-image: url("../images/button_stereo.png");
 }
 
-/* line 175, ../../source/css/buttons.scss */
+/* line 207, ../../source/css/buttons.scss */
 .surround-button {
   background-image: url("../images/button_surround.png");
 }
 
 /* line 4, ../../source/css/style.scss */
+#container {
+  padding: 0;
+  margin: 0;
+}
+
+/* line 9, ../../source/css/style.scss */
 .hidden {
   display: none;
 }
 
-/* line 8, ../../source/css/style.scss */
+/* line 13, ../../source/css/style.scss */
 .invisible {
   opacity: 0;
 }
 
-/* line 12, ../../source/css/style.scss */
+/* line 17, ../../source/css/style.scss */
 .fade-in {
   animation-name: fadein;
   animation-duration: 3s;
@@ -230,7 +264,7 @@
     opacity: 1;
   }
 }
-/* line 22, ../../source/css/style.scss */
+/* line 27, ../../source/css/style.scss */
 .points {
   position: absolute;
   z-index: 10;
@@ -244,7 +278,7 @@
   transition: top 2s linear, opacity 2s ease-in;
 }
 
-/* line 35, ../../source/css/style.scss */
+/* line 40, ../../source/css/style.scss */
 .speaker {
   border: 1px solid #fff;
 }
@@ -253,18 +287,18 @@
   UI
 */
 /* Pause menu is above all elements except the in-game logo */
-/* line 51, ../../source/css/style.scss */
+/* line 56, ../../source/css/style.scss */
 .pause-menu {
   width: 400px;
   z-index: 25;
 }
 
-/* line 55, ../../source/css/style.scss */
+/* line 60, ../../source/css/style.scss */
 .game-over-menu {
   width: 600px;
 }
 
-/* line 58, ../../source/css/style.scss */
+/* line 63, ../../source/css/style.scss */
 .pause-menu, .game-over-menu {
   position: absolute;
   bottom: 50%;
@@ -275,28 +309,28 @@
   text-align: center;
 }
 
-/* line 69, ../../source/css/style.scss */
+/* line 74, ../../source/css/style.scss */
 .pause-overlay {
   background: #000;
   opacity: 0.5;
   z-index: 20;
 }
 
-/* line 74, ../../source/css/style.scss */
+/* line 79, ../../source/css/style.scss */
 .pause-title, .game-over-title {
   color: #fff;
   font-size: 120px;
   font-family: 'HorizonBT-Regular';
 }
 
-/* line 81, ../../source/css/style.scss */
+/* line 86, ../../source/css/style.scss */
 .fullscreen {
   position: absolute;
   width: 100%;
   height: 100%;
 }
 
-/* line 88, ../../source/css/style.scss */
+/* line 93, ../../source/css/style.scss */
 .bg1 {
   background-image: url("../images/loader_background.jpg");
   background-repeat: repeat-x;
@@ -307,7 +341,7 @@
   animation-iteration-count: infinite;
 }
 
-/* line 98, ../../source/css/style.scss */
+/* line 103, ../../source/css/style.scss */
 .bg2 {
   background-image: url("../images/stars_tile.png");
   background-repeat: repeat-x;
@@ -318,7 +352,7 @@
   animation-iteration-count: infinite;
 }
 
-/* line 108, ../../source/css/style.scss */
+/* line 113, ../../source/css/style.scss */
 .bg1, .bg2 {
   animation-timing-function: linear;
   -webkit-animation-timing-function: linear;
@@ -341,12 +375,12 @@
     background-position: -100%;
   }
 }
-/* line 123, ../../source/css/style.scss */
+/* line 128, ../../source/css/style.scss */
 .menu-holder {
   text-align: center;
 }
 
-/* line 127, ../../source/css/style.scss */
+/* line 132, ../../source/css/style.scss */
 .play-place {
   position: absolute;
   width: 92px;
@@ -355,37 +389,52 @@
   left: 0;
   right: 0;
   top: 50%;
+  -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
   z-index: 10;
-  transition: transform 1s ease-in-out;
+  transition: -webkit-transform 1s ease-in-out, transform 1s ease-in-out;
 }
 
-/* line 140, ../../source/css/style.scss */
+/* line 147, ../../source/css/style.scss */
 .play-final-layout {
+  -webkit-transform: translateY(10px);
   transform: translateY(10px);
 }
 
-/* line 145, ../../source/css/style.scss */
+/* line 153, ../../source/css/style.scss */
 .half-ring-blue, .half-ring-white {
   background-size: 100%;
   width: 46px;
   height: 92px;
+  -webkit-transform-origin: 0 50%;
   transform-origin: 0 50%;
   position: absolute;
   left: 50%;
 }
 
-/* line 153, ../../source/css/style.scss */
+/* line 162, ../../source/css/style.scss */
 .half-ring-blue {
   background-image: url("../images/button_circle_half_blue.png");
 }
 
-/* line 156, ../../source/css/style.scss */
+/* line 165, ../../source/css/style.scss */
 .half-ring-white {
   background-image: url("../images/button_circle_half_white.png");
 }
 
-/* line 163, ../../source/css/style.scss */
+/* line 168, ../../source/css/style.scss */
+.rotate180 {
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+/* line 172, ../../source/css/style.scss */
+.rotate-180 {
+  -webkit-transform: rotate(-180deg);
+  transform: rotate(-180deg);
+}
+
+/* line 179, ../../source/css/style.scss */
 .progress-ring {
   width: 92px;
   height: 92px;
@@ -394,7 +443,7 @@
   background-repeat: no-repeat;*/
 }
 
-/* line 171, ../../source/css/style.scss */
+/* line 187, ../../source/css/style.scss */
 .progress-holder {
   position: absolute;
   margin: 0 auto;
@@ -405,7 +454,7 @@
   overflow: hidden;
 }
 
-/* line 181, ../../source/css/style.scss */
+/* line 197, ../../source/css/style.scss */
 .progress {
   position: relative;
   color: #fff;
@@ -416,7 +465,7 @@
   width: 52px;
 }
 
-/* line 190, ../../source/css/style.scss */
+/* line 206, ../../source/css/style.scss */
 .play-symbol {
   position: relative;
   margin: 0 auto;
@@ -428,7 +477,7 @@
   background-position: 50% 50%;
 }
 
-/* line 201, ../../source/css/style.scss */
+/* line 217, ../../source/css/style.scss */
 .progress-title-holder {
   position: absolute;
   width: 100%;
@@ -437,7 +486,7 @@
   z-index: 11;
 }
 
-/* line 208, ../../source/css/style.scss */
+/* line 224, ../../source/css/style.scss */
 .progress-title {
   position: absolute;
   bottom: 46px;
@@ -455,30 +504,31 @@
   transition-timing-function: ease-in-out;
 }
 
-/* line 225, ../../source/css/style.scss */
+/* line 241, ../../source/css/style.scss */
 .logo-loading-layout {
   width: 141px;
   height: 96px;
 }
 
-/* line 229, ../../source/css/style.scss */
+/* line 245, ../../source/css/style.scss */
 .logo-final-layout {
   width: 282px;
   height: 192px;
   bottom: 0;
 }
 
-/* line 236, ../../source/css/style.scss */
+/* line 252, ../../source/css/style.scss */
 .vertical-center {
   position: relative;
   top: 50%;
+  -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
 }
 
 /*****************
  * in-game
  *****************/
-/* line 247, ../../source/css/style.scss */
+/* line 264, ../../source/css/style.scss */
 .level-display, .score-display {
   margin: 20px;
   color: #F0F485;
@@ -492,21 +542,21 @@
   line-height: 32px;
 }
 
-/* line 262, ../../source/css/style.scss */
+/* line 279, ../../source/css/style.scss */
 .level-display {
   position: absolute;
   top: 0;
   right: 0;
 }
 
-/* line 268, ../../source/css/style.scss */
+/* line 285, ../../source/css/style.scss */
 .score-display {
   position: absolute;
   top: 0;
   left: 0;
 }
 
-/* line 274, ../../source/css/style.scss */
+/* line 291, ../../source/css/style.scss */
 .life-display {
   position: absolute;
   top: 0;
@@ -514,7 +564,7 @@
   margin-top: 27px;
 }
 
-/* line 280, ../../source/css/style.scss */
+/* line 297, ../../source/css/style.scss */
 .life-heart {
   width: 28px;
   height: 28px;
@@ -525,12 +575,12 @@
   background-position: bottom;
 }
 
-/* line 291, ../../source/css/style.scss */
+/* line 308, ../../source/css/style.scss */
 .life-heart.empty {
   background-position: top;
 }
 
-/* line 296, ../../source/css/style.scss */
+/* line 313, ../../source/css/style.scss */
 .game-logo {
   position: absolute;
   top: 5px;
@@ -545,7 +595,7 @@
   z-index: 30;
 }
 
-/* line 310, ../../source/css/style.scss */
+/* line 327, ../../source/css/style.scss */
 .title {
   position: absolute;
   width: 1000px;
