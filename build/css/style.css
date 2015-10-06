@@ -609,3 +609,31 @@
   font-size: 60px;
   line-height: 60px;
 }
+
+/* line 345, ../../source/css/style.scss */
+.browser-recommend {
+  width: 651px;
+  height: 80px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  margin: 0 auto;
+  overflow: hidden;
+  background-size: 100%;
+}
+
+/* line 356, ../../source/css/style.scss */
+.browser-recommend:hover {
+  background-position: 0 100%;
+}
+
+/* line 359, ../../source/css/style.scss */
+.recommend-safari {
+  background-image: url("../images/button_mac_safari.png");
+}
+
+/* line 362, ../../source/css/style.scss */
+.recommend-edge {
+  background-image: url("../images/button_microsoft_edge.png");
+}

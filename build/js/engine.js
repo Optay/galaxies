@@ -17,7 +17,8 @@ var listener;
 var listenerObject;
 
 var soundField;
-
+var outNode;
+var muteState = 'none'; // Designates which audio is muted: none, music, all
 
 // collection of AudioBuffer objects
 var loadedSounds = {};
@@ -64,7 +65,8 @@ var sounds = {
   'planetsplode': ['planetsplode'],
   'teleportin': ['teleportin'],
   'teleportout': ['teleportout'],
-  'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ]
+  'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ],
+  'titlewoosh': ['titlewoosh']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
@@ -77,6 +79,9 @@ function initAudio( complete ) {
   console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
   console.log( 0 !== null );
   
+  // Global mute
+  outNode = audioCtx.createGain();
+  outNode.connect( audioCtx.destination );
 
   var onComplete = complete;
 
@@ -348,12 +353,12 @@ function PositionedSound( source, position, baseVolume ) {
     }
     this.channels = [];
     if ( this.combiner != null ) {
-      this.combiner.disconnect( audioCtx.destination );
+      this.combiner.disconnect( outNode );
       this.combiner = null;
     }
     if ( this.panner!=null ) {
       this.preAmp.disconnect( this.panner );
-      this.panner.disconnect( audioCtx.destination );
+      this.panner.disconnect( outNode );
       this.panner = null;
     }
     //
@@ -368,7 +373,7 @@ function PositionedSound( source, position, baseVolume ) {
         newGainNode.connect( this.combiner, 0, i );
         this.channels[i] = newGainNode;
       }
-      this.combiner.connect(audioCtx.destination);
+      this.combiner.connect(outNode);
     } else { 
       // initialize stereo mix
       this.panner = audioCtx.createPanner();
@@ -381,7 +386,7 @@ function PositionedSound( source, position, baseVolume ) {
       this.panner.coneOuterAngle = 0;
       this.panner.coneOuterGain = 0;
       this.preAmp.connect( this.panner );
-      this.panner.connect( audioCtx.destination );
+      this.panner.connect( outNode );
     }
   }
   
@@ -687,7 +692,7 @@ function SoundField( source ) {
   var splitter = audioCtx.createChannelSplitter(6);
   volumeNode.connect( splitter );
   var combiner = audioCtx.createChannelMerger(6);
-  combiner.connect(audioCtx.destination);
+  combiner.connect(outNode);
   
   this.gains = [];
   
@@ -755,6 +760,37 @@ function toggleTargetMix( value ) {
   }
 }
 
+
+function toggleMuteState() {
+  if ( muteState === 'none' ) {
+    muteState = 'music';
+    setAllMute( false );
+    setMusicMute( true );
+  } else if ( muteState === 'music' ) {
+    muteState = 'all';
+    setAllMute( true );
+  } else {
+    muteState = 'none'
+    setAllMute( false );
+  }
+}
+
+function setAllMute( mute ) {
+  setMusicMute( false );
+  if ( mute ) {
+    outNode.gain.value = 0;
+  } else {
+    outNode.gain.value = 1;
+  }
+}
+
+function setMusicMute( mute ) {
+  if ( mute ) {
+    soundField.setVolume(0);
+  } else {
+    soundField.setVolume(0.24);
+  }
+}
 
 
 
@@ -1046,6 +1082,9 @@ function Asteroid( props ) {
         case 'fireworks':
           galaxies.fx.showFireworks( this.object.position );
           break;
+        case 'debris':
+          galaxies.fx.showDebris( this.object.position, velocity );
+          break;
         case 'rubble':
         default:
           galaxies.fx.showRubble( this.object.position, velocity );
@@ -1214,7 +1253,7 @@ var cameraViewAngle = 45; // Will be applied to smallest screen dimension, horiz
 var projectileSpeed = 3.0;
 var speedScale = 1;
 
-var ROUNDS_PER_PLANET = 3;
+var ROUNDS_PER_PLANET = 3; // 3
 
 var SHOOT_TIME = 0.4;
 var PROJ_HIT_THRESHOLD = 0.7;
@@ -1360,6 +1399,9 @@ function initScene() {
   //renderer.setSize( 640, 480 );
   container.appendChild( renderer.domElement );
   
+  window.addEventListener( 'resize', onWindowResize, false );
+  onWindowResize();
+
 }
 
 function initGame() {
@@ -1377,6 +1419,9 @@ function initGame() {
   var ufomodel = objLoader.parse( galaxies.queue.getResult('ufomodel') );
   //geometries['ufo'] = ufomodel.children[0].geometry;
   geometries['ufo'] = ufomodel;
+  var debrismodel = objLoader.parse( galaxies.queue.getResult('satellitedebrismodel') );
+  geometries['debris'] = debrismodel.children[0].geometry;
+  
   
   /*
   ufomodel.traverse( function ( child ) {
@@ -1462,6 +1507,15 @@ function initGame() {
       shading: THREE.SmoothShading
   } );
   
+  materials['debris'] = new THREE.MeshPhongMaterial( {
+    color: 0x999999,
+    specular: 0x202020,
+    shininess: 50,
+    opacity: 1,
+    transparent: true,
+    shading: THREE.SmoothShading
+  });
+
   
   
   
@@ -1538,7 +1592,6 @@ function initGame() {
   var characterMaterial = new THREE.SpriteMaterial({
     map: characterMap,
     color: 0xffffff,
-    depthTest: false,
     transparent: true,
     opacity: 1.0
   } );
@@ -1548,7 +1601,6 @@ function initGame() {
   character.scale.set(CHARACTER_HEIGHT*0.77, CHARACTER_HEIGHT, CHARACTER_HEIGHT * 0.77); // 0.77 is the aspect ratio width/height of the sprites
   //character.scale.set(5, 5, 5);
   characterRotator.add( character );
-  
 
   addInputListeners();
 
@@ -1601,11 +1653,13 @@ function initGame() {
   debugFormElement.querySelector("button[name='restart']").addEventListener('click', manualRestart );
   
   galaxies.fx.init( scene );
-  
-  startGame();
-  
+
+
   // TEST
   //addTestObject();
+
+  
+  startGame();
   
   /*
   window.setInterval( function() {
@@ -1615,11 +1669,12 @@ function initGame() {
   */
   
   //
-}
+} // initGame
 
 var testObjects = [];
+var testObject;
 function addTestObject() {
-  /*
+  
   //var colorMap = new THREE.Texture( galaxies.queue.getResult('asteriodColor'), THREE.UVMapping );
   var colorMap = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
   colorMap.needsUpdate = true;
@@ -1636,12 +1691,14 @@ function addTestObject() {
       shading: THREE.SmoothShading //THREE.FlatShading
       } );
   
-  testObject = new THREE.Mesh( geometries['asteroid'], material );
+  testObject = new THREE.Mesh( geometries['debris'], materials['debris'] );
   testObject.position.set( 0, 0, 10 );
   rootObject.add( testObject );
   var scale = 10;
   testObject.scale.set( scale, scale, scale );
-  */
+  
+  console.log( "Test Object", testObject);
+  
   /*
   var emitterSettings = {
         type: 'sphere',
@@ -1726,30 +1783,16 @@ function addTestObject() {
       testObjects.push(particleGroup2);
       */
       
-      
+      /*
       window.setInterval( function() {
         gameOver();
         
-        /*
-        particleGroup1.triggerPoolEmitter(1);
-        particleGroup2.triggerPoolEmitter(1);
-        galaxies.fx.showPlanetRubble();
-        */
         
       }, 3000 );
       
 
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+      */
       
       
       
@@ -1773,17 +1816,13 @@ function startGame() {
   listener.setOrientation(0,0,-1,0,1,0);
   listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
-  soundField = new SoundField( getSound('music') );
-  soundField.setVolume(0); // 0.24
-  //
-  
   ufo = new galaxies.Ufo();
   
   resetGame();
-  initLevel();
+  removeInputListeners();
+  startPlanetMove();
+  //initLevel();
 
-  window.addEventListener( 'resize', onWindowResize, false );
-  onWindowResize();
 
   gameInitialized = true;
   
@@ -1798,12 +1837,16 @@ function restartGame() {
 
   galaxies.ui.showPauseButton(); // is hidden by game over menu
 
-  // show permanent game objects
-  rootObject.add(planet);
+  // planet will be added by initial transition
+  rootObject.remove(planet);
+
+  // add character holder
   rootObject.add( characterRotator );
   
-  planetTransition(); // for testing purposes
-  initLevel();
+  //planetTransition(); // for testing purposes
+  removeInputListeners();
+  startPlanetMove();
+  //initLevel();
   
   createjs.Ticker.paused = false;
   clock.start();
@@ -1815,7 +1858,7 @@ function restartGame() {
 
 function initLevel() {
   
-  levelTime = 25;// + (5*level);
+  levelTime = 15;//25;// + (5*level);
   levelTimer = 0;
   levelComplete = false;
   
@@ -1843,8 +1886,8 @@ function initLevel() {
   
   // Counts for obstacles start low and asymptote to a max value.
   // Max values are first integer in formula. Initial value is first integer minus second integer.
-  var asteroidCount = Math.floor( 20 - (15 * (1/(1 + (level-1) * 0.3)) ) );
-  var satelliteCount = Math.floor( 8 - (6 * (1/(1 + (level-1) * 0.2)) ) );
+  var asteroidCount = Math.floor( 20 - (15 * (1/(1 + (level-1) * 0.1)) ) );
+  var satelliteCount = Math.floor( 8 - (6 * (1/(1 + (level-1) * 0.1)) ) );
   var cometCount = Math.floor( 8 - (7 * (1/(1 + (level-1) * 0.1)) ) );
   for ( var i=0; i<asteroidCount; i++ ) {
     addObstacle( 'asteroid' );
@@ -1923,7 +1966,11 @@ function startPlanetMove() {
   characterRotator.remove(character);
   
   // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
-  THREE.SceneUtils.detach (planet, rootObject, scene);
+  // Note that for first level, there is no planet to move out, so we check if the planet is active
+  // before performing the detach.
+  if ( planet.parent != null ) {
+    THREE.SceneUtils.detach (planet, rootObject, scene);
+  }
   
   // Set outbound end position and inbound starting position for planet
   var outPosition = rootObject.localToWorld( new THREE.Vector3(0,0,-100) );
@@ -1935,7 +1982,10 @@ function startPlanetMove() {
   createjs.Tween.get( planet.position )
     .to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut)
     .to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0)
-    .call(randomizePlanet, null, this)
+    .call( function() {
+      scene.add( planet ); // First level planet must be added here
+      randomizePlanet();
+    }, null, this)
     .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
   
   // Swing the world around
@@ -1943,7 +1993,7 @@ function startPlanetMove() {
   var targetX = rootObject.rotation.x + Math.PI/2;
   createjs.Tween.get( rootObject.rotation )
     .to({x:targetX}, transitionTimeMilliseconds, createjs.Ease.quadInOut )
-    .call(planetTransitionComplete);
+    .call(planetMoveComplete);
   
   // Stop drifting in the x-axis to prevent drift rotation from countering transition.
   // This ensures planet will move off-screen during transition.
@@ -1951,16 +2001,17 @@ function startPlanetMove() {
   //driftAxis.normalize();
   //driftSpeed = 0;
 }
-function planetTransitionComplete() {
+function planetMoveComplete() {
   // reattach the planet to the rootObject
   THREE.SceneUtils.attach( planet, scene, rootObject );
   
   // put the character back
   characterRotator.add(character);
-  galaxies.fx.showTeleportIn();
+  galaxies.fx.showTeleportIn(planetTransitionComplete);
   new PositionedSound( getSound('teleportin',false), rootPosition(character), 10 );
-
-  addInputListeners();
+}
+function planetTransitionComplete() {
+ addInputListeners();
   
   initLevel();
 }
@@ -2019,7 +2070,8 @@ function addObstacle( type ) {
   
   switch(type) {
     case 'asteroid':
-    //case "never":
+    //case 'never':
+    //default:
       props.speed = 0.2;
       props.tumble = true;
       props.points = 100;
@@ -2033,11 +2085,12 @@ function addObstacle( type ) {
       break;
     case 'satellite':
     //default:
-    //case "never":
+    //case 'never':
       props.speed = 0.5;
       props.spiral = 0.7;
       props.points = 250;
       props.orient = true;
+      props.explodeType = 'debris';
       
       var material = new THREE.MeshPhongMaterial();
       material.setValues( materials['satellite'] );
@@ -2360,10 +2413,11 @@ function update() {
 }
 
 function testUpdate( delta ) {
-  for (var i=0, len = testObjects.length; i<len; i++ ) {
+  /*
+   *for (var i=0, len = testObjects.length; i<len; i++ ) {
     testObjects[i].tick(delta); // particle system
-  }
-  //testObject.rotation.y = testObject.rotation.y + 1*delta;
+  }*/
+  testObject.rotation.y = testObject.rotation.y + 1*delta;
 }
 
 
@@ -2456,7 +2510,7 @@ function resetGame() {
   
   addInputListeners();
   
-  rootObject.add(planet);
+  rootObject.remove(planet);
   randomizePlanet();
   
   characterAnimator.updateFrame(0);
@@ -2579,22 +2633,6 @@ function rootPosition( object ) {
 
 
 
-// DEBUG
-function toggleAudio( value ) {
-  //console.log("toggleAudio", value);
-  if ( value ) {
-    ufo.ufoSound.sound.muteVolume.gain.value = 1;
-  } else {
-    ufo.ufoSound.sound.muteVolume.gain.value = 0;
-  }
-}
-function toggleSoundField( value ) {
-  if ( value ) {
-    soundField.setVolume(0.24);
-  } else {
-    soundField.setVolume(0);
-  }
-}
 
 function manualRestart() {
   var debugFormElement = document.getElementById("debugForm");
@@ -2618,16 +2656,18 @@ galaxies.fx = (function() {
   var CHARACTER_FLY_SPEED = 5;
   var CHARACTER_TUMBLE_SPEED = 3;
   
+
+  var rubbleMaterial = new THREE.MeshLambertMaterial( {
+    color: 0x847360,
+    opacity: 1.0,
+    transparent: true } );
   
-  var Rubble = function() {
-    var rubbleMaterial = new THREE.MeshLambertMaterial( {
-      color: 0x847360,
-      opacity: 1.0,
-      transparent: true } );
+  var Rubble = function( geometry, material, scale ) {
     
-    this.object = new THREE.Mesh( geometries['asteroid'], rubbleMaterial );
-    var scale = Math.random() * 0.1 + 0.05;
+    this.object = new THREE.Mesh( geometry, material.clone());
+    scale = scale * ( Math.random() + 0.5 );
     this.object.scale.set( scale, scale, scale );
+    this.object.rotation.set( THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2) );
     this.velocity = new THREE.Vector3(0,0,0);
     this.rotationAxis = new THREE.Vector3( Math.random()-0.5, Math.random()-0.5, Math.random()-0.5 );
     this.rotationAxis.normalize();
@@ -2692,6 +2732,12 @@ galaxies.fx = (function() {
   var rubbleSetSize = 8; // How many pieces to use for each exploding roid
   var rubblePoolSize = 24;
   
+  // Debris objects for satellite destruction
+  var debrisPool = [];
+  var debrisIndex = 0;
+  var debrisSetSize = 8;
+  var debrisPoolSize = 16;
+  
   var planetRubbleHolder;
   var planetParticleGroups = [];
   
@@ -2699,6 +2745,10 @@ galaxies.fx = (function() {
   var fireworksGroup;
   
   var teleportEmitter, teleportGroup;
+  var teleportSprite, teleportAnimator;
+  var TELEPORT_TIME_MS = 1500;
+  var TELEPORT_TIME_HALF_MS = TELEPORT_TIME_MS/2;
+  var teleporting = false;
   
   var init = function() {
     
@@ -2719,8 +2769,14 @@ galaxies.fx = (function() {
     
     // Rubble objects
     for (var i=0; i<rubblePoolSize; i++ ) {
-      var rubbleObject = new Rubble();
+      var rubbleObject = new Rubble( geometries['asteroid'], rubbleMaterial, 0.1 );
       rubblePool[i] = rubbleObject;
+    }
+    
+    // Debris objects
+    for (var i=0; i<debrisPoolSize; i++ ) {
+      var debrisObject = new Rubble( geometries['debris'], materials['debris'], 0.2 );
+      debrisPool[i] = debrisObject;
     }
     
     // Comet explode particles
@@ -2822,6 +2878,30 @@ galaxies.fx = (function() {
     groupFire.mesh.position.set( 0,0,0.1 );
     planetParticleGroups.push(groupFire);
 
+    
+    // teleport
+    var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
+    teleportAnimator = new galaxies.SpriteSheet(
+      characterMap,
+      [ [176,680,172,224,0,4,81.35],
+        [350,680,172,224,0,4,81.35],
+        [524,680,172,224,0,4,81.35],
+        [698,680,172,224,0,4,81.35]    
+        ], 
+      30
+      );
+    characterMap.needsUpdate = true;
+    
+    var characterMaterial = new THREE.SpriteMaterial({
+      map: characterMap,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.0
+    } );
+    teleportSprite = new THREE.Sprite( characterMaterial );
+    teleportSprite.position.z = 0.1; // must appear in front of base character sprite
+    
+    /*
     var teleportParticles = {
       type: 'sphere',
       radius: 0.6,
@@ -2846,7 +2926,7 @@ galaxies.fx = (function() {
     });
     teleportEmitter = new SPE.Emitter( teleportParticles );
     teleportGroup.addEmitter( teleportEmitter );
-    
+    */
   } // init
   
   var showFireworks = function( position ) {
@@ -2894,8 +2974,16 @@ galaxies.fx = (function() {
   }
   
   var showRubble = function( position, velocity ) {
-    for ( var i=0; i<rubbleSetSize; i++ ) {
-      var rObject = rubblePool[rubbleIndex];
+    rubbleIndex = showObjects( rubblePool, rubbleSetSize, rubbleIndex, position, velocity );
+  }
+  
+  var showDebris = function( position, velocity ) {
+    debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity );
+  }
+  var showObjects = function( set, setSize, index, position, velocity ) {
+    var poolSize = set.length;
+    for ( var i=0; i<setSize; i++ ) {
+      var rObject = set[index];
       rObject.object.position.copy( position );
       rObject.object.position.add( new THREE.Vector3( THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5) ) );
       rootObject.add( rObject.object );
@@ -2907,9 +2995,10 @@ galaxies.fx = (function() {
       
       rObject.reset();
       
-      rubbleIndex ++;
-      if ( rubbleIndex >= rubblePoolSize ) { rubbleIndex = 0; }
+      index++;
+      if ( index >= poolSize ) { index = 0; }
     }
+    return index;
   }
   
   var showPlanetSplode = function() {
@@ -2960,6 +3049,21 @@ galaxies.fx = (function() {
   }
   
   var showTeleportOut = function() {
+    character.add( teleportSprite );
+    teleportSprite.material.rotation = character.material.rotation;
+    teleportSprite.material.opacity = 0;
+    teleportAnimator.play(-1); // negative loop count will loop indefinitely
+    
+    // fade in and out
+    createjs.Tween.removeTweens( teleportSprite.material );
+    createjs.Tween.get( teleportSprite.material )
+      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
+      .set( { opacity: 0 }, character.material )
+      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
+      .call( teleportEffectComplete, this );
+    
+    teleporting = true;
+    /*
     character.parent.add( teleportGroup.mesh );
     
     //character.material.blending = THREE.AdditiveBlending;
@@ -2972,10 +3076,32 @@ galaxies.fx = (function() {
     teleportGroup.mesh.position.y -= 0.5;
     teleportEmitter.active = 1.0;
     teleportEmitter.enable();
+    */
   }
-  var showTeleportIn = function() {
-    createjs.Tween.get( character.material )
-      .to({opacity: 1}, 1000);
+  var teleportEffectComplete = function() {
+    teleportAnimator.stop();
+    teleportSprite.parent.remove(teleportSprite);
+    teleporting = false;
+    
+  }
+  var showTeleportIn = function( callback ) {
+    character.add( teleportSprite );
+    teleportSprite.material.rotation = character.material.rotation;
+    teleportSprite.material.opacity = 0;
+    teleportAnimator.play(-1); // negative loop count will loop indefinitely
+    character.material.opacity = 0;
+    
+    // fade in and out
+    createjs.Tween.removeTweens( teleportSprite.material );
+    createjs.Tween.get( teleportSprite.material )
+      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
+      .set( { opacity: 1 }, character.material )
+      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
+      .call( teleportEffectComplete, this )
+      .call( callback, this );
+      
+    teleporting = true;
+      
   }
   
   
@@ -2986,6 +3112,9 @@ galaxies.fx = (function() {
     }
     for ( var i=0; i<rubblePoolSize; i++ ) {
       rubblePool[i].update(delta);
+    }
+    for ( var i=0; i<debrisPoolSize; i++ ) {
+      debrisPool[i].update(delta);
     }
     fireworksGroup.tick(delta);
     
@@ -3000,9 +3129,12 @@ galaxies.fx = (function() {
       character.material.rotation = character.rotation.z;
     }
     
+    if ( teleporting ) {
+      teleportAnimator.update( delta );
+    }
     // teleport particles
     // TODO only update these when active
-    teleportGroup.tick(delta );
+    // teleportGroup.tick(delta );
   }
   
   var shakeCamera = function( magnitude, duration ) {
@@ -3039,7 +3171,8 @@ galaxies.fx = (function() {
     showPlanetSplode: showPlanetSplode,
     showTeleportOut: showTeleportOut,
     showTeleportIn: showTeleportIn,
-    shakeCamera: shakeCamera
+    shakeCamera: shakeCamera,
+    showDebris: showDebris
   };
 })();
 'use strict';
@@ -3055,14 +3188,14 @@ this.galaxies = this.galaxies || {};
 
 this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCallback ) {
   var assetManifest = [];
-
-  // sniff!
-  var canPlayEC3 = galaxies.utils.supportsEC3();
-  var canPlayOGG = true;
   
-  var ext = '.ogg';
-  if ( canPlayEC3 ) { ext = '.ec3'; }
-  else if ( !canPlayOGG ) { ext = '.aac'; }
+  // Set audio extension
+  var ext;
+  if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }
+  else { ext = '.m4a'; }
+  
+  console.log("Audio extension selected:", ext );
   
   // Add audio files
   // Note that audio files are added as binary data because they will need to be decoded by the web audio context object.
@@ -3090,7 +3223,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'teleportout', src: 'teleport_gliss_down_effect', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit1', src: 'metal_hit1', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit2', src: 'metal_hit2', type: createjs.AbstractLoader.BINARY },
-    { id: 'metalhit3', src: 'metal_hit3', type: createjs.AbstractLoader.BINARY }
+    { id: 'metalhit3', src: 'metal_hit3', type: createjs.AbstractLoader.BINARY },
+    { id: 'titlewoosh', src:'whoosh', type: createjs.AbstractLoader.BINARY }
     
     
   ];
@@ -3108,6 +3242,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
     { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
     { id: 'lux', src: 'lux.png' },
+    { id: 'trunkford', src: 'trunkford.png' },
     { id: 'projhitparticle', src: 'hit_sprite.png' },
     { id: 'asteroidcolor', src:'asteroid_color.jpg' },
     { id: 'asteroidnormal', src:'asteroid_normal.jpg' },
@@ -3122,7 +3257,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'title1', src: 'title_01_luxurious_animals.png' },
     { id: 'title2', src: 'title_02_luxamillion.png' },
     { id: 'title3', src: 'title_03_dolby.png' },
-    { id: 'title4', src: 'title_04_trunkford.png' }
+    { id: 'title4', src: 'title_04_trunkford.png' },
+    { id: 'titleExtra2', src: 'title_luxamillion_planet.png' },
+    { id: 'titleExtra4', src: 'title_trunkford_in_ufo.png' }
+    
     
   ];
   for (var i=0; i<imageItems.length; i++ ) {
@@ -3137,7 +3275,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'asteroidmodel', src: 'models/asteroid01.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'projmodel', src: 'models/shuttlecock.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'satellitemodel', src: 'models/mercury_pod.obj', type: createjs.AbstractLoader.TEXT },
-    { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT }
+    { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT },
+    { id: 'satellitedebrismodel', src: 'models/pod_chunk.obj', type: createjs.AbstractLoader.TEXT }
     
   );
   
@@ -3288,6 +3427,7 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
   
   var frameIndex = 0;
   var timer = 0;
+  var loopCounter;
   
   var width = texture.image.width;
   var height = texture.image.height;
@@ -3323,22 +3463,33 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
     
     if ( newFrameIndex > frameIndex ) {
       if ( newFrameIndex >= this.frames.length ) {
-        // animation complete
-        //console.log("animation complete");
-        frameIndex = 0;
-        this.updateFrame( frameIndex );
-        playing = false;
+        loopCounter--;
+        newFrameIndex = 0;
+        timer = 0;
+      }
+      if ( loopCounter === 0 ) { // animation complete
+        this.stop();
         return;
       }
       this.updateFrame(newFrameIndex );
     }
   }
   
-  this.play = function() {
+  this.play = function( loops ) {
+    if ( typeof(loops) === 'undefined' ) {
+      loops = 1;
+    }
+    loopCounter = loops;
     timer = 0;
     frameIndex = 0;
     playing = true;
     //console.log("play animation");
+  }
+  
+  this.stop = function() {
+    frameIndex = 0;
+    this.updateFrame( frameIndex );
+    playing = false;
   }
   
   this.updateFrame(0);
@@ -3419,12 +3570,26 @@ galaxies.TitleSequence = function() {
   var titleTransition = function() {
     createjs.Tween.removeTweens( titleHub.rotation );
     createjs.Tween.get( titleHub.rotation )
-      .wait(2000)
-      .to( { x: 2*Math.PI/4 }, 250 )
+      .wait(TITLE_TIME_MS)
+      .to( { x: 2*Math.PI/4 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadIn )
       .to( { x: -1*Math.PI/4 }, 0 )
       .call( nextTitle )
-      .to( { x: 0 }, 250 )
-      .call( checkTitleSequence )
+      .to( { x: 0 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadOut )
+      .call( checkTitleSequence );
+    
+    createjs.Tween.removeTweens( titlePivot.rotation );
+    createjs.Tween.get( titlePivot.rotation )
+      .wait(TITLE_TIME_MS)
+      .to( { z: Math.PI/4 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadIn )
+      .to( { z: -Math.PI/4 }, 0)
+      .to( { z: 0 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadOut );
+    
+    var start = rootObject.rotation.x;
+    createjs.Tween.removeTweens( rootObject.rotation );
+    createjs.Tween.get( rootObject.rotation )
+      .wait(TITLE_TIME_MS)
+      .to( { x: start - Math.PI/4 }, TRANSITION_TIME_MS, createjs.Ease.quadInOut );
+    
   }
   var nextTitle = function() {
     currentTitleIndex ++;
@@ -3434,6 +3599,10 @@ galaxies.TitleSequence = function() {
     title.material = titles[currentTitleIndex];
     title.position.set( 0, -TITLE_OFFSET, 0 );
     title.scale.set( title.material.map.image.width/titleScale, title.material.map.image.height/titleScale , 1 );
+    
+    if ( titleExtra != null ) { titleHub.remove( titleExtra ); }
+    titleExtra = titleExtras[currentTitleIndex];
+    if ( titleExtra!=null ) { titleHub.add( titleExtra ); }
   }
   var checkTitleSequence = function() {
     if ( currentTitleIndex < (titles.length-1) ) {
@@ -3446,15 +3615,27 @@ galaxies.TitleSequence = function() {
   var driftSpeed = 0.05;
   
   var titleFrameRequest;
+  var titleRoot; // the root object
+  
+  var TITLE_TIME_MS = 2000;
+  var TRANSITION_TIME_MS = 500;
+  var TRANSITION_TIME_HALF_MS = TRANSITION_TIME_MS/2;
   
   
   var TITLE_HUB_OFFSET = 100;
   var TITLE_OFFSET = TITLE_HUB_OFFSET - 5;
   
+  var titlePivot = new THREE.Object3D();
+  titlePivot.position.set(0,0,0);
+  titleRoot = titlePivot;
+  
   var titleHub = new THREE.Object3D();
   titleHub.position.set( 0, TITLE_HUB_OFFSET, 0 );
+  titlePivot.add( titleHub );
   
-  var titles = [];
+  var titles = []; // Title sprite materials
+  var titleExtras = []; // Sprite objects
+  var titleExtra; // Reference to current object
   var currentTitleIndex = 0;
   
   var titleImageIds = ['title5', 'title1', 'title2', 'title3', 'title4', 'title5'];
@@ -3478,12 +3659,35 @@ galaxies.TitleSequence = function() {
   var title = new THREE.Sprite( titles[0] );
   titleHub.add( title );
 //titles[i].rotateOnAxis(titleRotationAxis, i * 0.1);//PI_2/len );
-    
+  
+  var extraTexture2 = new THREE.Texture( galaxies.queue.getResult( 'titleExtra2' ) );
+  extraTexture2.needsUpdate = true;
+  titleExtras[2] = new THREE.Sprite(
+    new THREE.SpriteMaterial( {
+      color: 0xffffff,
+      map: extraTexture2
+    } )
+  );
+  titleExtras[2].position.set(13,-TITLE_OFFSET,6);
+  titleExtras[2].scale.set( titleExtras[2].material.map.image.width/70, titleExtras[2].material.map.image.height/70, 1 );
+  
+  var extraTexture4 = new THREE.Texture( galaxies.queue.getResult( 'titleExtra4' ) );
+  extraTexture4.needsUpdate = true;
+  titleExtras[4] = new THREE.Sprite(
+    new THREE.SpriteMaterial( {
+      color: 0xffffff,
+      map: extraTexture4
+    } )
+  );
+  titleExtras[4].position.set(16,-TITLE_OFFSET,4);
+  titleExtras[4].scale.set( titleExtras[4].material.map.image.width/60, titleExtras[4].material.map.image.height/60, 1 );
+  
   updateTitleSprite();
 
   
   var activate = function() {
-    rootObject.add( titleHub );
+    rootObject.add( titleRoot );
+    
     clock.start();
     createjs.Ticker.paused = false;
     
@@ -3509,14 +3713,19 @@ galaxies.TitleSequence = function() {
   
   
   var deactivate = function() {
-    rootObject.remove( titleHub );
+    rootObject.remove( titleRoot );
     clock.stop();
     
     if ( titleFrameRequest != null ) {
       window.cancelAnimationFrame(titleFrameRequest);
       titleFrameRequest = null;
     }
-    // stop camera motion
+    
+    // stop motion
+    createjs.Tween.removeTweens( titleHub.rotation );
+    createjs.Tween.removeTweens( titlePivot.rotation );
+    createjs.Tween.removeTweens( rootObject.rotation );
+    
   }
 
   var animateTitle = function() {
@@ -3524,11 +3733,14 @@ galaxies.TitleSequence = function() {
     updateTitle();
   };
   
+  // Tick function
+  // TODO - drift functionality is repeated from game loop... should be common somehow.
   var updateTitle = function() {
     var delta = clock.getDelta();
     if ( delta===0 ) { return; } // paused!
     
-    rootObject.rotateOnAxis( driftAxis, driftSpeed * delta );
+    driftObject.rotateOnAxis( driftAxis, driftSpeed * delta );
+    title.material.rotation = titlePivot.rotation.z; // match lean angle of wheel
     
     renderer.render( scene, camera );
   }
@@ -3576,6 +3788,23 @@ this.galaxies.Ufo = function() {
   
   this.object.add( this.model );
   
+  var trunkMap = new THREE.Texture( galaxies.queue.getResult('trunkford') );
+  trunkMap.needsUpdate = true;
+  var trunkMat = new THREE.MeshLambertMaterial({
+    map: trunkMap,
+    color: 0xffffff,
+    transparent: true,
+    //depthTest: false,
+    //depthWrite: false,
+    side: THREE.DoubleSide
+  } );
+  //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
+  var trunkford = new THREE.Mesh( new THREE.PlaneGeometry(1.23,1), trunkMat ); // 1.23 is aspect ratio of texture
+  trunkford.position.set( 0, 0.4, 0.4 );
+  trunkford.scale.set(0.6, 0.6, 1);
+  trunkford.rotation.set( 0, Math.PI, 0 );
+  this.model.add( trunkford );
+  
   var anchor = new THREE.Object3D();
   anchor.add( this.object );
   
@@ -3583,6 +3812,9 @@ this.galaxies.Ufo = function() {
   var stepTimer = 0;
   var stepTime = 0;
   var transitionTime = 0;
+  
+  var hitCounter = 0;
+  var HITS = 2;
   
   var angle = Math.random() * PI_2; // random start angle
   var angularSpeed = 0.7;
@@ -3618,6 +3850,39 @@ this.galaxies.Ufo = function() {
   var laserChargeEmitter = new SPE.Emitter( laserChargeParticles );
   laserChargeGroup.addEmitter( laserChargeEmitter );
   laserChargeGroup.mesh.position.x = -0.5;
+  
+  
+  var smokeParticles = {
+    type: 'cube',
+    acceleration: new THREE.Vector3(0,0,-3),
+    velocity: new THREE.Vector3(0, -2, 0),
+    velocitySpread: new THREE.Vector3(1, 1, 1),
+    //speedSpread: 5,
+    sizeStart: 3,
+    sizeStartSpread: 1,
+    sizeEnd: 3,
+    opacityStart: 1,
+    opacityEnd: 0,
+    colorStart: new THREE.Color(0.600, 0.600, 0.600),
+    colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
+    colorEnd: new THREE.Color(0.200, 0.200, 0.200),
+    particlesPerSecond: 10,
+    particleCount: 50,
+    alive: 0.0,
+    duration: null//0.1
+  };
+  var smokeTexture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
+  smokeTexture.needsUpdate = true;
+  var smokeGroup = new SPE.Group({
+    texture: smokeTexture,
+    maxAge: 2,
+    blending: THREE.NormalBlending
+  });
+  var smokeEmitter = new SPE.Emitter( smokeParticles );
+  smokeGroup.addEmitter( smokeEmitter );
+  this.object.add( smokeGroup.mesh );
+  
+  
   
   //rootObject.add( laserChargeGroup.mesh );
   this.object.add( laserChargeGroup.mesh );
@@ -3730,7 +3995,7 @@ this.galaxies.Ufo = function() {
         this.isHittable = true;
         
         // Tip to attack posture
-        this.model.rotation.y = Math.PI/2;
+        this.model.rotation.y = Math.PI/3;
         createjs.Tween.removeTweens( this.model.rotation );
         createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
         
@@ -3824,6 +4089,7 @@ this.galaxies.Ufo = function() {
     //
     
     laserChargeGroup.tick(delta);
+    smokeGroup.tick(delta);
     
     /*
     if ( angle > stepAngle ) {
@@ -3868,6 +4134,9 @@ this.galaxies.Ufo = function() {
     var shortAngle = ((angle) + Math.PI) % PI_2 - Math.PI;
     angle = shortAngle;
     lastAngle = angle;
+    
+    targetAngle = (Math.floor(angle / Math.PI) + 1 ) * Math.PI;
+    /*
     if ( Math.abs( shortAngle ) < Math.PI/2 ) {
       targetAngle = 0;
     } else {
@@ -3876,21 +4145,26 @@ this.galaxies.Ufo = function() {
       } else {
         targetAngle = Math.PI;
       }
-    }
+    }*/
     
     // Tip to show bubble
     createjs.Tween.removeTweens( this.model.rotation );
-    createjs.Tween.get(this.model.rotation).to({y: Math.PI/2}, 2000, createjs.Ease.quadIn );
+    createjs.Tween.get(this.model.rotation).to({y: Math.PI/3}, 2000, createjs.Ease.quadIn );
     
     console.log( 'orbit -> out' );
   }
   
   this.hit = function() {
-    this.leave();
+    hitCounter++;
+    if ( hitCounter >= HITS ) {
+      this.leave();
+      
+      // score is scaled by how far away you hit the ufo.
+      showCombo( this.points * (3-step), this.object );
+    }
     
-    // score is scaled by how far away you hit the ufo.
-    showCombo( this.points * (3-step), this.object );
-    
+    smokeEmitter.alive = 1.0;
+        
     // play sound
     new PositionedSound( getSound('ufohit',false), rootPosition(this.object), 1 );
     //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
@@ -3901,6 +4175,10 @@ this.galaxies.Ufo = function() {
   this.reset = function() {
     state = 'idle';
     stepTimer = 0;
+    
+    hitCounter = 0;
+    smokeEmitter.alive = 0.0;
+
     
     if ( isGameOver ) {
       this.deactivate();
@@ -3970,6 +4248,10 @@ galaxies.ui = (function() {
   var loadRing = uiHolder.querySelector(".progress-ring");
   var playHolder = uiHolder.querySelector(".play-place");
   var playButton = uiHolder.querySelector(".play-button");
+  
+  // recommend buttons
+  var recommendSafari = loadingHolder.querySelector(".recommend-safari");
+  var recommendEdge = loadingHolder.querySelector(".recommend-edge");
   
   // audio controls
   var audioControls = loadingHolder.querySelector(".audio-controls");
@@ -4088,6 +4370,15 @@ galaxies.ui = (function() {
     
 
   
+    logoAppear();
+    
+    galaxies.utils.testAudioSupport( startLoad );
+    
+    // set background animation keyframe based on window size
+    // update this when window is resized
+  }
+  
+  var startLoad = function() {
     
     var handleComplete = function() {
       // Initialize audio context before showing audio controls
@@ -4106,11 +4397,6 @@ galaxies.ui = (function() {
     
     galaxies.loadAssets( handleProgress, handleComplete );
     
-    logoAppear();
-  
-    
-    // set background animation keyframe based on window size
-    // update this when window is resized
   }
   
   var initBgKeyframes = function() {
@@ -4146,7 +4432,6 @@ galaxies.ui = (function() {
       }
     }
       
-    
     // rule not found
     return null;
   }
@@ -4154,11 +4439,25 @@ galaxies.ui = (function() {
   
   var transitionToMenu = function() {
     console.log("Transition loading layout to main menu.");
+    
+    // Start the music
+    soundField = new SoundField( getSound('music') );
+    soundField.setVolume(0.24); // 0.24
+    
     /*
     var test = document.createElement( 'img' );
     test.src = galaxies.queue.getResult('lux').src;
     document.getElementById('menuHolder').appendChild(test);
     */
+    
+    // Turn on the appropriate recommend link
+    if ( !galaxies.utils.supportsEC3 ) {
+      if ( galaxies.utils.isOSX() ) {
+        recommendSafari.classList.remove('hidden');
+      } else if ( galaxies.utils.isWindows() ) {
+        recommendEdge.classList.remove('hidden');
+      }
+    }
     
     // transition load indicator to play button
     progressElement.style.left = 0;
@@ -4275,6 +4574,18 @@ galaxies.ui = (function() {
   }
   
   var onClickMute = function(e) {
+    // Change the mute state
+    toggleMuteState();
+    
+    // Update the button class
+    if ( muteState === 'music' ) {
+      
+    } else if ( muteState === 'all' ) {
+      
+    } else {
+      
+    }
+    
     console.log("Toggle mute");
   }
   
@@ -4377,24 +4688,67 @@ this.galaxies.utils.getShakeEase = function ( frequency ) {
   };
 };
 
-this.galaxies.utils.supportsEC3 = function() {
-  var codecString = 'audio/mp4; codecs="ec-3"';
+// Identify desktop platforms to recommend correct browser with EC-3.
+this.galaxies.utils.isOSX = function() {
+  var agt = navigator.userAgent;
+  return ( /Mac OS X/.test(agt) );
+}
+this.galaxies.utils.isWindows = function() {
+  var agt = navigator.userAgent;
+  return ( /Windows/.test(agt) && !/phone/i.test(agt) );
+}
+
+
+
+// Identify which audio format to use.
+this.galaxies.utils.testAudioSupport = function( callback ) {
+  // Has test been run?
+  if ( typeof( galaxies.utils.supportsOGG ) !== 'undefined' ) {
+    return;
+  }
   
-  if ( (typeof MediaSource !== 'undefined') ) {
-    return MediaSource.isTypeSupported( codecString );
+  // Test OGG
+  var oggTester = document.createElement("audio"); // Construct new Audio object
+  var codecString = 'audio/ogg;codecs="vorbis"';
+  galaxies.utils.supportsOGG = (oggTester.canPlayType(codecString)==='probably'); // cast to boolean
+  console.log( "Supports OGG?", galaxies.utils.supportsOGG );
+  //
+  
+  // Test EC-3
+  // Note: Feature detection with MediaSource returns incorrect result in Safari 8. 
+  // This code was created by Dolby.
+  // https://github.com/DolbyDev/Browser_Feature_Detection
+  var video = document.createElement('video');
+
+  if (video.canPlayType('audio/mp4;codecs="ec-3"') === '' || video.canPlayType('audio/mp4;codecs="ac-3"') === '') {
+      galaxies.utils.supportsEC3 = false;
+      callback();
   } else {
-    var testEl = document.createElement( "video" );
-    if ( testEl.canPlayType ) {
-      return ( ( 'probably' === testEl.canPlayType( codecString ) ) );
-    } else {
-      return false;
-    }
+      var audio = new Audio();
+      audio.muted = true;
+      audio.addEventListener('error', function () {
+          galaxies.utils.supportsEC3 = false;
+          callback();
+      }, false);
+      audio.addEventListener('seeked', function () {
+          galaxies.utils.supportsEC3 = true;
+          callback();
+      }, false);
+
+      audio.addEventListener('canplaythrough', function () {
+          try {
+              audio.currentTime = 2;
+          } catch (e) {
+          }
+      }, false);
+      audio.src = '/assets/silence.mp4';
+      audio.play();
   }  
 }
 
 
 
-// Patch SPE to allow negative speeds to make particles move inwards.
+// Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
 SPE.Emitter.prototype.randomizeExistingVelocityVector3OnSphere = function( v, base, position, speed, speedSpread ) {
         v.copy( position )
