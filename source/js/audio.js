@@ -17,7 +17,8 @@ var listener;
 var listenerObject;
 
 var soundField;
-
+var outNode;
+var muteState = 'none'; // Designates which audio is muted: none, music, all
 
 // collection of AudioBuffer objects
 var loadedSounds = {};
@@ -64,7 +65,8 @@ var sounds = {
   'planetsplode': ['planetsplode'],
   'teleportin': ['teleportin'],
   'teleportout': ['teleportout'],
-  'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ]
+  'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ],
+  'titlewoosh': ['titlewoosh']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
@@ -77,6 +79,9 @@ function initAudio( complete ) {
   console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
   console.log( 0 !== null );
   
+  // Global mute
+  outNode = audioCtx.createGain();
+  outNode.connect( audioCtx.destination );
 
   var onComplete = complete;
 
@@ -348,12 +353,12 @@ function PositionedSound( source, position, baseVolume ) {
     }
     this.channels = [];
     if ( this.combiner != null ) {
-      this.combiner.disconnect( audioCtx.destination );
+      this.combiner.disconnect( outNode );
       this.combiner = null;
     }
     if ( this.panner!=null ) {
       this.preAmp.disconnect( this.panner );
-      this.panner.disconnect( audioCtx.destination );
+      this.panner.disconnect( outNode );
       this.panner = null;
     }
     //
@@ -368,7 +373,7 @@ function PositionedSound( source, position, baseVolume ) {
         newGainNode.connect( this.combiner, 0, i );
         this.channels[i] = newGainNode;
       }
-      this.combiner.connect(audioCtx.destination);
+      this.combiner.connect(outNode);
     } else { 
       // initialize stereo mix
       this.panner = audioCtx.createPanner();
@@ -381,7 +386,7 @@ function PositionedSound( source, position, baseVolume ) {
       this.panner.coneOuterAngle = 0;
       this.panner.coneOuterGain = 0;
       this.preAmp.connect( this.panner );
-      this.panner.connect( audioCtx.destination );
+      this.panner.connect( outNode );
     }
   }
   
@@ -687,7 +692,7 @@ function SoundField( source ) {
   var splitter = audioCtx.createChannelSplitter(6);
   volumeNode.connect( splitter );
   var combiner = audioCtx.createChannelMerger(6);
-  combiner.connect(audioCtx.destination);
+  combiner.connect(outNode);
   
   this.gains = [];
   
@@ -755,6 +760,37 @@ function toggleTargetMix( value ) {
   }
 }
 
+
+function toggleMuteState() {
+  if ( muteState === 'none' ) {
+    muteState = 'music';
+    setAllMute( false );
+    setMusicMute( true );
+  } else if ( muteState === 'music' ) {
+    muteState = 'all';
+    setAllMute( true );
+  } else {
+    muteState = 'none'
+    setAllMute( false );
+  }
+}
+
+function setAllMute( mute ) {
+  setMusicMute( false );
+  if ( mute ) {
+    outNode.gain.value = 0;
+  } else {
+    outNode.gain.value = 1;
+  }
+}
+
+function setMusicMute( mute ) {
+  if ( mute ) {
+    soundField.setVolume(0);
+  } else {
+    soundField.setVolume(0.24);
+  }
+}
 
 
 

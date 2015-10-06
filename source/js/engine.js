@@ -39,7 +39,7 @@ var cameraViewAngle = 45; // Will be applied to smallest screen dimension, horiz
 var projectileSpeed = 3.0;
 var speedScale = 1;
 
-var ROUNDS_PER_PLANET = 3;
+var ROUNDS_PER_PLANET = 3; // 3
 
 var SHOOT_TIME = 0.4;
 var PROJ_HIT_THRESHOLD = 0.7;
@@ -185,6 +185,9 @@ function initScene() {
   //renderer.setSize( 640, 480 );
   container.appendChild( renderer.domElement );
   
+  window.addEventListener( 'resize', onWindowResize, false );
+  onWindowResize();
+
 }
 
 function initGame() {
@@ -202,6 +205,9 @@ function initGame() {
   var ufomodel = objLoader.parse( galaxies.queue.getResult('ufomodel') );
   //geometries['ufo'] = ufomodel.children[0].geometry;
   geometries['ufo'] = ufomodel;
+  var debrismodel = objLoader.parse( galaxies.queue.getResult('satellitedebrismodel') );
+  geometries['debris'] = debrismodel.children[0].geometry;
+  
   
   /*
   ufomodel.traverse( function ( child ) {
@@ -287,6 +293,15 @@ function initGame() {
       shading: THREE.SmoothShading
   } );
   
+  materials['debris'] = new THREE.MeshPhongMaterial( {
+    color: 0x999999,
+    specular: 0x202020,
+    shininess: 50,
+    opacity: 1,
+    transparent: true,
+    shading: THREE.SmoothShading
+  });
+
   
   
   
@@ -363,7 +378,6 @@ function initGame() {
   var characterMaterial = new THREE.SpriteMaterial({
     map: characterMap,
     color: 0xffffff,
-    depthTest: false,
     transparent: true,
     opacity: 1.0
   } );
@@ -373,7 +387,6 @@ function initGame() {
   character.scale.set(CHARACTER_HEIGHT*0.77, CHARACTER_HEIGHT, CHARACTER_HEIGHT * 0.77); // 0.77 is the aspect ratio width/height of the sprites
   //character.scale.set(5, 5, 5);
   characterRotator.add( character );
-  
 
   addInputListeners();
 
@@ -426,11 +439,13 @@ function initGame() {
   debugFormElement.querySelector("button[name='restart']").addEventListener('click', manualRestart );
   
   galaxies.fx.init( scene );
-  
-  startGame();
-  
+
+
   // TEST
   //addTestObject();
+
+  
+  startGame();
   
   /*
   window.setInterval( function() {
@@ -440,11 +455,12 @@ function initGame() {
   */
   
   //
-}
+} // initGame
 
 var testObjects = [];
+var testObject;
 function addTestObject() {
-  /*
+  
   //var colorMap = new THREE.Texture( galaxies.queue.getResult('asteriodColor'), THREE.UVMapping );
   var colorMap = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
   colorMap.needsUpdate = true;
@@ -461,12 +477,14 @@ function addTestObject() {
       shading: THREE.SmoothShading //THREE.FlatShading
       } );
   
-  testObject = new THREE.Mesh( geometries['asteroid'], material );
+  testObject = new THREE.Mesh( geometries['debris'], materials['debris'] );
   testObject.position.set( 0, 0, 10 );
   rootObject.add( testObject );
   var scale = 10;
   testObject.scale.set( scale, scale, scale );
-  */
+  
+  console.log( "Test Object", testObject);
+  
   /*
   var emitterSettings = {
         type: 'sphere',
@@ -551,30 +569,16 @@ function addTestObject() {
       testObjects.push(particleGroup2);
       */
       
-      
+      /*
       window.setInterval( function() {
         gameOver();
         
-        /*
-        particleGroup1.triggerPoolEmitter(1);
-        particleGroup2.triggerPoolEmitter(1);
-        galaxies.fx.showPlanetRubble();
-        */
         
       }, 3000 );
       
 
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+      */
       
       
       
@@ -598,17 +602,13 @@ function startGame() {
   listener.setOrientation(0,0,-1,0,1,0);
   listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
-  soundField = new SoundField( getSound('music') );
-  soundField.setVolume(0); // 0.24
-  //
-  
   ufo = new galaxies.Ufo();
   
   resetGame();
-  initLevel();
+  removeInputListeners();
+  startPlanetMove();
+  //initLevel();
 
-  window.addEventListener( 'resize', onWindowResize, false );
-  onWindowResize();
 
   gameInitialized = true;
   
@@ -623,12 +623,16 @@ function restartGame() {
 
   galaxies.ui.showPauseButton(); // is hidden by game over menu
 
-  // show permanent game objects
-  rootObject.add(planet);
+  // planet will be added by initial transition
+  rootObject.remove(planet);
+
+  // add character holder
   rootObject.add( characterRotator );
   
-  planetTransition(); // for testing purposes
-  initLevel();
+  //planetTransition(); // for testing purposes
+  removeInputListeners();
+  startPlanetMove();
+  //initLevel();
   
   createjs.Ticker.paused = false;
   clock.start();
@@ -640,7 +644,7 @@ function restartGame() {
 
 function initLevel() {
   
-  levelTime = 25;// + (5*level);
+  levelTime = 15;//25;// + (5*level);
   levelTimer = 0;
   levelComplete = false;
   
@@ -668,8 +672,8 @@ function initLevel() {
   
   // Counts for obstacles start low and asymptote to a max value.
   // Max values are first integer in formula. Initial value is first integer minus second integer.
-  var asteroidCount = Math.floor( 20 - (15 * (1/(1 + (level-1) * 0.3)) ) );
-  var satelliteCount = Math.floor( 8 - (6 * (1/(1 + (level-1) * 0.2)) ) );
+  var asteroidCount = Math.floor( 20 - (15 * (1/(1 + (level-1) * 0.1)) ) );
+  var satelliteCount = Math.floor( 8 - (6 * (1/(1 + (level-1) * 0.1)) ) );
   var cometCount = Math.floor( 8 - (7 * (1/(1 + (level-1) * 0.1)) ) );
   for ( var i=0; i<asteroidCount; i++ ) {
     addObstacle( 'asteroid' );
@@ -748,7 +752,11 @@ function startPlanetMove() {
   characterRotator.remove(character);
   
   // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
-  THREE.SceneUtils.detach (planet, rootObject, scene);
+  // Note that for first level, there is no planet to move out, so we check if the planet is active
+  // before performing the detach.
+  if ( planet.parent != null ) {
+    THREE.SceneUtils.detach (planet, rootObject, scene);
+  }
   
   // Set outbound end position and inbound starting position for planet
   var outPosition = rootObject.localToWorld( new THREE.Vector3(0,0,-100) );
@@ -760,7 +768,10 @@ function startPlanetMove() {
   createjs.Tween.get( planet.position )
     .to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut)
     .to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0)
-    .call(randomizePlanet, null, this)
+    .call( function() {
+      scene.add( planet ); // First level planet must be added here
+      randomizePlanet();
+    }, null, this)
     .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
   
   // Swing the world around
@@ -768,7 +779,7 @@ function startPlanetMove() {
   var targetX = rootObject.rotation.x + Math.PI/2;
   createjs.Tween.get( rootObject.rotation )
     .to({x:targetX}, transitionTimeMilliseconds, createjs.Ease.quadInOut )
-    .call(planetTransitionComplete);
+    .call(planetMoveComplete);
   
   // Stop drifting in the x-axis to prevent drift rotation from countering transition.
   // This ensures planet will move off-screen during transition.
@@ -776,16 +787,17 @@ function startPlanetMove() {
   //driftAxis.normalize();
   //driftSpeed = 0;
 }
-function planetTransitionComplete() {
+function planetMoveComplete() {
   // reattach the planet to the rootObject
   THREE.SceneUtils.attach( planet, scene, rootObject );
   
   // put the character back
   characterRotator.add(character);
-  galaxies.fx.showTeleportIn();
+  galaxies.fx.showTeleportIn(planetTransitionComplete);
   new PositionedSound( getSound('teleportin',false), rootPosition(character), 10 );
-
-  addInputListeners();
+}
+function planetTransitionComplete() {
+ addInputListeners();
   
   initLevel();
 }
@@ -844,7 +856,8 @@ function addObstacle( type ) {
   
   switch(type) {
     case 'asteroid':
-    //case "never":
+    //case 'never':
+    //default:
       props.speed = 0.2;
       props.tumble = true;
       props.points = 100;
@@ -858,11 +871,12 @@ function addObstacle( type ) {
       break;
     case 'satellite':
     //default:
-    //case "never":
+    //case 'never':
       props.speed = 0.5;
       props.spiral = 0.7;
       props.points = 250;
       props.orient = true;
+      props.explodeType = 'debris';
       
       var material = new THREE.MeshPhongMaterial();
       material.setValues( materials['satellite'] );
@@ -1185,10 +1199,11 @@ function update() {
 }
 
 function testUpdate( delta ) {
-  for (var i=0, len = testObjects.length; i<len; i++ ) {
+  /*
+   *for (var i=0, len = testObjects.length; i<len; i++ ) {
     testObjects[i].tick(delta); // particle system
-  }
-  //testObject.rotation.y = testObject.rotation.y + 1*delta;
+  }*/
+  testObject.rotation.y = testObject.rotation.y + 1*delta;
 }
 
 
@@ -1281,7 +1296,7 @@ function resetGame() {
   
   addInputListeners();
   
-  rootObject.add(planet);
+  rootObject.remove(planet);
   randomizePlanet();
   
   characterAnimator.updateFrame(0);
@@ -1404,22 +1419,6 @@ function rootPosition( object ) {
 
 
 
-// DEBUG
-function toggleAudio( value ) {
-  //console.log("toggleAudio", value);
-  if ( value ) {
-    ufo.ufoSound.sound.muteVolume.gain.value = 1;
-  } else {
-    ufo.ufoSound.sound.muteVolume.gain.value = 0;
-  }
-}
-function toggleSoundField( value ) {
-  if ( value ) {
-    soundField.setVolume(0.24);
-  } else {
-    soundField.setVolume(0);
-  }
-}
 
 function manualRestart() {
   var debugFormElement = document.getElementById("debugForm");

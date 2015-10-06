@@ -269,6 +269,9 @@ function Asteroid( props ) {
         case 'fireworks':
           galaxies.fx.showFireworks( this.object.position );
           break;
+        case 'debris':
+          galaxies.fx.showDebris( this.object.position, velocity );
+          break;
         case 'rubble':
         default:
           galaxies.fx.showRubble( this.object.position, velocity );

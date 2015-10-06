@@ -17,6 +17,10 @@ galaxies.ui = (function() {
   var playHolder = uiHolder.querySelector(".play-place");
   var playButton = uiHolder.querySelector(".play-button");
   
+  // recommend buttons
+  var recommendSafari = loadingHolder.querySelector(".recommend-safari");
+  var recommendEdge = loadingHolder.querySelector(".recommend-edge");
+  
   // audio controls
   var audioControls = loadingHolder.querySelector(".audio-controls");
   var stereoButton = audioControls.querySelector(".stereo-button");
@@ -134,6 +138,15 @@ galaxies.ui = (function() {
     
 
   
+    logoAppear();
+    
+    galaxies.utils.testAudioSupport( startLoad );
+    
+    // set background animation keyframe based on window size
+    // update this when window is resized
+  }
+  
+  var startLoad = function() {
     
     var handleComplete = function() {
       // Initialize audio context before showing audio controls
@@ -152,11 +165,6 @@ galaxies.ui = (function() {
     
     galaxies.loadAssets( handleProgress, handleComplete );
     
-    logoAppear();
-  
-    
-    // set background animation keyframe based on window size
-    // update this when window is resized
   }
   
   var initBgKeyframes = function() {
@@ -192,7 +200,6 @@ galaxies.ui = (function() {
       }
     }
       
-    
     // rule not found
     return null;
   }
@@ -200,11 +207,25 @@ galaxies.ui = (function() {
   
   var transitionToMenu = function() {
     console.log("Transition loading layout to main menu.");
+    
+    // Start the music
+    soundField = new SoundField( getSound('music') );
+    soundField.setVolume(0.24); // 0.24
+    
     /*
     var test = document.createElement( 'img' );
     test.src = galaxies.queue.getResult('lux').src;
     document.getElementById('menuHolder').appendChild(test);
     */
+    
+    // Turn on the appropriate recommend link
+    if ( !galaxies.utils.supportsEC3 ) {
+      if ( galaxies.utils.isOSX() ) {
+        recommendSafari.classList.remove('hidden');
+      } else if ( galaxies.utils.isWindows() ) {
+        recommendEdge.classList.remove('hidden');
+      }
+    }
     
     // transition load indicator to play button
     progressElement.style.left = 0;
@@ -321,6 +342,18 @@ galaxies.ui = (function() {
   }
   
   var onClickMute = function(e) {
+    // Change the mute state
+    toggleMuteState();
+    
+    // Update the button class
+    if ( muteState === 'music' ) {
+      
+    } else if ( muteState === 'all' ) {
+      
+    } else {
+      
+    }
+    
     console.log("Toggle mute");
   }
   

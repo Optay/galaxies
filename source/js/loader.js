@@ -11,14 +11,14 @@ this.galaxies = this.galaxies || {};
 
 this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCallback ) {
   var assetManifest = [];
-
-  // sniff!
-  var canPlayEC3 = galaxies.utils.supportsEC3();
-  var canPlayOGG = true;
   
-  var ext = '.ogg';
-  if ( canPlayEC3 ) { ext = '.ec3'; }
-  else if ( !canPlayOGG ) { ext = '.aac'; }
+  // Set audio extension
+  var ext;
+  if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }
+  else { ext = '.m4a'; }
+  
+  console.log("Audio extension selected:", ext );
   
   // Add audio files
   // Note that audio files are added as binary data because they will need to be decoded by the web audio context object.
@@ -46,7 +46,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'teleportout', src: 'teleport_gliss_down_effect', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit1', src: 'metal_hit1', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit2', src: 'metal_hit2', type: createjs.AbstractLoader.BINARY },
-    { id: 'metalhit3', src: 'metal_hit3', type: createjs.AbstractLoader.BINARY }
+    { id: 'metalhit3', src: 'metal_hit3', type: createjs.AbstractLoader.BINARY },
+    { id: 'titlewoosh', src:'whoosh', type: createjs.AbstractLoader.BINARY }
     
     
   ];
@@ -64,6 +65,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
     { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
     { id: 'lux', src: 'lux.png' },
+    { id: 'trunkford', src: 'trunkford.png' },
     { id: 'projhitparticle', src: 'hit_sprite.png' },
     { id: 'asteroidcolor', src:'asteroid_color.jpg' },
     { id: 'asteroidnormal', src:'asteroid_normal.jpg' },
@@ -78,7 +80,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'title1', src: 'title_01_luxurious_animals.png' },
     { id: 'title2', src: 'title_02_luxamillion.png' },
     { id: 'title3', src: 'title_03_dolby.png' },
-    { id: 'title4', src: 'title_04_trunkford.png' }
+    { id: 'title4', src: 'title_04_trunkford.png' },
+    { id: 'titleExtra2', src: 'title_luxamillion_planet.png' },
+    { id: 'titleExtra4', src: 'title_trunkford_in_ufo.png' }
+    
     
   ];
   for (var i=0; i<imageItems.length; i++ ) {
@@ -93,7 +98,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'asteroidmodel', src: 'models/asteroid01.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'projmodel', src: 'models/shuttlecock.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'satellitemodel', src: 'models/mercury_pod.obj', type: createjs.AbstractLoader.TEXT },
-    { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT }
+    { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT },
+    { id: 'satellitedebrismodel', src: 'models/pod_chunk.obj', type: createjs.AbstractLoader.TEXT }
     
   );
   

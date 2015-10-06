@@ -10,6 +10,7 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
   
   var frameIndex = 0;
   var timer = 0;
+  var loopCounter;
   
   var width = texture.image.width;
   var height = texture.image.height;
@@ -45,22 +46,33 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
     
     if ( newFrameIndex > frameIndex ) {
       if ( newFrameIndex >= this.frames.length ) {
-        // animation complete
-        //console.log("animation complete");
-        frameIndex = 0;
-        this.updateFrame( frameIndex );
-        playing = false;
+        loopCounter--;
+        newFrameIndex = 0;
+        timer = 0;
+      }
+      if ( loopCounter === 0 ) { // animation complete
+        this.stop();
         return;
       }
       this.updateFrame(newFrameIndex );
     }
   }
   
-  this.play = function() {
+  this.play = function( loops ) {
+    if ( typeof(loops) === 'undefined' ) {
+      loops = 1;
+    }
+    loopCounter = loops;
     timer = 0;
     frameIndex = 0;
     playing = true;
     //console.log("play animation");
+  }
+  
+  this.stop = function() {
+    frameIndex = 0;
+    this.updateFrame( frameIndex );
+    playing = false;
   }
   
   this.updateFrame(0);

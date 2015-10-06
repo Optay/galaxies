@@ -6,16 +6,18 @@ galaxies.fx = (function() {
   var CHARACTER_FLY_SPEED = 5;
   var CHARACTER_TUMBLE_SPEED = 3;
   
+
+  var rubbleMaterial = new THREE.MeshLambertMaterial( {
+    color: 0x847360,
+    opacity: 1.0,
+    transparent: true } );
   
-  var Rubble = function() {
-    var rubbleMaterial = new THREE.MeshLambertMaterial( {
-      color: 0x847360,
-      opacity: 1.0,
-      transparent: true } );
+  var Rubble = function( geometry, material, scale ) {
     
-    this.object = new THREE.Mesh( geometries['asteroid'], rubbleMaterial );
-    var scale = Math.random() * 0.1 + 0.05;
+    this.object = new THREE.Mesh( geometry, material.clone());
+    scale = scale * ( Math.random() + 0.5 );
     this.object.scale.set( scale, scale, scale );
+    this.object.rotation.set( THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2) );
     this.velocity = new THREE.Vector3(0,0,0);
     this.rotationAxis = new THREE.Vector3( Math.random()-0.5, Math.random()-0.5, Math.random()-0.5 );
     this.rotationAxis.normalize();
@@ -80,6 +82,12 @@ galaxies.fx = (function() {
   var rubbleSetSize = 8; // How many pieces to use for each exploding roid
   var rubblePoolSize = 24;
   
+  // Debris objects for satellite destruction
+  var debrisPool = [];
+  var debrisIndex = 0;
+  var debrisSetSize = 8;
+  var debrisPoolSize = 16;
+  
   var planetRubbleHolder;
   var planetParticleGroups = [];
   
@@ -87,6 +95,10 @@ galaxies.fx = (function() {
   var fireworksGroup;
   
   var teleportEmitter, teleportGroup;
+  var teleportSprite, teleportAnimator;
+  var TELEPORT_TIME_MS = 1500;
+  var TELEPORT_TIME_HALF_MS = TELEPORT_TIME_MS/2;
+  var teleporting = false;
   
   var init = function() {
     
@@ -107,8 +119,14 @@ galaxies.fx = (function() {
     
     // Rubble objects
     for (var i=0; i<rubblePoolSize; i++ ) {
-      var rubbleObject = new Rubble();
+      var rubbleObject = new Rubble( geometries['asteroid'], rubbleMaterial, 0.1 );
       rubblePool[i] = rubbleObject;
+    }
+    
+    // Debris objects
+    for (var i=0; i<debrisPoolSize; i++ ) {
+      var debrisObject = new Rubble( geometries['debris'], materials['debris'], 0.2 );
+      debrisPool[i] = debrisObject;
     }
     
     // Comet explode particles
@@ -210,6 +228,30 @@ galaxies.fx = (function() {
     groupFire.mesh.position.set( 0,0,0.1 );
     planetParticleGroups.push(groupFire);
 
+    
+    // teleport
+    var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
+    teleportAnimator = new galaxies.SpriteSheet(
+      characterMap,
+      [ [176,680,172,224,0,4,81.35],
+        [350,680,172,224,0,4,81.35],
+        [524,680,172,224,0,4,81.35],
+        [698,680,172,224,0,4,81.35]    
+        ], 
+      30
+      );
+    characterMap.needsUpdate = true;
+    
+    var characterMaterial = new THREE.SpriteMaterial({
+      map: characterMap,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.0
+    } );
+    teleportSprite = new THREE.Sprite( characterMaterial );
+    teleportSprite.position.z = 0.1; // must appear in front of base character sprite
+    
+    /*
     var teleportParticles = {
       type: 'sphere',
       radius: 0.6,
@@ -234,7 +276,7 @@ galaxies.fx = (function() {
     });
     teleportEmitter = new SPE.Emitter( teleportParticles );
     teleportGroup.addEmitter( teleportEmitter );
-    
+    */
   } // init
   
   var showFireworks = function( position ) {
@@ -282,8 +324,16 @@ galaxies.fx = (function() {
   }
   
   var showRubble = function( position, velocity ) {
-    for ( var i=0; i<rubbleSetSize; i++ ) {
-      var rObject = rubblePool[rubbleIndex];
+    rubbleIndex = showObjects( rubblePool, rubbleSetSize, rubbleIndex, position, velocity );
+  }
+  
+  var showDebris = function( position, velocity ) {
+    debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity );
+  }
+  var showObjects = function( set, setSize, index, position, velocity ) {
+    var poolSize = set.length;
+    for ( var i=0; i<setSize; i++ ) {
+      var rObject = set[index];
       rObject.object.position.copy( position );
       rObject.object.position.add( new THREE.Vector3( THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5) ) );
       rootObject.add( rObject.object );
@@ -295,9 +345,10 @@ galaxies.fx = (function() {
       
       rObject.reset();
       
-      rubbleIndex ++;
-      if ( rubbleIndex >= rubblePoolSize ) { rubbleIndex = 0; }
+      index++;
+      if ( index >= poolSize ) { index = 0; }
     }
+    return index;
   }
   
   var showPlanetSplode = function() {
@@ -348,6 +399,21 @@ galaxies.fx = (function() {
   }
   
   var showTeleportOut = function() {
+    character.add( teleportSprite );
+    teleportSprite.material.rotation = character.material.rotation;
+    teleportSprite.material.opacity = 0;
+    teleportAnimator.play(-1); // negative loop count will loop indefinitely
+    
+    // fade in and out
+    createjs.Tween.removeTweens( teleportSprite.material );
+    createjs.Tween.get( teleportSprite.material )
+      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
+      .set( { opacity: 0 }, character.material )
+      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
+      .call( teleportEffectComplete, this );
+    
+    teleporting = true;
+    /*
     character.parent.add( teleportGroup.mesh );
     
     //character.material.blending = THREE.AdditiveBlending;
@@ -360,10 +426,32 @@ galaxies.fx = (function() {
     teleportGroup.mesh.position.y -= 0.5;
     teleportEmitter.active = 1.0;
     teleportEmitter.enable();
+    */
   }
-  var showTeleportIn = function() {
-    createjs.Tween.get( character.material )
-      .to({opacity: 1}, 1000);
+  var teleportEffectComplete = function() {
+    teleportAnimator.stop();
+    teleportSprite.parent.remove(teleportSprite);
+    teleporting = false;
+    
+  }
+  var showTeleportIn = function( callback ) {
+    character.add( teleportSprite );
+    teleportSprite.material.rotation = character.material.rotation;
+    teleportSprite.material.opacity = 0;
+    teleportAnimator.play(-1); // negative loop count will loop indefinitely
+    character.material.opacity = 0;
+    
+    // fade in and out
+    createjs.Tween.removeTweens( teleportSprite.material );
+    createjs.Tween.get( teleportSprite.material )
+      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
+      .set( { opacity: 1 }, character.material )
+      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
+      .call( teleportEffectComplete, this )
+      .call( callback, this );
+      
+    teleporting = true;
+      
   }
   
   
@@ -374,6 +462,9 @@ galaxies.fx = (function() {
     }
     for ( var i=0; i<rubblePoolSize; i++ ) {
       rubblePool[i].update(delta);
+    }
+    for ( var i=0; i<debrisPoolSize; i++ ) {
+      debrisPool[i].update(delta);
     }
     fireworksGroup.tick(delta);
     
@@ -388,9 +479,12 @@ galaxies.fx = (function() {
       character.material.rotation = character.rotation.z;
     }
     
+    if ( teleporting ) {
+      teleportAnimator.update( delta );
+    }
     // teleport particles
     // TODO only update these when active
-    teleportGroup.tick(delta );
+    // teleportGroup.tick(delta );
   }
   
   var shakeCamera = function( magnitude, duration ) {
@@ -427,6 +521,7 @@ galaxies.fx = (function() {
     showPlanetSplode: showPlanetSplode,
     showTeleportOut: showTeleportOut,
     showTeleportIn: showTeleportIn,
-    shakeCamera: shakeCamera
+    shakeCamera: shakeCamera,
+    showDebris: showDebris
   };
 })();

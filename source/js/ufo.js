@@ -32,6 +32,23 @@ this.galaxies.Ufo = function() {
   
   this.object.add( this.model );
   
+  var trunkMap = new THREE.Texture( galaxies.queue.getResult('trunkford') );
+  trunkMap.needsUpdate = true;
+  var trunkMat = new THREE.MeshLambertMaterial({
+    map: trunkMap,
+    color: 0xffffff,
+    transparent: true,
+    //depthTest: false,
+    //depthWrite: false,
+    side: THREE.DoubleSide
+  } );
+  //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
+  var trunkford = new THREE.Mesh( new THREE.PlaneGeometry(1.23,1), trunkMat ); // 1.23 is aspect ratio of texture
+  trunkford.position.set( 0, 0.4, 0.4 );
+  trunkford.scale.set(0.6, 0.6, 1);
+  trunkford.rotation.set( 0, Math.PI, 0 );
+  this.model.add( trunkford );
+  
   var anchor = new THREE.Object3D();
   anchor.add( this.object );
   
@@ -39,6 +56,9 @@ this.galaxies.Ufo = function() {
   var stepTimer = 0;
   var stepTime = 0;
   var transitionTime = 0;
+  
+  var hitCounter = 0;
+  var HITS = 2;
   
   var angle = Math.random() * PI_2; // random start angle
   var angularSpeed = 0.7;
@@ -74,6 +94,39 @@ this.galaxies.Ufo = function() {
   var laserChargeEmitter = new SPE.Emitter( laserChargeParticles );
   laserChargeGroup.addEmitter( laserChargeEmitter );
   laserChargeGroup.mesh.position.x = -0.5;
+  
+  
+  var smokeParticles = {
+    type: 'cube',
+    acceleration: new THREE.Vector3(0,0,-3),
+    velocity: new THREE.Vector3(0, -2, 0),
+    velocitySpread: new THREE.Vector3(1, 1, 1),
+    //speedSpread: 5,
+    sizeStart: 3,
+    sizeStartSpread: 1,
+    sizeEnd: 3,
+    opacityStart: 1,
+    opacityEnd: 0,
+    colorStart: new THREE.Color(0.600, 0.600, 0.600),
+    colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
+    colorEnd: new THREE.Color(0.200, 0.200, 0.200),
+    particlesPerSecond: 10,
+    particleCount: 50,
+    alive: 0.0,
+    duration: null//0.1
+  };
+  var smokeTexture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
+  smokeTexture.needsUpdate = true;
+  var smokeGroup = new SPE.Group({
+    texture: smokeTexture,
+    maxAge: 2,
+    blending: THREE.NormalBlending
+  });
+  var smokeEmitter = new SPE.Emitter( smokeParticles );
+  smokeGroup.addEmitter( smokeEmitter );
+  this.object.add( smokeGroup.mesh );
+  
+  
   
   //rootObject.add( laserChargeGroup.mesh );
   this.object.add( laserChargeGroup.mesh );
@@ -186,7 +239,7 @@ this.galaxies.Ufo = function() {
         this.isHittable = true;
         
         // Tip to attack posture
-        this.model.rotation.y = Math.PI/2;
+        this.model.rotation.y = Math.PI/3;
         createjs.Tween.removeTweens( this.model.rotation );
         createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
         
@@ -280,6 +333,7 @@ this.galaxies.Ufo = function() {
     //
     
     laserChargeGroup.tick(delta);
+    smokeGroup.tick(delta);
     
     /*
     if ( angle > stepAngle ) {
@@ -324,6 +378,9 @@ this.galaxies.Ufo = function() {
     var shortAngle = ((angle) + Math.PI) % PI_2 - Math.PI;
     angle = shortAngle;
     lastAngle = angle;
+    
+    targetAngle = (Math.floor(angle / Math.PI) + 1 ) * Math.PI;
+    /*
     if ( Math.abs( shortAngle ) < Math.PI/2 ) {
       targetAngle = 0;
     } else {
@@ -332,21 +389,26 @@ this.galaxies.Ufo = function() {
       } else {
         targetAngle = Math.PI;
       }
-    }
+    }*/
     
     // Tip to show bubble
     createjs.Tween.removeTweens( this.model.rotation );
-    createjs.Tween.get(this.model.rotation).to({y: Math.PI/2}, 2000, createjs.Ease.quadIn );
+    createjs.Tween.get(this.model.rotation).to({y: Math.PI/3}, 2000, createjs.Ease.quadIn );
     
     console.log( 'orbit -> out' );
   }
   
   this.hit = function() {
-    this.leave();
+    hitCounter++;
+    if ( hitCounter >= HITS ) {
+      this.leave();
+      
+      // score is scaled by how far away you hit the ufo.
+      showCombo( this.points * (3-step), this.object );
+    }
     
-    // score is scaled by how far away you hit the ufo.
-    showCombo( this.points * (3-step), this.object );
-    
+    smokeEmitter.alive = 1.0;
+        
     // play sound
     new PositionedSound( getSound('ufohit',false), rootPosition(this.object), 1 );
     //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
@@ -357,6 +419,10 @@ this.galaxies.Ufo = function() {
   this.reset = function() {
     state = 'idle';
     stepTimer = 0;
+    
+    hitCounter = 0;
+    smokeEmitter.alive = 0.0;
+
     
     if ( isGameOver ) {
       this.deactivate();
