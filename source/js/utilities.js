@@ -30,6 +30,7 @@ this.galaxies.utils.isWindows = function() {
 this.galaxies.utils.testAudioSupport = function( callback ) {
   // Has test been run?
   if ( typeof( galaxies.utils.supportsOGG ) !== 'undefined' ) {
+    callback();
     return;
   }
   
@@ -65,9 +66,10 @@ this.galaxies.utils.testAudioSupport = function( callback ) {
           try {
               audio.currentTime = 2;
           } catch (e) {
+            callback();
           }
       }, false);
-      audio.src = '/assets/silence.mp4';
+      audio.src = 'audio/silence.mp4';
       audio.play();
   }  
 }

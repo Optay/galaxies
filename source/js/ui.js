@@ -92,6 +92,7 @@ galaxies.ui = (function() {
   var init = function() {
     createjs.CSSPlugin.install();
     
+    /*
     // Loading indicator transition, setup
     // Create hidden background images and listen for them to complete loading,
     // then add fade-in class to scrolling background elements.
@@ -110,6 +111,7 @@ galaxies.ui = (function() {
       holder.classList.add('fade-in');
       holder.classList.remove('invisible');
     }
+    */
     function logoAppear() {
       loadingLogo.classList.add('logo-loading-layout');
 /*      logo.style.width = 0;
@@ -124,8 +126,10 @@ galaxies.ui = (function() {
     playButton.addEventListener('click', onClickPlay );
     
     muteButton.addEventListener('click', onClickMute );
+    muteButton.addEventListener('mousedown', blockEvent );
     
     pauseButton.addEventListener('click', onClickPause );
+    pauseButton.addEventListener('mousedown', blockEvent );
     resumeButton.addEventListener('click', onClickResume );
     restartButton.addEventListener('click', onClickRestart );
     restartButton2.addEventListener('click', onClickRestart );
@@ -244,8 +248,10 @@ galaxies.ui = (function() {
     muteButton.classList.remove("hidden");
     
     // Show Dolby logo (TODO detect)
-    dolbyLogo.classList.add("fade-in");
-    dolbyLogo.classList.remove("hidden");
+    if ( galaxies.utils.supportsEC3 ) {
+      dolbyLogo.classList.add("fade-in");
+      dolbyLogo.classList.remove("hidden");
+    }
     
     // Resize title card and reposition
     loadingLogo.classList.add('hidden');
@@ -324,6 +330,14 @@ galaxies.ui = (function() {
     titleActive = false;
 
   }
+  
+  // Stop event from reaching other listeners.
+  // Used to keep ui buttons from causing fire events.
+  var blockEvent = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+  }
 
   /// Start the game
   var onClickPlay = function(e) {
@@ -342,6 +356,8 @@ galaxies.ui = (function() {
   }
   
   var onClickMute = function(e) {
+    e.preventDefault();
+    
     // Change the mute state
     toggleMuteState();
     
@@ -358,6 +374,8 @@ galaxies.ui = (function() {
   }
   
   var onClickPause = function(e) {
+    e.preventDefault();
+    
     pauseHolder.classList.remove('hidden');
     pauseOverlay.classList.remove('hidden');
     pauseGame();

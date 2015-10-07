@@ -435,6 +435,10 @@ galaxies.fx = (function() {
     
   }
   var showTeleportIn = function( callback ) {
+    // Set character to vertical position (this will work because user cannot move during transition).
+    angle = 0;
+    targetAngle = 0;
+    
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
     teleportSprite.material.opacity = 0;
@@ -481,6 +485,7 @@ galaxies.fx = (function() {
     
     if ( teleporting ) {
       teleportAnimator.update( delta );
+      teleportSprite.material.rotation = character.material.rotation;
     }
     // teleport particles
     // TODO only update these when active

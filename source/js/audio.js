@@ -29,11 +29,11 @@ function getSound( id, loop ) {
   
   if ( typeof( loadedSounds[id]) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
-    return;
+    return null;
   }
   var source = audioCtx.createBufferSource();
-  source.buffer = loadedSounds[id].next();
   source.loop = loop;
+  source.buffer = loadedSounds[id].next();
   
   return source;
 }
@@ -76,8 +76,7 @@ function initAudio( complete ) {
   listener = audioCtx.listener;
   //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
-  console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
-  console.log( 0 !== null );
+  //console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
   
   // Global mute
   outNode = audioCtx.createGain();
@@ -105,7 +104,7 @@ function initAudio( complete ) {
   function decodeFile( soundId, fileId ) {
     var loadedId = soundId;
     var result = galaxies.queue.getResult( fileId, true );
-    console.log( result );
+    //console.log( result );
     if ( result != null ) {
       audioCtx.decodeAudioData( result,
         function(buffer) {

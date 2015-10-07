@@ -58,7 +58,7 @@ galaxies.TitleSequence = function() {
   var titleFrameRequest;
   var titleRoot; // the root object
   
-  var TITLE_TIME_MS = 2000;
+  var TITLE_TIME_MS = 4000;
   var TRANSITION_TIME_MS = 500;
   var TRANSITION_TIME_HALF_MS = TRANSITION_TIME_MS/2;
   

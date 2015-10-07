@@ -5,6 +5,7 @@ var invulnerable = false;
 
 var animationFrameRequest;
 var gameInitialized = false;
+var container;
 
 var windowHalfX = 0;
 var windowHalfY = 0;
@@ -133,7 +134,7 @@ function init() {
 
 // Create 3D scene, camera, light, skybox
 function initScene() {
-  var container, mesh;
+  var mesh;
   container = document.getElementById( 'container' );
 
   scene = new THREE.Scene();
@@ -152,21 +153,21 @@ function initScene() {
   light.position.set( 30, 20, 50 );
   rootObject.add( light );
   
-  var texture = new THREE.CubeTexture([
+  var skyTexture = new THREE.CubeTexture([
                     galaxies.queue.getResult('skyboxright1'),
                     galaxies.queue.getResult('skyboxleft2'),
                     galaxies.queue.getResult('skyboxtop3'),
                     galaxies.queue.getResult('skyboxbottom4'),
                     galaxies.queue.getResult('skyboxfront5'),
                     galaxies.queue.getResult('skyboxback6') ] );
-  texture.needsUpdate = true;
+  skyTexture.needsUpdate = true;
   
   /* Set up a material that uses a cubemap texture.  This material uses
      custom vertex and fragment shaders that are defined in three.js as
      part of its shader library.  This code is copied from examples in
      the three.js download. */
   var shader = THREE.ShaderLib[ "cube" ];
-  shader.uniforms[ "tCube" ].value = texture;
+  shader.uniforms[ "tCube" ].value = skyTexture;
   var material = new THREE.ShaderMaterial( { // A ShaderMaterial uses custom vertex and fragment shaders.
       fragmentShader: shader.fragmentShader,
       vertexShader: shader.vertexShader,
@@ -176,7 +177,7 @@ function initScene() {
   } );
 
   skyCube = new THREE.Mesh( new THREE.BoxGeometry( 200, 200, 200 ), material );
-  rootObject.add(skyCube);
+  scene.add(skyCube);
   
   
   renderer = new THREE.WebGLRenderer();
@@ -184,6 +185,12 @@ function initScene() {
   renderer.setSize( window.innerWidth, window.innerHeight );
   //renderer.setSize( 640, 480 );
   container.appendChild( renderer.domElement );
+  
+  console.log( renderer.domElement );
+  //renderer.domElement.addEventListener( "webglcontextlost", handleContextLost, false);
+  renderer.context.canvas.addEventListener( "webglcontextlost", handleContextLost, false);
+  //renderer.domElement.addEventListener( "webglcontextrestored", handleContextRestored, false);  
+  renderer.context.canvas.addEventListener( "webglcontextrestored", handleContextRestored, false);  
   
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();
@@ -275,7 +282,7 @@ function initGame() {
   } );
   materials['ufocanopy'] = new THREE.MeshPhongMaterial( {
     color: 0x222222,
-    specular: 0xffffff,
+    specular: 0x080808,
     shininess: 100,
     opacity: 0.9,
     transparent: true,
@@ -619,18 +626,16 @@ function startGame() {
 }
 
 function restartGame() {
-  resetGame();
-
   galaxies.ui.showPauseButton(); // is hidden by game over menu
-
-  // planet will be added by initial transition
-  rootObject.remove(planet);
-
-  // add character holder
+  
+  // Add character holder.
+  // Character will be removed by planet transition.
   rootObject.add( characterRotator );
   
-  //planetTransition(); // for testing purposes
+  resetGame();
   removeInputListeners();
+  // Start initial transition.
+  rootObject.remove(planet);
   startPlanetMove();
   //initLevel();
   
@@ -734,12 +739,14 @@ function planetTransition() {
   
   // disable input
   removeInputListeners();
+  isFiring = false;
   
   console.log("wait");
   
   galaxies.fx.showTeleportOut();
   new PositionedSound( getSound('teleportout',false), rootPosition(character), 10 );
   
+  createjs.Tween.removeTweens(character);
   createjs.Tween.get(character)
     .wait(1500)
     .call( startPlanetMove, null, this );
@@ -765,6 +772,7 @@ function startPlanetMove() {
   
   var transitionTimeMilliseconds = 6500;
   // Tween!
+  createjs.Tween.removeTweens( planet.position );
   createjs.Tween.get( planet.position )
     .to({x:outPosition.x, y:outPosition.y, z:outPosition.z}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut)
     .to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0)
@@ -777,6 +785,7 @@ function startPlanetMove() {
   // Swing the world around
   //createjs.Tween.get( camera.rotation ).to({x:PI_2, y:PI_2}, 8000, createjs.Ease.quadInOut ).call(planetTransitionComplete);
   var targetX = rootObject.rotation.x + Math.PI/2;
+  createjs.Tween.removeTweens( rootObject.rotation );
   createjs.Tween.get( rootObject.rotation )
     .to({x:targetX}, transitionTimeMilliseconds, createjs.Ease.quadInOut )
     .call(planetMoveComplete);
@@ -813,7 +822,6 @@ function randomizePlanet() {
 
 
 function onDocumentMouseDown( event ) {
-
 	event.preventDefault();
 
 	//isUserInteracting = true;
@@ -882,6 +890,7 @@ function addObstacle( type ) {
       material.setValues( materials['satellite'] );
       var model = new THREE.Mesh( geometries['satellite'], material );
       model.position.y = -2;
+      model.rotation.y = Math.random() * PI_2; // random roll to show window
       
       var modelOrient = new THREE.Object3D();
       modelOrient.add(model);
@@ -1278,7 +1287,7 @@ function endGame() {
   
   resetGame();
   
-  // clear permanent game objects
+  // Remove permanent game objects from scene.
   rootObject.remove(planet);
   rootObject.remove( characterRotator );
   
@@ -1309,11 +1318,17 @@ function resetGame() {
   galaxies.ui.updateLife( playerLife );
   galaxies.ui.updateScore( score );
   galaxies.ui.clearTitle();
+  
+  // Clear transition tweens (mostly used in the planet transition)
+  createjs.Tween.removeTweens(character);
+  createjs.Tween.removeTweens( rootObject.rotation );
+  createjs.Tween.removeTweens( planet.position );
+  
 }
 function clearLevel() {
   // clear all actors
   for( var i=0; i<obstacles.length; i++ ) {
-    obstacles[i].remove();
+    obstacles[i].deactivate();
   }
   obstacles = [];
   
@@ -1342,7 +1357,12 @@ function removeInputListeners() {
   document.removeEventListener( 'touchmove', onDocumentTouchMove, false );
 }
 
-
+function handleContextLost(e) {
+  console.log("WebGL Context Lost", e);
+}
+function handleContextRestored() {
+  console.log("WebGL Context Restored", e);
+}
 
 
 
@@ -1368,7 +1388,7 @@ function showCombo( value, obj ) {
   divElem.style.left = screenX + 'px';
   divElem.style.top = screenY + 'px';
   divElem.appendChild(newContent); //add the text node to the newly created div.
-  document.getElementById("container").appendChild(divElem);
+  container.appendChild(divElem);
   
   window.getComputedStyle(divElem).top; // reflow
   

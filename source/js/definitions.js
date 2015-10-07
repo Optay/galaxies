@@ -128,7 +128,7 @@ function Asteroid( props ) {
       // Prevent ricochets from traveling all the way out, so
       // the player cannot score points off-screen
       var radius = flatLength( this.object.position );
-      if ( radius > clearDistance ) { this.destroy(); }
+      if ( radius > clearDistance ) { this.deactivate(); }
       if ( this.isActive && (radius > OBSTACLE_VISIBLE_RADIUS ) ) {
         this.isActive = false;
         if ( material!=null) {
@@ -164,7 +164,7 @@ function Asteroid( props ) {
       if (( radius <= PLANET_DISTANCE ) && (velocity.length() < PLANET_DISTANCE) ) {
         // This order is very important as hitPlayer may trigger game over which
         // must override the obstacle's state.
-        this.destroy();
+        this.splode();
         hitPlayer();
         break;
       }
@@ -230,7 +230,7 @@ function Asteroid( props ) {
   
   this.removePassSound = function() {
     if ( this.passSound !== null ) {
-      this.passSound.sound.source.stop();
+      this.passSound.sound.source.stop(0); // API does not require an argument, but Safari 8 does.
       //removeSource( this.passSound );
       this.passSound = null;
     }
@@ -260,24 +260,7 @@ function Asteroid( props ) {
     
     if ( this.state === 'ricocheting' ) {
       showCombo( (this.ricochetCount * this.points), this.object );
-      new PositionedSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
-      //playSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
-      
-      galaxies.fx.shakeCamera(0.5);
-
-      switch ( this.explodeType) {
-        case 'fireworks':
-          galaxies.fx.showFireworks( this.object.position );
-          break;
-        case 'debris':
-          galaxies.fx.showDebris( this.object.position, velocity );
-          break;
-        case 'rubble':
-        default:
-          galaxies.fx.showRubble( this.object.position, velocity );
-      }
-      
-      this.destroy();
+      this.splode();
       return;
     }
     
@@ -307,7 +290,27 @@ function Asteroid( props ) {
     //console.log(velocity);
   }
   
-  this.destroy = function() {
+  this.splode = function() {
+    new PositionedSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
+    
+    galaxies.fx.shakeCamera(0.5);
+
+    switch ( this.explodeType) {
+      case 'fireworks':
+        galaxies.fx.showFireworks( this.object.position );
+        break;
+      case 'debris':
+        galaxies.fx.showDebris( this.object.position, velocity );
+        break;
+      case 'rubble':
+      default:
+        galaxies.fx.showRubble( this.object.position, velocity );
+    }
+    
+    this.deactivate();
+  }
+  
+  this.deactivate = function() {
     if ( this.passSound !== null ) { this.passSound.volume = 0; }
     this.state = 'inactive';
     this.remove();
@@ -320,6 +323,7 @@ function Asteroid( props ) {
     }
   }
   
+  // Clear this object, so it will be garbage collected.
   this.destruct = function() {
     this.removePassSound();
     this.remove();
