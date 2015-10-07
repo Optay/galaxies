@@ -20,6 +20,8 @@ var driftSpeed = 0.05;
 var geometries = {};
 var materials = {};
 
+var isPaused = false;
+
 var isGameOver = false;
 
 var score;
@@ -94,6 +96,18 @@ function onDocumentTouchMove( event ) {
         
 }
 
+// Force pause state when window is minimized to prevent large deltas when resuming.
+function onVisibilityChange( event ) {
+  console.log( "document.hidden:", document.hidden );
+  if ( document.hidden ) {
+    stopTimers();
+  } else {
+    if ( !isPaused ) {
+      startTimers();
+    }
+  }
+}
+
 
 /*
 var textureURLs = [  // URLs of the six faces of the cube map 
@@ -118,9 +132,11 @@ var onPointerDownPointerX, onPointerDownPointerY, onPointerDownLon, onPointerDow
 
 var skyCube;
 var planet, character, characterRotator, characterAnimator, targetAngle = 0, angle = 0;
+var planetAngle;
 
 var ufo;
 
+/// Entry Point
 function init() {
   // It would be nice not to be using both of these.
   // create.js ticker for tweens
@@ -128,6 +144,9 @@ function init() {
     
   // three.js clock for delta time
   clock = new THREE.Clock();
+  
+  // Detect minimized/inactive window to avoid bad delta time values.
+  document.addEventListener("visibilitychange", onVisibilityChange );
   
   galaxies.ui.init();
 }
@@ -195,6 +214,29 @@ function initScene() {
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();
 
+  // configure listener (necessary for correct panner behavior when mixing for stereo)
+  listenerObject = camera;
+  listener.setOrientation(0,0,-1,0,1,0);
+  listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
+
+  
+  // Mask object to simulate fade in of skybox
+  var blackBox = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 100, 1),
+    new THREE.MeshBasicMaterial( {
+      color:0x000000,
+      transparent: true,
+      opacity: 1,
+      side: THREE.DoubleSide} )
+  );
+  blackBox.position.set(0,0,cameraZ - 5);
+  rootObject.add(blackBox);
+  createjs.Tween.get(blackBox.material)
+    .to( { opacity: 0 }, 1000 )
+    .call( function() {
+        rootObject.remove(blackBox);
+    }, this );
+  //
 }
 
 function initGame() {
@@ -599,21 +641,13 @@ function addTestObject() {
 
 function startGame() {
   
-  // audio
-  // Set initial mix to 6-channel surround.
-  // TODO - detect this automagically
-  toggleTargetMix( true );
   
-  // configure listener (necessary for correct panner behavior when mixing for stereo)
-  listenerObject = camera;
-  listener.setOrientation(0,0,-1,0,1,0);
-  listener.setPosition( listenerObject.position.x, listenerObject.position.y, listenerObject.position.z );
   
   ufo = new galaxies.Ufo();
   
   resetGame();
   removeInputListeners();
-  startPlanetMove();
+  planetTransition();
   //initLevel();
 
 
@@ -634,9 +668,8 @@ function restartGame() {
   
   resetGame();
   removeInputListeners();
-  // Start initial transition.
-  rootObject.remove(planet);
-  startPlanetMove();
+  
+  planetTransition();
   //initLevel();
   
   createjs.Ticker.paused = false;
@@ -657,10 +690,10 @@ function initLevel() {
   // NOTE: LEVEL, ROUND, AND PLANET NUMBERS ARE ALL 1-INDEXED
   // Sigmoid functions set bounds of speedScale based on planet number (absolute level number).
   var planetRound = ((level-1) % ROUNDS_PER_PLANET) + 1;      // Round number for this planet
-  var planet = Math.floor((level-1)/ROUNDS_PER_PLANET) + 1;     // Planet number
+  var planetNumber = Math.floor((level-1)/ROUNDS_PER_PLANET) + 1;     // Planet number
   
-  var planetFirstSpeed = 1 + 1/(1+Math.exp(4-planet));    // Speed on first level for this planet
-  var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planet/2)); // Speed on last level for this planet
+  var planetFirstSpeed = 1 + 1/(1+Math.exp(4-planetNumber));    // Speed on first level for this planet
+  var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-planetNumber/2)); // Speed on last level for this planet
   
   speedScale = THREE.Math.mapLinear(planetRound, 1, 3, planetFirstSpeed, planetLastSpeed );
   //console.log( planetFirstSpeed, planetLastSpeed, speedScale );
@@ -708,11 +741,8 @@ function initLevel() {
   
   initRootRotation();
   
-  galaxies.ui.updateLevel( planet, planetRound );
+  galaxies.ui.updateLevel( planetNumber, planetRound );
   
-  if ( planetRound === 1 ) {
-    galaxies.ui.showTitle( galaxies.utils.generatePlanetName(planet), 5 );
-  }
   galaxies.ui.showTitle("ROUND " + planetRound, 3 );
   
 
@@ -741,22 +771,25 @@ function planetTransition() {
   removeInputListeners();
   isFiring = false;
   
-  console.log("wait");
+  console.log("begin planet transition");
   
-  galaxies.fx.showTeleportOut();
-  new PositionedSound( getSound('teleportout',false), rootPosition(character), 10 );
-  
-  createjs.Tween.removeTweens(character);
-  createjs.Tween.get(character)
-    .wait(1500)
-    .call( startPlanetMove, null, this );
+  // If planet is in the scene, then we must do the out-transition first.
+  // If planet is not in the scene, then we skip this step (happens on the first level new games).
+  if ( planet.parent != null ) {
+    galaxies.fx.showTeleportOut();
+    new PositionedSound( getSound('teleportout'), rootPosition(character), 10, false );
+    
+    createjs.Tween.removeTweens(character);
+    createjs.Tween.get(character)
+      .wait(1500)
+      .call( startPlanetMove, null, this );
+  } else {
+    startPlanetMove();
+  }
 }
 
 function startPlanetMove() {
-  console.log("start transition");
-  
-  // hide the character
-  characterRotator.remove(character);
+  console.log("planet move");
   
   // Move planet to scene level, so it will not be affected by rootObject rotation while it flies off.
   // Note that for first level, there is no planet to move out, so we check if the planet is active
@@ -779,6 +812,9 @@ function startPlanetMove() {
     .call( function() {
       scene.add( planet ); // First level planet must be added here
       randomizePlanet();
+      
+      var planetNumber = Math.floor((level-1)/ROUNDS_PER_PLANET) + 1;
+      galaxies.ui.showTitle( galaxies.utils.generatePlanetName( planetNumber ), 5 );
     }, null, this)
     .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
   
@@ -799,21 +835,23 @@ function startPlanetMove() {
 function planetMoveComplete() {
   // reattach the planet to the rootObject
   THREE.SceneUtils.attach( planet, scene, rootObject );
+  planetAngle = planet.rotation.z;
   
   // put the character back
   characterRotator.add(character);
   galaxies.fx.showTeleportIn(planetTransitionComplete);
-  new PositionedSound( getSound('teleportin',false), rootPosition(character), 10 );
+  new PositionedSound( getSound('teleportin'), rootPosition(character), 10, false );
 }
 function planetTransitionComplete() {
- addInputListeners();
+  addInputListeners();
   
   initLevel();
 }
 
 function randomizePlanet() {
-  planet.rotation.set( Math.random()*PI_2, Math.random()*PI_2, Math.random()*PI_2 );
+  planet.rotation.set( Math.random()*PI_2, Math.random()*PI_2, Math.random()*PI_2, 'ZXY' );
   planet.material.color.setHSL( Math.random(), THREE.Math.randFloat(0.1, 0.4), THREE.Math.randFloat(0.5, 0.7) );
+  planetAngle = planet.rotation.z;
   //planet.material.color.setRGB(1,0,0);
   
 
@@ -869,7 +907,8 @@ function addObstacle( type ) {
       props.speed = 0.2;
       props.tumble = true;
       props.points = 100;
-      props.explodeSound = 'asteroidexplode';
+      props.hitSound = 'asteroidhit';
+      props.explodeSound = 'asteroidsplode';
       
       var material = new THREE.MeshPhongMaterial();
       material.setValues( materials['asteroid'] );
@@ -885,6 +924,8 @@ function addObstacle( type ) {
       props.points = 250;
       props.orient = true;
       props.explodeType = 'debris';
+      props.hitSound = 'metalhit';
+      props.explodeSound = 'satellitesplode';
       
       var material = new THREE.MeshPhongMaterial();
       material.setValues( materials['satellite'] );
@@ -904,7 +945,6 @@ function addObstacle( type ) {
       
       props.model = modelOrient;
       
-      props.hitSound = 'metalhit';
       /*
       var ref = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), new THREE.MeshLambertMaterial() );
       props.anchor.add( ref );
@@ -1012,7 +1052,7 @@ function shoot() {
 function shootSync( proj ) {
   
   // play sound
-  new PositionedSound( getSound('shoot',false), rootPosition(character), 10 );
+  new PositionedSound( getSound('shoot'), rootPosition(character), 10, false );
   proj.updatePosition( angle );
   proj.addToScene();
   
@@ -1043,7 +1083,8 @@ function getConifiedDepth( position ) {
 // Game Loop
 function update() {
   var delta = clock.getDelta();
-  if ( delta===0 ) { return; } // paused!
+  if ( delta === 0 ) { return; } // paused!
+  if ( delta > 1 ) { console.log(delta); }
   
   // Test for hits, projectiles and ricochets
   var activeObstacleCount = 0;
@@ -1186,7 +1227,11 @@ function update() {
     
     characterRotator.rotation.set(0,0,angle);
     character.material.rotation = angle;
-    characterAnimator.update( delta);
+    characterAnimator.update( delta );
+    
+    if ( planet.parent === rootObject ) {
+      planet.rotation.z = planetAngle-(angle/4);
+    }
   }
   
   renderer.render( scene, camera );
@@ -1239,17 +1284,28 @@ function hitPlayer() {
   }
 }
 
+// Stop time objects. These are called on user pause and also
+// when window is minimized.
+function stopTimers() {
+  createjs.Ticker.paused = true;
+  clock.stop();
+}
+function startTimers() {
+  createjs.Ticker.paused = false;
+  clock.start();
+}
+
 function pauseGame() {
+  isPaused = true;
+  stopTimers();
   if ( animationFrameRequest != null ) {
-    createjs.Ticker.paused = true;
-    clock.stop();
     window.cancelAnimationFrame(animationFrameRequest);
     animationFrameRequest = null;
   }
 }
 function resumeGame() {
-  createjs.Ticker.paused = false;
-  clock.start();
+  isPaused = false;
+  startTimers();
   if ( animationFrameRequest == null ) {
     animate();
   }
@@ -1287,8 +1343,9 @@ function endGame() {
   
   resetGame();
   
-  // Remove permanent game objects from scene.
-  rootObject.remove(planet);
+  if ( planet.parent != null ) {
+    planet.parent.remove(planet);
+  }
   rootObject.remove( characterRotator );
   
   galaxies.ui.showMenu();
@@ -1305,7 +1362,12 @@ function resetGame() {
   
   addInputListeners();
   
-  rootObject.remove(planet);
+  // remove character
+  characterRotator.remove(character);
+  // remove planet
+  if ( planet.parent != null ) {
+    planet.parent.remove(planet);
+  }
   randomizePlanet();
   
   characterAnimator.updateFrame(0);

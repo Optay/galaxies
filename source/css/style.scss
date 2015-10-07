@@ -16,12 +16,39 @@
 
 .fade-in {
   animation-name: fadein;
-  animation-duration: 3s;
+  animation-duration: 2s;
   animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  -webkit-animation-name: fadein;
+  -webkit-animation-duration: 2s;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-fill-mode: forwards;
 }
 @keyframes fadein {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+@-webkit-keyframes fadein {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.fade-out {
+  animation-name: fadeout;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  -webkit-animation-name: fadeout;
+  -webkit-animation-duration: 2s;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-fill-mode: forwards;
+}
+@keyframes fadeout {
+  0% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+@-webkit-keyframes fadeout {
+  0% { opacity: 1; }
+  100% { opacity: 0; display: none; }
 }
 
 .points {
@@ -137,16 +164,11 @@
   left: 0;
   right: 0;
   top: 50%;
-  -webkit-transform: translateY( -50% );
-  transform: translateY( -50% );
+  -webkit-transform: translateY( 10px );
+  transform: translateY( 10px );
   z-index: 10;
   transition: -webkit-transform 1s ease-in-out,
               transform 1s ease-in-out;
-}
-
-.play-final-layout {
-  -webkit-transform: translateY( 10px );
-  transform: translateY( 10px );
 }
 
 

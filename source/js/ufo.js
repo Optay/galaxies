@@ -243,6 +243,7 @@ this.galaxies.Ufo = function() {
         createjs.Tween.removeTweens( this.model.rotation );
         createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
         
+        new PositionedSound( getSound('trunkfordlaugh'), new THREE.Vector3(0,0,cameraZ*1.5), 4, false );
         
         /*
         console.log( angle );
@@ -277,7 +278,7 @@ this.galaxies.Ufo = function() {
         // Fire
         laserChargeEmitter.alive = 1.0;
         createjs.Tween.get(laserBeam).wait(1000).call( function() {
-          new PositionedSound( getSound('ufoshoot',false), rootPosition(this.object), 1 );
+          new PositionedSound( getSound('ufoshoot'), rootPosition(this.object), 1, false );
           
           this.object.add(laserOrient);
           laserBeam.material.opacity = 1;
@@ -410,7 +411,7 @@ this.galaxies.Ufo = function() {
     smokeEmitter.alive = 1.0;
         
     // play sound
-    new PositionedSound( getSound('ufohit',false), rootPosition(this.object), 1 );
+    new PositionedSound( getSound('ufohit'), rootPosition(this.object), 1, false );
     //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
     
   }

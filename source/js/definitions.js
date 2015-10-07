@@ -81,7 +81,7 @@ function Asteroid( props ) {
   this.passSound = null;
   if ( props.passSound != null ) {
     //console.log(_passSoundId);
-    this.passSound = new ObjectSound( getSound( props.passSound, true), this.object, 0 );
+    this.passSound = new ObjectSound( getSound( props.passSound), this.object, 0, true );
     //directionalSources.push(passSound);
   }
   
@@ -264,7 +264,7 @@ function Asteroid( props ) {
       return;
     }
     
-    new PositionedSound( getSound(hitSound,false), rootPosition(this.object), 1 );
+    new PositionedSound( getSound(hitSound), rootPosition(this.object), 2, false);
     //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
     this.state= 'ricocheting';
     
@@ -291,7 +291,7 @@ function Asteroid( props ) {
   }
   
   this.splode = function() {
-    new PositionedSound( getSound(explodeSound,false), rootPosition(this.object), 2 );
+    new PositionedSound( getSound(explodeSound), rootPosition(this.object), 2, false );
     
     galaxies.fx.shakeCamera(0.5);
 

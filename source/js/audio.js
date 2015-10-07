@@ -24,18 +24,12 @@ var muteState = 'none'; // Designates which audio is muted: none, music, all
 var loadedSounds = {};
 
 // Create a new AudioBufferSource node for a given sound.
-function getSound( id, loop ) {
-  if ( typeof(loop) ==='undefined' ) { loop = true; }
-  
+function getSound( id ) {
   if ( typeof( loadedSounds[id]) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
     return null;
   }
-  var source = audioCtx.createBufferSource();
-  source.loop = loop;
-  source.buffer = loadedSounds[id].next();
-  
-  return source;
+  return loadedSounds[id].next();
 }
 
 /*
@@ -54,7 +48,7 @@ var sounds = {
 // This structure combines groups of sounds together for constructing exhaustive arrays.
 var sounds = {
   'shoot': ['shoot1', 'shoot2', 'shoot3', 'shoot4', 'shoot5'],
-  'asteroidexplode': ['asteroidexplode1', 'asteroidexplode2', 'asteroidexplode3'],
+  'asteroidsplode': ['asteroidsplode1', 'asteroidsplode2', 'asteroidsplode3'],
   'cometexplode': ['cometexplode'],
   'cometloop': ['cometloop'],
   'fpo': ['fpo1'],
@@ -66,7 +60,11 @@ var sounds = {
   'teleportin': ['teleportin'],
   'teleportout': ['teleportout'],
   'metalhit': ['metalhit1', 'metalhit2', 'metalhit3' ],
-  'titlewoosh': ['titlewoosh']
+  'titlewoosh': ['titlewoosh'],
+  'satellitesplode': ['satellitesplode'],
+  'asteroidhit': ['asteroidhit1', 'asteroidhit2', 'asteroidhit3', 'asteroidhit4'],
+  'trunkfordlaugh': ['trunkfordlaugh1', 'trunkfordlaugh2', 'trunkfordlaugh3', 'trunkfordlaugh4' ],
+  'buttonover': ['buttonover']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
@@ -76,7 +74,7 @@ function initAudio( complete ) {
   listener = audioCtx.listener;
   //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
-  //console.log( "Output channels?", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
+  console.log( "Output channels:", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
   
   // Global mute
   outNode = audioCtx.createGain();
@@ -116,12 +114,14 @@ function initAudio( complete ) {
           console.log( "Error decoding audio file.", loadedId );
           
           // Add an empty buffer to the cache to prevent errors when trying to play this sound.
-          loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+          //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+          loadedSounds[loadedId].add( null );
           fileComplete();
         } );
     } else {
       // Add an empty buffer
-      loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );  
+      //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+      loadedSounds[loadedId].add( null );
       fileComplete();
     }
   }
@@ -139,6 +139,10 @@ function initAudio( complete ) {
     for( var i=0; i<soundIds.length; i++ ) {
       loadedSounds[ soundIds[i] ].init();
     }
+    
+    // audio
+    // Set initial mix to 6-channel surround.
+    toggleTargetMix( ( audioCtx.destination.maxChannelCount === 6 ) );
     
     // fire callback
     onComplete();
@@ -315,12 +319,17 @@ function playSound( source, position, volume ) {
 */
 
 /// Creates a sound that is mixed based on its position in 3D space.
-function PositionedSound( source, position, baseVolume ) {
-  this.source = source;
+function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
+  var buffer = sourceBuffer; // hold on to the buffer, so we can replay non-looping sounds
+  
+  if ( typeof(loop) ==='undefined' ) { loop = true; }
+  this.loop = loop;
+
+  if ( typeof(start) ==='undefined' ) { start = true; }
+  
   this.toSource = new THREE.Vector3(); // vector from listener to source
   
   this.muteVolume = audioCtx.createGain();
-  this.source.connect( this.muteVolume );
   
   this.preAmp = audioCtx.createGain();
   this.muteVolume.connect( this.preAmp );
@@ -424,16 +433,29 @@ function PositionedSound( source, position, baseVolume ) {
     }
   }
   
+  this.startSound = function() {
+    if ( this.source != null ) {
+      this.source.stop(0);
+    }
+    this.source = audioCtx.createBufferSource();
+    this.source.loop = this.loop;
+    this.source.buffer = buffer;
+    this.source.connect( this.muteVolume );
+    this.source.start(0);
+  }
+  
   this.init();
   this.updatePosition( position ); // set initial mix
   
-  this.source.start(0);
+  if ( start ) {
+    this.startSound();
+  }
 }
 
 /// Object sound wraps a positioned sound, attaching the sound's position to an object.
-function ObjectSound( source, object, baseVolume ) {
+function ObjectSound( source, object, baseVolume, loop, start ) {
   this.object = object;
-  this.sound = new PositionedSound( source, rootPosition( object ), baseVolume );
+  this.sound = new PositionedSound( source, rootPosition( object ), baseVolume, loop, start );
  
   // Doppler
   this.lastDistance = 0;
@@ -448,6 +470,7 @@ function ObjectSound( source, object, baseVolume ) {
   });
  
   this.update = function( delta ) {
+    if ( this.sound.source == null ) { return; }
     this.sound.updatePosition( rootPosition( this.object ) );
     
     var deltaDistance = (this.lastDistance - this.sound.distance)/delta;
@@ -461,6 +484,16 @@ function ObjectSound( source, object, baseVolume ) {
     source.onended = function() { removeSource(selfReference); };
   }*/
 }
+
+// Plays a non-positioned sound
+function playSound( buffer ) {
+  var source = audioCtx.createBufferSource();
+  source.loop = false;
+  source.buffer = buffer;
+  source.connect( outNode );
+  source.start(0);
+}
+
 
 /*
 /// A mono source that is mixed based on its position in space relative to the
@@ -681,7 +714,10 @@ var playThrough = [2, 3];
 /// A multi-channel source that is mixed based on an arbitrary angle which
 /// rotates the soundfield.
 function SoundField( source ) {
-  this.source = source;
+  this.source = audioCtx.createBufferSource();
+  this.source.loop = true;
+  this.source.buffer = source;
+
   this.angle = 0;
   this.angularVelocity = 1;
   
@@ -740,6 +776,7 @@ function updateSoundField( delta ) {
 
 function toggleTargetMix( value ) {
   surroundMix = value;
+  galaxies.ui.setMixButtons( surroundMix );
   
   // Re-initialize active sources using new mix
   for( var i=0; i<obstacles.length; i++ ) {
@@ -750,6 +787,8 @@ function toggleTargetMix( value ) {
   if ( ufo!=null ) {
     ufo.ufoSound.sound.init();
   }
+  // TODO - call init on whoosh sound
+  //if ( 
   
   // Set destination channel count to match
   if ( ( surroundMix )  ) {
@@ -757,6 +796,7 @@ function toggleTargetMix( value ) {
   } else {
     if ( audioCtx.destination.maxChannelCount >= 2 ) { audioCtx.destination.channelCount = 2; }
   }
+
 }
 
 

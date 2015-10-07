@@ -394,7 +394,7 @@ galaxies.fx = (function() {
     characterAnimator.updateFrame(10);
     
     // play the sound
-    new PositionedSound( getSound('planetsplode', false), rootObject.position, 16);
+    new PositionedSound( getSound('planetsplode'), rootObject.position, 16, false);
     
   }
   

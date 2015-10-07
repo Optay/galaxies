@@ -30,9 +30,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'shoot3', src: 'shuttlecock_release_03', type: createjs.AbstractLoader.BINARY },
     { id: 'shoot4', src: 'shuttlecock_release_04', type: createjs.AbstractLoader.BINARY },
     { id: 'shoot5', src: 'shuttlecock_release_05', type: createjs.AbstractLoader.BINARY },
-    { id: 'asteroidexplode1', src: 'asteroid_explode_01', type: createjs.AbstractLoader.BINARY },
-    { id: 'asteroidexplode2', src: 'asteroid_explode_02', type: createjs.AbstractLoader.BINARY },
-    { id: 'asteroidexplode3', src: 'asteroid_explode_03', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidsplode1', src: 'asteroid_explode_01', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidsplode2', src: 'asteroid_explode_02', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidsplode3', src: 'asteroid_explode_03', type: createjs.AbstractLoader.BINARY },
     { id: 'cometexplode', src: 'comet_explode_01', type: createjs.AbstractLoader.BINARY },
     { id: 'cometloop', src: 'comet_fire_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'fpo1', src: 'UFO_laser_fire', type: createjs.AbstractLoader.BINARY },
@@ -47,7 +47,19 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'metalhit1', src: 'metal_hit1', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit2', src: 'metal_hit2', type: createjs.AbstractLoader.BINARY },
     { id: 'metalhit3', src: 'metal_hit3', type: createjs.AbstractLoader.BINARY },
-    { id: 'titlewoosh', src:'whoosh', type: createjs.AbstractLoader.BINARY }
+    { id: 'titlewoosh', src:'whoosh', type: createjs.AbstractLoader.BINARY },
+    { id: 'satellitesplode', src:'pod_explode', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidhit1', src:'asteroid_debris_01', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidhit2', src:'asteroid_debris_02', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidhit3', src:'asteroid_debris_03', type: createjs.AbstractLoader.BINARY },
+    { id: 'asteroidhit4', src:'asteroid_debris_04', type: createjs.AbstractLoader.BINARY },
+    { id: 'trunkfordlaugh1', src:'trunkford_laugh_01', type: createjs.AbstractLoader.BINARY },
+    { id: 'trunkfordlaugh2', src:'trunkford_laugh_02', type: createjs.AbstractLoader.BINARY },
+    { id: 'trunkfordlaugh3', src:'trunkford_laugh_03', type: createjs.AbstractLoader.BINARY },
+    { id: 'trunkfordlaugh4', src:'trunkford_laugh_04', type: createjs.AbstractLoader.BINARY },
+    { id: 'buttonover', src:'button_rollover', type: createjs.AbstractLoader.BINARY }
+    
+    
     
     
   ];
@@ -81,8 +93,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'title2', src: 'title_02_luxamillion.png' },
     { id: 'title3', src: 'title_03_dolby.png' },
     { id: 'title4', src: 'title_04_trunkford.png' },
-    { id: 'titleExtra2', src: 'title_luxamillion_planet.png' },
-    { id: 'titleExtra4', src: 'title_trunkford_in_ufo.png' }
+    { id: 'titleExtraLux', src: 'title_luxamillion_planet.png' },
+    { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' }
     
     
   ];

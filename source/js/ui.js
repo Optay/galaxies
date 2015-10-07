@@ -124,22 +124,33 @@ galaxies.ui = (function() {
       
     // hook button elements
     playButton.addEventListener('click', onClickPlay );
+    playButton.addEventListener('mouseover', onOverButton);
     
     muteButton.addEventListener('click', onClickMute );
     muteButton.addEventListener('mousedown', blockEvent );
+    muteButton.addEventListener('mouseover', onOverButton);
     
     pauseButton.addEventListener('click', onClickPause );
     pauseButton.addEventListener('mousedown', blockEvent );
+    pauseButton.addEventListener('mouseover', onOverButton);
     resumeButton.addEventListener('click', onClickResume );
+    resumeButton.addEventListener('mouseover', onOverButton);
     restartButton.addEventListener('click', onClickRestart );
+    restartButton.addEventListener('mouseover', onOverButton);
     restartButton2.addEventListener('click', onClickRestart );
+    restartButton2.addEventListener('mouseover', onOverButton);
     quitButton.addEventListener('click', onClickQuit );
+    quitButton.addEventListener('mouseover', onOverButton);
     quitButton2.addEventListener('click', onClickQuit );
-    
+    quitButton2.addEventListener('mouseover', onOverButton);
     
     stereoButton.addEventListener('click', onClickStereo);
+    stereoButton.addEventListener('mouseover', onOverButton);
     surroundButton.addEventListener('click', onClickSurround);
+    surroundButton.addEventListener('mouseover', onOverButton);
     
+    recommendSafari.addEventListener('mouseover', onOverButton);
+    recommendEdge.addEventListener('mouseover', onOverButton);
 
   
     logoAppear();
@@ -222,6 +233,38 @@ galaxies.ui = (function() {
     document.getElementById('menuHolder').appendChild(test);
     */
     
+    // Hide loading logo
+    loadingLogo.classList.add('fade-out');
+    // Initialize the 3D scene
+    initScene();
+    
+    
+    
+    // Resize title card and reposition
+    /*
+    loadingLogo.classList.remove('logo-loading-layout');
+    loadingLogo.classList.add("logo-final-layout");
+    */
+    
+    // Start title sequence
+    titleSequence = new galaxies.TitleSequence();
+    titleSequence.activate();
+    
+    // Wait for skybox fade, then transform play button
+    createjs.Tween.get(progressElement)
+      .wait(1000)
+      .call( transformLoadingIndicator, this );
+  }
+  
+  var transformLoadingIndicator = function() {
+    // transition load indicator to play button
+    progressElement.style.left = 0;
+    createjs.Tween.get(progressElement).to({left:52}, 500, createjs.Ease.quadInOut).call( showPlayButton );
+    var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
+    playSymbol.style.left = start;
+    createjs.Tween.get(playSymbol).to({left:0}, 500, createjs.Ease.quadInOut);
+    
+    
     // Turn on the appropriate recommend link
     if ( !galaxies.utils.supportsEC3 ) {
       if ( galaxies.utils.isOSX() ) {
@@ -231,42 +274,20 @@ galaxies.ui = (function() {
       }
     }
     
-    // transition load indicator to play button
-    progressElement.style.left = 0;
-    createjs.Tween.get(progressElement).to({left:52}, 500, createjs.Ease.quadInOut).call( showPlayButton );
-    var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
-    playSymbol.style.left = start;
-    createjs.Tween.get(playSymbol).to({left:0}, 500, createjs.Ease.quadInOut);
-    
     // Show mute button
     audioControls.classList.add("fade-in");
     audioControls.classList.remove("hidden");
-    
 
     // Show mute button
     muteButton.classList.add("fade-in");
     muteButton.classList.remove("hidden");
     
-    // Show Dolby logo (TODO detect)
+    // Show Dolby logo
     if ( galaxies.utils.supportsEC3 ) {
       dolbyLogo.classList.add("fade-in");
       dolbyLogo.classList.remove("hidden");
     }
     
-    // Resize title card and reposition
-    loadingLogo.classList.add('hidden');
-    /*
-    loadingLogo.classList.remove('logo-loading-layout');
-    loadingLogo.classList.add("logo-final-layout");
-    */
-    playHolder.classList.add("play-final-layout");
-    
-    
-    // Initialize the 3D scene
-    initScene();
-    // start title sequence
-    titleSequence = new galaxies.TitleSequence();
-    titleSequence.activate();
     
   }
   var showPlayButton = function() {
@@ -282,6 +303,10 @@ galaxies.ui = (function() {
     pauseOverlay.classList.add('hidden');
     gameOverHolder.classList.add('hidden');
     clearTitle();
+    
+    // Loading logo should be removed
+    loadingLogo.classList.remove('fade-out');
+    loadingLogo.classList.add('hidden');
     
     titleSequence.activate();
     loadingHolder.classList.remove('hidden');
@@ -399,16 +424,23 @@ galaxies.ui = (function() {
   
   var onClickStereo = function(e) {
     toggleTargetMix( false );
-    stereoButton.classList.add('active');
-    surroundButton.classList.remove('active');
   }
   var onClickSurround = function(e) {
     toggleTargetMix( true );
-    stereoButton.classList.remove('active');
-    surroundButton.classList.add('active');
+  }
+  var setMixButtons = function( isSurround ) {
+    if ( isSurround ) {
+      stereoButton.classList.remove('active');
+      surroundButton.classList.add('active');
+    } else {
+      stereoButton.classList.add('active');
+      surroundButton.classList.remove('active');
+    }
   }
   
-  
+  function onOverButton(e) {
+    playSound( getSound('buttonover') );
+  }
   
   
   
@@ -444,7 +476,8 @@ galaxies.ui = (function() {
     clearTitle: clearTitle,
     updateLevel: updateLevel,
     updateScore: updateScore,
-    updateLife: updateLife
+    updateLife: updateLife,
+    setMixButtons: setMixButtons
   };
   
   
