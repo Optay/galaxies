@@ -1,12 +1,19 @@
 "use strict";
+/** Utilities
+ * A collection of miscellaneous functions and definitions. This includes
+ * things like ExhaustiveArray, feature detection, and custom easing functions.
+ * 
+ */
 
 this.galaxies = this.galaxies || {};
 
-this.galaxies.utils = this.galaxies.utils || {};
+galaxies.utils = this.galaxies.utils || {};
+
+galaxies.utils.PI_2 = Math.PI * 2;
 
 // A linear tapered sinusoidal easing function.
 // Used for shaking camera.
-this.galaxies.utils.getShakeEase = function ( frequency ) {
+galaxies.utils.getShakeEase = function ( frequency ) {
   return function( t ) {
     var val = Math.cos( t * frequency ) * (1-t);
     //console.log(t, val);
@@ -15,19 +22,17 @@ this.galaxies.utils.getShakeEase = function ( frequency ) {
 };
 
 // Identify desktop platforms to recommend correct browser with EC-3.
-this.galaxies.utils.isOSX = function() {
+galaxies.utils.isOSX = function() {
   var agt = navigator.userAgent;
   return ( /Mac OS X/.test(agt) );
 }
-this.galaxies.utils.isWindows = function() {
+galaxies.utils.isWindows = function() {
   var agt = navigator.userAgent;
   return ( /Windows/.test(agt) && !/phone/i.test(agt) );
 }
 
-
-
 // Identify which audio format to use.
-this.galaxies.utils.testAudioSupport = function( callback ) {
+galaxies.utils.testAudioSupport = function( callback ) {
   // Has test been run?
   if ( typeof( galaxies.utils.supportsOGG ) !== 'undefined' ) {
     callback();
@@ -73,6 +78,83 @@ this.galaxies.utils.testAudioSupport = function( callback ) {
       audio.play();
   }  
 }
+
+/// Takes an array and returns its contents in a randomized order.
+galaxies.ExhaustiveArray = function() {
+  var objects = [];
+  var index = 0;
+  
+  var shuffle = function() {
+    for (var i=0; i<objects.length; i++ ) {
+      var randomIndex = Math.floor( Math.random() * (i+1) );
+      var temp = objects[randomIndex];
+      objects[randomIndex] = objects[i];
+      objects[i] = temp;
+    }
+  }
+  
+  this.add = function( item ) {
+    objects.push(item);
+  }
+  
+  this.init = function() {
+    index = 0;
+    shuffle();
+  }
+  
+  this.next = function() {
+    var nextObject = objects[index];
+    
+    if ( objects.length > 1 ) {
+      index++;
+      if ( index >= objects.length ) {
+        index = 0;
+        shuffle();
+      }
+    }
+    
+    return nextObject;
+  }
+  
+  shuffle();
+  
+}
+
+
+
+galaxies.utils.flatLength = function( vector ) {
+  return Math.sqrt( Math.pow(vector.x, 2) + Math.pow(vector.y,2) );
+}
+galaxies.utils.flatLengthSqr = function(vector ) {
+  return (Math.pow(vector.x, 2) + Math.pow(vector.y,2));
+}
+
+galaxies.utils.rootPosition = function( object ) {
+  var foo = object.position.clone();
+  if ((object.parent == null) || (galaxies.engine.rootObject==null) ) {
+    return foo;
+  } else {
+    return galaxies.engine.rootObject.worldToLocal( object.parent.localToWorld( foo ) );
+  }
+
+}
+
+/// Set z-position for objects to map x-y plane to a cone.
+//var parabolicConeSlope = coneSlope/3; // This constant here is related to the radius value used by obstacles
+galaxies.utils.conify = function( object ) {
+  object.position.setZ( galaxies.utils.getConifiedDepth( object.position ) );
+}
+galaxies.utils.getConifiedDepth = function( position ) {
+  // linear
+  return ( (galaxies.utils.flatLength(position)/galaxies.engine.CONE_SLOPE) );
+  // parabolic
+  //return ( galaxies.utils.flatLengthSqr(position) * parabolicConeSlope - 0 );
+}
+
+
+
+
+
 
 
 

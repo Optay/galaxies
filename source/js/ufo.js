@@ -3,7 +3,7 @@
 this.galaxies = this.galaxies || {};
 
 this.galaxies.Ufo = function() {
-  this.points = 1000;
+  this.points = 2000;
   
   /*
   var geometry = new THREE.CylinderGeometry( 0.4, 0.4, 0.25, 8, 1, false);
@@ -17,14 +17,14 @@ this.galaxies.Ufo = function() {
   this.object = new THREE.Mesh( geometry, material );*/
   
   this.object = new THREE.Object3D();
-  this.model = geometries['ufo'];
+  this.model = galaxies.engine.geometries['ufo'];
   /*new THREE.Mesh(
     geometries['ufo'],
     new THREE.MeshFaceMaterial( [ materials['ufo2'], materials['ufo'], materials['ufo3'] ] )
   );
   */
-  this.model.children[0].material = materials['ufo'];
-  this.model.children[1].material = materials['ufocanopy'];
+  this.model.children[0].material = galaxies.engine.materials['ufo'];
+  this.model.children[1].material = galaxies.engine.materials['ufocanopy'];
   
   
   this.model.scale.set(0.6, 0.6, 0.6);
@@ -60,7 +60,7 @@ this.galaxies.Ufo = function() {
   var hitCounter = 0;
   var HITS = 2;
   
-  var angle = Math.random() * PI_2; // random start angle
+  var angle = Math.random() * galaxies.utils.PI_2; // random start angle
   var angularSpeed = 0.7;
   var rotationAxis = new THREE.Vector3(0,1,0);
   
@@ -128,7 +128,6 @@ this.galaxies.Ufo = function() {
   
   
   
-  //rootObject.add( laserChargeGroup.mesh );
   this.object.add( laserChargeGroup.mesh );
 
   var laserOrient = new THREE.Object3D();
@@ -165,20 +164,20 @@ this.galaxies.Ufo = function() {
   */
   
   // Sound!
-  this.ufoSound = new ObjectSound( getSound('ufo'), this.object, 0 );
+  this.ufoSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound('ufo'), this.object, 0 );
   //directionalSources.push( ufoSound );
   
-  var idleZ = cameraZ + 10;
+  var idleZ = galaxies.engine.CAMERA_Z + 10;
   var idlePosition = new THREE.Vector3(1,0,idleZ);
 
   var orbitPositions = [
-    new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS,0,0),
-    new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS * 0.9,0,0),
-    new THREE.Vector3(OBSTACLE_VISIBLE_RADIUS * 0.75,0,0)
+    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS,0,0),
+    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
+    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.75,0,0)
   ];
-  orbitPositions[0].z = getConifiedDepth( orbitPositions[0] );
-  orbitPositions[1].z = getConifiedDepth( orbitPositions[1] );
-  orbitPositions[2].z = getConifiedDepth( orbitPositions[2] );
+  orbitPositions[0].z = galaxies.utils.getConifiedDepth( orbitPositions[0] );
+  orbitPositions[1].z = galaxies.utils.getConifiedDepth( orbitPositions[1] );
+  orbitPositions[2].z = galaxies.utils.getConifiedDepth( orbitPositions[2] );
   var orbitPosition = orbitPositions[1];
   
   /*
@@ -243,7 +242,12 @@ this.galaxies.Ufo = function() {
         createjs.Tween.removeTweens( this.model.rotation );
         createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
         
-        new PositionedSound( getSound('trunkfordlaugh'), new THREE.Vector3(0,0,cameraZ*1.5), 4, false );
+        new galaxies.audio.PositionedSound({
+          source: galaxies.audio.getSound('trunkfordlaugh'),
+          position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z*1.5),
+          baseVolume: 4,
+          loop: false
+        });
         
         /*
         console.log( angle );
@@ -278,7 +282,12 @@ this.galaxies.Ufo = function() {
         // Fire
         laserChargeEmitter.alive = 1.0;
         createjs.Tween.get(laserBeam).wait(1000).call( function() {
-          new PositionedSound( getSound('ufoshoot'), rootPosition(this.object), 1, false );
+          new galaxies.audio.PositionedSound({
+            source: galaxies.audio.getSound('ufoshoot'),
+            position: galaxies.utils.rootPosition(this.object),
+            baseVolume: 1,
+            loop: false
+          });
           
           this.object.add(laserOrient);
           laserBeam.material.opacity = 1;
@@ -291,7 +300,7 @@ this.galaxies.Ufo = function() {
           laserOrient.rotation.z = (Math.round( Math.random() )* 2 - 1) * Math.PI/16;
           
           if ( step > 2 ) {
-            hitPlayer();
+            galaxies.engine.hitPlayer();
             this.leave();
             laserOrient.rotation.z = 0;
           }
@@ -343,13 +352,13 @@ this.galaxies.Ufo = function() {
       if ( step === (targetPositions.length-1) ) {
         // fire!
         hitPlayer();
-        stepAngle = angle + PI_2;
-        transitionAngle = angle + PI_2;
+        stepAngle = angle + galaxies.utils.PI_2;
+        transitionAngle = angle + galaxies.utils.PI_2;
       } else if ( step >= targetPositions.length ) {
         this.reset();
       } else {
         // step down
-        stepAngle = angle + (PI_2);
+        stepAngle = angle + (galaxies.utils.PI_2);
         transitionAngle = angle + (Math.PI/2);
       }
     }
@@ -376,7 +385,7 @@ this.galaxies.Ufo = function() {
     // Abort firing 
     createjs.Tween.removeTweens(laserBeam);
     
-    var shortAngle = ((angle) + Math.PI) % PI_2 - Math.PI;
+    var shortAngle = ((angle) + Math.PI) % galaxies.utils.PI_2 - Math.PI;
     angle = shortAngle;
     lastAngle = angle;
     
@@ -404,15 +413,18 @@ this.galaxies.Ufo = function() {
     if ( hitCounter >= HITS ) {
       this.leave();
       
-      // score is scaled by how far away you hit the ufo.
-      showCombo( this.points * (3-step), this.object );
+      galaxies.engine.showCombo( this.points, this.object );
     }
     
     smokeEmitter.alive = 1.0;
         
     // play sound
-    new PositionedSound( getSound('ufohit'), rootPosition(this.object), 1, false );
-    //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
+    new galaxies.audio.PositionedSound({
+      source: galaxies.audio.getSound('ufohit'),
+      position: galaxies.utils.rootPosition(this.object),
+      baseVolume: 1,
+      loop: false
+    });
     
   }
   
@@ -425,7 +437,7 @@ this.galaxies.Ufo = function() {
     smokeEmitter.alive = 0.0;
 
     
-    if ( isGameOver ) {
+    if ( galaxies.engine.isGameOver ) {
       this.deactivate();
       return;
     } else {
@@ -455,7 +467,7 @@ this.galaxies.Ufo = function() {
   this.activate = function() {
     this.reset();
     
-    rootObject.add( anchor );
+    galaxies.engine.rootObject.add( anchor );
     
   }
   this.deactivate = function() {
@@ -467,7 +479,7 @@ this.galaxies.Ufo = function() {
     this.object.position.copy( idlePosition );
     this.ufoSound.volume=0;
     
-    rootObject.remove( anchor );
+    galaxies.engine.rootObject.remove( anchor );
   }
   
   

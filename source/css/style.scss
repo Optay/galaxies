@@ -14,39 +14,52 @@
   opacity: 0;
 }
 
+.delay-a {
+  -webkit-animation-delay: 0s;
+  animation-delay: 0s;
+}
+.delay-b {
+  -webkit-animation-delay: 0.25s;
+  animation-delay: 0.25s;
+}
+.delay-c {
+  -webkit-animation-delay: 0.5s;
+  animation-delay: 0.5s;
+}
+
 .fade-in {
-  animation-name: fadein;
-  animation-duration: 2s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
   -webkit-animation-name: fadein;
   -webkit-animation-duration: 2s;
   -webkit-animation-iteration-count: 1;
   -webkit-animation-fill-mode: forwards;
-}
-@keyframes fadein {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  animation-name: fadein;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 @-webkit-keyframes fadein {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
+@keyframes fadein {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
 .fade-out {
-  animation-name: fadeout;
-  animation-duration: 2s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
   -webkit-animation-name: fadeout;
   -webkit-animation-duration: 2s;
   -webkit-animation-iteration-count: 1;
   -webkit-animation-fill-mode: forwards;
+  animation-name: fadeout;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
-@keyframes fadeout {
+@-webkit-keyframes fadeout {
   0% { opacity: 1; }
   100% { opacity: 0; display: none; }
 }
-@-webkit-keyframes fadeout {
+@keyframes fadeout {
   0% { opacity: 1; }
   100% { opacity: 0; display: none; }
 }
@@ -61,6 +74,9 @@
   opacity: 1;
   top: 0;
   transition: top 2s linear, opacity 2s ease-in;
+  
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
 }
 
 
@@ -107,6 +123,15 @@
   color: #fff;
   font-size: 120px;
   font-family: 'HorizonBT-Regular';
+  
+  -webkit-transform: perspective(100px) translate3D(0, -100px, 100px);
+  transform: perspective(100px) translate3D(0, -100px, 100px);
+    
+  transition: -webkit-transform $transition-time ease-out, transform $transition-time ease-out;
+}
+.pause-title-on, .game-over-title-on {
+  -webkit-transform: perspective(100px) translate3D(0, 0px, 0px);
+  transform: perspective(100px) translate3D(0, 0px, 0px);
 }
 
 
@@ -167,8 +192,6 @@
   -webkit-transform: translateY( 10px );
   transform: translateY( 10px );
   z-index: 10;
-  transition: -webkit-transform 1s ease-in-out,
-              transform 1s ease-in-out;
 }
 
 
@@ -355,13 +378,17 @@
   right:0;
   margin: 70px auto;
   
-  top: 50%;
+  top: 100%;
+  transition: top $transition-time ease;
   
   color: $score-color;
   
   font-family: 'HorizonBT-Regular';
   font-size: 60px;
   line-height: 60px;
+}
+.title-on {
+  top: 50%;
 }
 
 .browser-recommend {
@@ -370,14 +397,19 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 5px;
+  bottom: -100px;
   margin: 0 auto;
   overflow: hidden;
   background-size: 100%;
+  transition: bottom $transition-time ease-out;
 }
 .browser-recommend:hover {
   background-position: 0 100%;
 }
+.browser-recommend-on {
+  bottom: 5px;
+}
+
 .recommend-safari {
   background-image: url('../images/button_mac_safari.png');
 }

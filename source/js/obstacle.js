@@ -1,16 +1,22 @@
 "use strict";
+/**
+ * Obstacle: the object responsible for asteroids, satellites (pods),
+ * and comets.
+ *
+ */
+
+this.galaxies = this.galaxies || {};
+
 
 /// Rename this 'Obstacle'
-function Asteroid( props ) {
+galaxies.Obstacle = function ( props ) {
   var PLANET_DISTANCE = 1.25;
   var RICOCHET_SPEED = 0.35;
   
+  this.type = props.type;
+  
   this.particleGroup = props.particleGroup;
-  
   this.points = props.points;
-  this.speed = props.speed * speedScale;
-  this.orient = props.orient;
-  
   this.explodeType = props.explodeType;
   
   var angle = 0;
@@ -23,6 +29,7 @@ function Asteroid( props ) {
   var baseTumbleSpeed = 1.5;
   var tumbleSpeed = baseTumbleSpeed;
   
+  var baseSpeed = props.speed;
   var velocity = new THREE.Vector3();
   
   //this.falling = false;
@@ -41,39 +48,16 @@ function Asteroid( props ) {
   this.object = props.anchor;
   this.object.up.set(0,0,1);
   
+  this.orient = props.orient;
   this.model = props.model;
-  
-  //var axisHelper = new THREE.AxisHelper( 2 );
-  //this.object.add( axisHelper );  
   
   var material;
   if ( this.model != null ) {
     material = this.model.material;
   }
   
-  /*
-  var geometry = _geometry;
-  if ( typeof(_geometry)==='undefined' ) {
-    geometry = new THREE.BoxGeometry( 0.7, 0.7, 0.7 );
-  }
-  
-  // Ghetto color difference between objects (didn't want to pass in another parameter)
-  var objectColor = new THREE.Color( this.points/500, this.points/500, this.points/500 );
-  var material = new THREE.MeshLambertMaterial( {
-      color: objectColor.getHex(),
-      opacity: 0.4,
-      transparent: false,
-      emissive: 0x555555,
-      shading: THREE.SmoothShading } );//THREE.FlatShading
-  
-  this.object = new THREE.Mesh( geometry, material );
-  this.object.scale.set( scale, scale, scale );
-  /*
-  var objLoader = new THREE.OBJLoader();
-  this.object = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
-  this.object.material = material;
-  this.object.scale.set(0.5, 0.5, 0.5);*/
-  
+  //var axisHelper = new THREE.AxisHelper( 2 );
+  //this.object.add( axisHelper );  
   
   // Sound
   var hitSound = props.hitSound;
@@ -81,40 +65,42 @@ function Asteroid( props ) {
   this.passSound = null;
   if ( props.passSound != null ) {
     //console.log(_passSoundId);
-    this.passSound = new ObjectSound( getSound( props.passSound), this.object, 0, true );
+    this.passSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound( props.passSound), this.object, 0, true );
     //directionalSources.push(passSound);
   }
   
-  var clearDistance = OBSTACLE_VISIBLE_RADIUS * 1.2;
-  var startDistance = OBSTACLE_VISIBLE_RADIUS * 1.2;
+  var clearDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
+  var startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
   if (this.passSound != null ) {
-    startDistance = OBSTACLE_VISIBLE_RADIUS * 2;
+    startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 2;
   }
   
-  this.resetPosition= function() {
-      angle = Math.random()*Math.PI*2;
-      var position = new THREE.Vector3( Math.cos(angle), Math.sin(angle), 0 );
-      
-      position.multiplyScalar( startDistance );
-      this.object.position.copy(position);
-      this.object.lookAt( new THREE.Vector3() );
-      
-      if ( material!=null) {
-        material.transparent = false;
-      }
-      
-      this.state = 'waiting';
-      this.isActive = false;
-      fallTime = Math.random() * 10 + 1;
-      fallTimer = 0;
-      velocity.set(0,0,0);
-      
-      tumbleAxis.set( Math.random()*2 -1, Math.random()*2 -1, Math.random()*2 -1 );
-      tumbleAxis.normalize();
-      tumbling = tumble;
-      tumbleSpeed = baseTumbleSpeed;
-      
-      //this.ricochet = false;
+  this.reset = function() {
+    angle = Math.random()*Math.PI*2;
+    var position = new THREE.Vector3( Math.cos(angle), Math.sin(angle), 0 );
+    
+    position.multiplyScalar( startDistance );
+    this.object.position.copy(position);
+    this.object.lookAt( new THREE.Vector3() );
+    
+    if ( material!=null) {
+      material.transparent = false;
+    }
+    
+    this.state = 'waiting';
+    this.isActive = false;
+    fallTime = Math.random() * 3; // random delay to make obstacles arrive less uniformly
+    fallTimer = 0;
+    velocity.set(0,0,0);
+
+    this.speed = baseSpeed * galaxies.engine.speedScale;
+    
+    tumbleAxis.set( Math.random()*2-1, Math.random()*2 -1, Math.random()*2 -1 );
+    tumbleAxis.normalize();
+    tumbling = tumble;
+    tumbleSpeed = baseTumbleSpeed;
+    
+    //this.ricochet = false;
   }
     
   this.update = function( delta ) {
@@ -127,9 +113,9 @@ function Asteroid( props ) {
       
       // Prevent ricochets from traveling all the way out, so
       // the player cannot score points off-screen
-      var radius = flatLength( this.object.position );
+      var radius = galaxies.utils.flatLength( this.object.position );
       if ( radius > clearDistance ) { this.deactivate(); }
-      if ( this.isActive && (radius > OBSTACLE_VISIBLE_RADIUS ) ) {
+      if ( this.isActive && (radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) ) {
         this.isActive = false;
         if ( material!=null) {
           material.transparent = true;
@@ -160,15 +146,15 @@ function Asteroid( props ) {
       velocity.set( Math.cos(fallAngle), Math.sin(fallAngle), 0 );
       velocity.multiplyScalar( this.speed * delta );
       
-      var radius = flatLength( this.object.position );
+      var radius = galaxies.utils.flatLength( this.object.position );
       if (( radius <= PLANET_DISTANCE ) && (velocity.length() < PLANET_DISTANCE) ) {
         // This order is very important as hitPlayer may trigger game over which
         // must override the obstacle's state.
         this.splode();
-        hitPlayer();
+        galaxies.engine.hitPlayer();
         break;
       }
-      if ( radius < OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
+      if ( radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
       this.object.position.add( velocity );
       
       /*
@@ -181,7 +167,7 @@ function Asteroid( props ) {
       // idle sound level
       if ( this.passSound !== null ) {
         this.passSound.update( delta );
-        var soundLevel = 2 - Math.abs(this.object.position.z - cameraZ)/10;
+        var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
         soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
         //console.log( soundLevel );
         this.passSound.volume = soundLevel;
@@ -203,7 +189,7 @@ function Asteroid( props ) {
         //this.falling = true;
         this.state = 'falling';
         
-        rootObject.add( this.object );
+        galaxies.engine.rootObject.add( this.object );
         
         //velocity.set( -Math.sin(angle), Math.cos(angle) * radius );
         //angle = angle + (Math.PI/2);
@@ -219,7 +205,7 @@ function Asteroid( props ) {
     if ( tumbling ) {
       this.object.rotateOnAxis( tumbleAxis, tumbleSpeed * delta );
     } else if ( this.orient ) {
-      this.object.lookAt( rootObject.position );
+      this.object.lookAt( galaxies.engine.rootObject.position );
     }
     
     if ( this.particleGroup != null ) {
@@ -243,7 +229,7 @@ function Asteroid( props ) {
     
     velocity.copy( this.object.position );
     velocity.z = 0;
-    velocity.setLength( 3 * RICOCHET_SPEED * speedScale );
+    velocity.setLength( 3 * RICOCHET_SPEED * galaxies.engine.speedScale );
     
     if (tumbleOnHit) { tumbling = true; }
     
@@ -259,13 +245,17 @@ function Asteroid( props ) {
     }
     
     if ( this.state === 'ricocheting' ) {
-      showCombo( (this.ricochetCount * this.points), this.object );
+      galaxies.engine.showCombo( (this.ricochetCount * this.points), this.object );
       this.splode();
       return;
     }
     
-    new PositionedSound( getSound(hitSound), rootPosition(this.object), 2, false);
-    //playSound( getSound('fpo',false), rootPosition(this.object), 1 );
+    new galaxies.audio.PositionedSound({
+      source: galaxies.audio.getSound(hitSound),
+      position: galaxies.utils.rootPosition(this.object),
+      baseVolume: 2,
+      loop: false
+    });
     this.state= 'ricocheting';
     
     //this.ricochet = true;
@@ -286,12 +276,17 @@ function Asteroid( props ) {
     velocity.copy( this.object.position );
     velocity.sub( hitPosition );
     velocity.z = 0;
-    velocity.setLength( RICOCHET_SPEED * speedScale );
+    velocity.setLength( RICOCHET_SPEED * galaxies.engine.speedScale );
     //console.log(velocity);
   }
   
   this.splode = function() {
-    new PositionedSound( getSound(explodeSound), rootPosition(this.object), 2, false );
+    new galaxies.audio.PositionedSound({
+      source: galaxies.audio.getSound(explodeSound),
+      position: galaxies.utils.rootPosition(this.object),
+      baseVolume: 2,
+      loop: false
+    });
     
     galaxies.fx.shakeCamera(0.5);
 
@@ -329,76 +324,6 @@ function Asteroid( props ) {
     this.remove();
   }
   
-  this.resetPosition();
+  this.reset();
   
-}
-
-
-
-function Projectile( model, angle ) {
-  this.angularSpeed = 10
-  this.isExpired = false;
-  
-  this.object = new THREE.Object3D();
-  this.object.up.set(0,0,1);
-  
-  var rotateAxis = new THREE.Vector3(0,1,0);
-  
-  // set initial direction
-  var direction = new THREE.Vector3( -Math.sin(angle), Math.cos(angle), 0 );
-  direction.multiplyScalar( PROJ_START_Y );
-  this.object.position.copy( direction );
-  direction.add( direction );
-  this.object.lookAt( direction );
-  
-  this.model = model;
-  this.object.add(this.model);
-  this.model.rotation.x = coneAngle;
-  
-  conify(this.object);
-  
-  //object.rotation.x = object.rotation.z + Math.PI/2;
-  //this.direction = direction.multiplyScalar( SPEED );
-  //console.log( object.position, direction );
-  
-  this.lifeTimer = 0;
-  
-  this.updatePosition = function( newAngle ) {
-    
-    var distance = flatLength( this.object.position );
-    direction.set( -Math.sin(newAngle), Math.cos(newAngle), 0 );
-    direction.multiplyScalar( distance );
-    
-    this.object.position.copy( direction );
-    direction.add( direction );
-    this.object.lookAt( direction );
-    conify( this.object );
-  }
-  
-  /// Expire and schedule for removal
-  this.destroy = function() {
-    galaxies.fx.showHit( this.object.position );
-    
-    this.isExpired = true;
-    this.lifeTimer = PROJECTILE_LIFE;
-  }
-  this.remove = function() {
-    if ( this.object.parent!=null) {
-      this.object.parent.remove(this.object);
-    }
-  }
-  this.addToScene = function() {
-    if (!this.isExpired) {
-      rootObject.add( this.object );
-    }
-  }
-  this.update = function( delta ) {
-    this.object.translateZ( projectileSpeed * delta );
-    this.model.rotateOnAxis( rotateAxis, this.angularSpeed * delta );
-    this.lifeTimer += delta;
-    if ( this.lifeTimer >= PROJECTILE_LIFE ) {
-      this.isExpired = true;
-      //console.log( flatLength(this.object.position) );
-    }
-  }
 }

@@ -9,15 +9,10 @@ this.galaxies = this.galaxies || {};
 galaxies.TitleSequence = function() {
   
   var titleTransition = function() {
-    var waitTime = TITLE_TIME_MS;
-    if ( currentTitleIndex === 0 ) {
-      waitTime = waitTime/2;
-    }
     
     // spin wheel
     createjs.Tween.removeTweens( titleHub.rotation );
     createjs.Tween.get( titleHub.rotation )
-      .wait(waitTime)
       .to( { x: 2*Math.PI/4 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadIn )
       .to( { x: -1*Math.PI/4 }, 0 )
       .call( nextTitle )
@@ -27,31 +22,28 @@ galaxies.TitleSequence = function() {
     // tilt wheel
     createjs.Tween.removeTweens( titlePivot.rotation );
     createjs.Tween.get( titlePivot.rotation )
-      .wait(waitTime)
       .to( { z: Math.PI/4 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadIn )
       .to( { z: -Math.PI/4 }, 0)
       .to( { z: 0 }, TRANSITION_TIME_HALF_MS, createjs.Ease.quadOut );
     
     // rotate view to match wheel motion
-    var start = rootObject.rotation.x;
-    createjs.Tween.removeTweens( rootObject.rotation );
-    createjs.Tween.get( rootObject.rotation )
-      .wait(waitTime)
+    var start = galaxies.engine.rootObject.rotation.x;
+    createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
+    createjs.Tween.get( galaxies.engine.rootObject.rotation )
       .to( { x: start - Math.PI/4 }, TRANSITION_TIME_MS, createjs.Ease.quadInOut );
-    
-    // audio object
+  }
+  // Audio start must be offset from title motion to sync hence the separate function.
+  var titleTransitionAudio = function() {
     // Whoosh object goes beyond rest position, so sound doesn't stop so abruptly.
     // Whoosh tween also lasts duration of whoosh audio.
-    createjs.Tween.removeTweens( wooshObject.position );
-    createjs.Tween.get( wooshObject.position )
-      .wait( waitTime*9/10 )
-      .to( {x:0, y:10, z: cameraZ*2}, 0 )
+    createjs.Tween.removeTweens( whooshObject.position );
+    createjs.Tween.get( whooshObject.position )
+      .to( {x:0, y:10, z: galaxies.engine.CAMERA_Z+20}, 0 )
       .call( function() {
-        //restart the sound...
         whooshSound.sound.startSound();
         //console.log("starting whoosh sound");
       }, this)
-      .to( {x:0, y:5, z:-cameraZ}, 3000, createjs.Ease.quadInOut );
+      .to( {x:0, y:10, z:-10}, 3000, createjs.Ease.quadInOut );
   }
   var nextTitle = function() {
     currentTitleIndex ++;
@@ -71,7 +63,19 @@ galaxies.TitleSequence = function() {
   }
   var checkTitleSequence = function() {
     if ( currentTitleIndex < (titles.length-1) ) {
-      titleTransition();
+      var waitTime = TITLE_TIME_MS;
+      if ( currentTitleIndex === 0 ) {
+        waitTime = waitTime/2;
+      }
+      createjs.Tween.removeTweens( this );
+      createjs.Tween.get( this )
+        .wait(waitTime)
+        .call( titleTransition, this );
+
+      createjs.Tween.get( whooshObject, {override:true} )
+        .wait( waitTime - 500 )
+        .call( titleTransitionAudio, this );
+      
     }
   }
   
@@ -106,10 +110,10 @@ galaxies.TitleSequence = function() {
   var titleImageIds = ['', 'title5', 'title1', 'title2', 'title3', 'title4', 'title5'];
   var titleRotationAxis = new THREE.Vector3(1,0,0);
   var titleScale = 100;
-  var titleStartAngle = 0;//PI_2/titleImageIds.length * -0.2;
+  var titleStartAngle = 0;//galaxies.utils.PI_2/titleImageIds.length * -0.2;
   
-  var wooshObject = new THREE.Object3D();
-  var whooshSound = new ObjectSound( getSound('titlewoosh'), wooshObject, 10, false, false );
+  var whooshObject = new THREE.Object3D();
+  var whooshSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound('titlewoosh'), whooshObject, 5, false, false );
   
   for ( var i=0, len=titleImageIds.length; i<len; i++ ) {
     if ( titleImageIds[i] == '' ) {
@@ -134,7 +138,7 @@ galaxies.TitleSequence = function() {
   
   var title = new THREE.Sprite( titles[0] );
   titleHub.add( title );
-//titles[i].rotateOnAxis(titleRotationAxis, i * 0.1);//PI_2/len );
+//titles[i].rotateOnAxis(titleRotationAxis, i * 0.1);//galaxies.utils.PI_2/len );
   
   var extraTextureLux = new THREE.Texture( galaxies.queue.getResult( 'titleExtraLux' ) );
   extraTextureLux.needsUpdate = true;
@@ -162,13 +166,9 @@ galaxies.TitleSequence = function() {
 
   
   var activate = function() {
-    rootObject.add( titleRoot );
+    galaxies.engine.rootObject.add( titleRoot );
     
-    startTimers();
-    /*
-    clock.start();
-    createjs.Ticker.paused = false;
-    */
+    galaxies.engine.startTimers();
     
     // reset hub
     titleHub.rotation.set(0,0,0);
@@ -176,7 +176,7 @@ galaxies.TitleSequence = function() {
     
     currentTitleIndex = 0;
     updateTitleSprite();
-    titleTransition();
+    checkTitleSequence.call(this); // need context in order to set tweens on the titleSequence object
    
     if ( titleFrameRequest == null ) {
       animateTitle();
@@ -191,7 +191,7 @@ galaxies.TitleSequence = function() {
   
   
   var deactivate = function() {
-    rootObject.remove( titleRoot );
+    galaxies.engine.rootObject.remove( titleRoot );
     
     if ( titleFrameRequest != null ) {
       window.cancelAnimationFrame(titleFrameRequest);
@@ -199,10 +199,11 @@ galaxies.TitleSequence = function() {
     }
     
     // stop motion
+    createjs.Tween.removeTweens( this );
     createjs.Tween.removeTweens( titleHub.rotation );
     createjs.Tween.removeTweens( titlePivot.rotation );
-    createjs.Tween.removeTweens( rootObject.rotation );
-    createjs.Tween.removeTweens( wooshObject.position );
+    createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
+    createjs.Tween.removeTweens( whooshObject.position );
 
   }
 
@@ -214,15 +215,15 @@ galaxies.TitleSequence = function() {
   // Tick function
   // TODO - drift functionality is repeated from game loop... should be common somehow.
   var updateTitle = function() {
-    var delta = clock.getDelta();
+    var delta = galaxies.engine.clock.getDelta();
     if ( delta===0 ) { return; } // paused!
     
     whooshSound.update(delta);
     
-    driftObject.rotateOnAxis( driftAxis, driftSpeed * delta );
+    galaxies.engine.driftObject.rotateOnAxis( driftAxis, driftSpeed * delta );
     title.material.rotation = titlePivot.rotation.z; // match lean angle of wheel
     
-    renderer.render( scene, camera );
+    galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
   }
   
   

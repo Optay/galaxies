@@ -1,52 +1,40 @@
 'use strict'
+/**
+ * audio
+ *
+ * Audio functions and definitions.
+ *
+ */
 
-var audioCtx;
+this.galaxies = this.galaxies || {};
+galaxies.audio = galaxies.audio || {};
 
-// TODO - set up detection and/or hook to menu control
-// use surround when true, fallback to stereo mix when false
-var surroundMix = true;
+// Use surround when true, fallback to stereo mix when false, auto-detect value is set in initAudio
+galaxies.audio.surroundMix = false;
 
-var AUDIBLE_RANGE = 10;
-var DISTANCE_ATTENUATION = 0.1;//0.05;
-var DISTANCE_REF = 2;
-var DISTANCE_ROLL = 1;
-var DIRECTION_FOCUS = 1; // How much sounds spread to neighboring speakers: higher values produces sharper spatialization, lower values spread sound more evenly
-var DOPPLER_FACTOR = 70; // Higher numbers result in less doppler shift.
+// spatialization parameters
+galaxies.audio.DISTANCE_ATTENUATION = 0.1;//0.05;
+galaxies.audio.DISTANCE_REF = 2;
+galaxies.audio.DISTANCE_ROLL = 1;
+galaxies.audio.DIRECTION_FOCUS = 1; // How much sounds spread to neighboring speakers: higher values produces sharper spatialization, lower values spread sound more evenly
+galaxies.audio.DOPPLER_FACTOR = 70; // Higher numbers result in less doppler shift.
 
-var listener;
-var listenerObject;
+galaxies.audio.muteState = 'none'; // Designates which audio is muted: none, music, all
 
-var soundField;
-var outNode;
-var muteState = 'none'; // Designates which audio is muted: none, music, all
-
-// collection of AudioBuffer objects
-var loadedSounds = {};
+// active ObjectSound instances
+galaxies.audio.positionedSounds = [];
 
 // Create a new AudioBufferSource node for a given sound.
-function getSound( id ) {
-  if ( typeof( loadedSounds[id]) === 'undefined' ) {
+galaxies.audio.getSound = function( id ) {
+  if ( typeof( galaxies.audio.loadedSounds[id]) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
     return null;
   }
-  return loadedSounds[id].next();
+  return galaxies.audio.loadedSounds[id].next();
 }
 
-/*
-var sounds = {
-  'shoot': ['shuttlecock_release_01.ogg', 'shuttlecock_release_02.ogg', 'shuttlecock_release_03.ogg', 'shuttlecock_release_04.ogg', 'shuttlecock_release_05.ogg'],
-  'asteroidexplode': ['asteroid_explode_01.ogg', 'asteroid_explode_02.ogg', 'asteroid_explode_03.ogg'],
-  'cometexplode': ['comet_explode_01.ogg'],
-  'cometloop': ['comet_fire_loop.ogg'],
-  'fpo': ['Beep Ping-SoundBible.com-217088958.mp3', 'Robot_blip-Marianne_Gagnon-120342607.mp3', 'Robot_blip_2-Marianne_Gagnon-299056732.mp3'],
-  'ufo': ['ufo_engine_loop_01.ogg'],
-  'music': ['5.1 Test_music.ogg'],
-  'ufohit': ['ufo_hit_01.ogg', 'ufo_hit_02.ogg'],
-  'ufoshoot': ['UFO_laser_fire.ogg']
-};*/
-
 // This structure combines groups of sounds together for constructing exhaustive arrays.
-var sounds = {
+galaxies.audio.sounds = {
   'shoot': ['shoot1', 'shoot2', 'shoot3', 'shoot4', 'shoot5'],
   'asteroidsplode': ['asteroidsplode1', 'asteroidsplode2', 'asteroidsplode3'],
   'cometexplode': ['cometexplode'],
@@ -68,34 +56,36 @@ var sounds = {
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
-function initAudio( complete ) {
+galaxies.audio.initAudio = function( complete ) {
   var AudioContext = window.AudioContext || window.webkitAudioContext;
-  audioCtx = new AudioContext();
-  listener = audioCtx.listener;
+  galaxies.audio.audioCtx = new AudioContext();
+  galaxies.audio.listener = galaxies.audio.audioCtx.listener;
   //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
-  console.log( "Output channels:", audioCtx.destination.channelCountMode, audioCtx.destination.channelCount, audioCtx.destination.maxChannelCount );
+  //console.log( "Output channels:", galaxies.audio.audioCtx.destination.channelCountMode, galaxies.audio.audioCtx.destination.channelCount, galaxies.audio.audioCtx.destination.maxChannelCount );
   
   // Global mute
-  outNode = audioCtx.createGain();
-  outNode.connect( audioCtx.destination );
+  galaxies.audio.outNode = galaxies.audio.audioCtx.createGain();
+  galaxies.audio.outNode.connect( galaxies.audio.audioCtx.destination );
 
   var onComplete = complete;
-
-  var soundIds = Object.keys(sounds);
+  
+  var soundIds = Object.keys(galaxies.audio.sounds);
   
   var remaining = 0;
   for( var i=0; i<soundIds.length; i++ ) {
-    remaining += sounds[ soundIds[i] ].length;
+    remaining += galaxies.audio.sounds[ soundIds[i] ].length;
   }
   
+  // collection of AudioBuffer objects
+  galaxies.audio.loadedSounds = {};
 
   for( var i=0; i<soundIds.length; i++ ) {
-    loadedSounds[ soundIds[i] ] = new ExhaustiveArray();
-    for ( var j=0; j<sounds[ soundIds[i] ].length; j++ ) {
+    galaxies.audio.loadedSounds[ soundIds[i] ] = new galaxies.ExhaustiveArray();
+    for ( var j=0; j<galaxies.audio.sounds[ soundIds[i] ].length; j++ ) {
       //console.log( sounds[soundIds[i]][j] );
       //console.log( galaxies.queue.getResult( sounds[soundIds[i]][j]) );
-      decodeFile( soundIds[i], sounds[soundIds[i]][j] );
+      decodeFile( soundIds[i], galaxies.audio.sounds[soundIds[i]][j] );
     }
   }
   
@@ -104,10 +94,10 @@ function initAudio( complete ) {
     var result = galaxies.queue.getResult( fileId, true );
     //console.log( result );
     if ( result != null ) {
-      audioCtx.decodeAudioData( result,
+      galaxies.audio.audioCtx.decodeAudioData( result,
         function(buffer) {
           //console.log("decoded", loadedId );
-          loadedSounds[ loadedId ].add( buffer );  
+          galaxies.audio.loadedSounds[ loadedId ].add( buffer );  
           fileComplete();
         },
         function() {
@@ -115,13 +105,13 @@ function initAudio( complete ) {
           
           // Add an empty buffer to the cache to prevent errors when trying to play this sound.
           //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
-          loadedSounds[loadedId].add( null );
+          //loadedSounds[loadedId].add( null );
           fileComplete();
         } );
     } else {
       // Add an empty buffer
       //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
-      loadedSounds[loadedId].add( null );
+      //loadedSounds[loadedId].add( null );
       fileComplete();
     }
   }
@@ -135,14 +125,14 @@ function initAudio( complete ) {
   
   function loadComplete() {
     // perform initial shuffle on exhaustive arrays
-    var soundIds = Object.keys(loadedSounds);
+    var soundIds = Object.keys(galaxies.audio.loadedSounds);
     for( var i=0; i<soundIds.length; i++ ) {
-      loadedSounds[ soundIds[i] ].init();
+      galaxies.audio.loadedSounds[ soundIds[i] ].init();
     }
     
     // audio
     // Set initial mix to 6-channel surround.
-    toggleTargetMix( ( audioCtx.destination.maxChannelCount === 6 ) );
+    galaxies.audio.toggleTargetMix( ( galaxies.audio.audioCtx.destination.maxChannelCount === 6 ) );
     
     // fire callback
     onComplete();
@@ -152,186 +142,43 @@ function initAudio( complete ) {
 }
 
 
-function SoundLoader( complete ) {
-  var onComplete = complete;
-  
-  var audioPath = 'audio/';
-  var soundIds = Object.keys(sounds);
-  
-  var remaining = 0;
-  for( var i=0; i<soundIds.length; i++ ) {
-    remaining += sounds[ soundIds[i] ].length;
-  }
-  
-  for( var i=0; i<soundIds.length; i++ ) {
-    loadedSounds[ soundIds[i] ] = new ExhaustiveArray();
-    for ( var j=0; j<sounds[ soundIds[i] ].length; j++ ) {
-      loadSound( soundIds[i], sounds[ soundIds[i] ][j] );
-    }
-  }
-  
-  // use XHR to load an audio track, and
-  // decodeAudioData to decode it and stick it in a buffer.
-  function loadSound( id, uri ) {
-    var request = new XMLHttpRequest();
-    var loadedId = id;
-    
-    uri = audioPath + uri;
-    
-    //request.open('GET', 'Test-intro_01.ogg', true);
-    request.open('GET', uri, true);
-  
-    request.responseType = 'arraybuffer';
-    request.onload = function() {
-      var audioData = request.response;
-  
-      audioCtx.decodeAudioData(audioData,
-        function(buffer) {
-          loadedSounds[ loadedId ].add( buffer );
-          fileComplete();
-        },
-  
-        function() {
-          console.log( "Error decoding audio file.", loadedId );
-          fileComplete();
-        } );
-    }
-  
-    request.send();
-  }
-  
-  function fileComplete() {
-    remaining --;
-    if ( remaining <= 0 ) {
-      loadComplete();
-    }
-  }
-  
-  function loadComplete() {
-    // perform initial shuffle on exhaustive arrays
-    var soundIds = Object.keys(loadedSounds);
-    for( var i=0; i<soundIds.length; i++ ) {
-      loadedSounds[ soundIds[i] ].init();
-    }
-    
-    // fire callback
-    onComplete();
-  }
-}
-
-/// Takes an array and returns its contents in a randomized order.
-function ExhaustiveArray() {
-  var objects = [];
-  var index = 0;
-  
-  var shuffle = function() {
-    for (var i=0; i<objects.length; i++ ) {
-      var randomIndex = Math.floor( Math.random() * (i+1) );
-      var temp = objects[randomIndex];
-      objects[randomIndex] = objects[i];
-      objects[i] = temp;
-    }
-  }
-  
-  this.add = function( item ) {
-    objects.push(item);
-  }
-  
-  this.init = function() {
-    index = 0;
-    shuffle();
-  }
-  
-  this.next = function() {
-    var nextObject = objects[index];
-    
-    if ( objects.length > 1 ) {
-      index++;
-      if ( index >= objects.length ) {
-        index = 0;
-        shuffle();
-      }
-    }
-    
-    return nextObject;
-  }
-  
-  shuffle();
-  
-}
 
 
 
 
 
 
-var channelAngles = [
-  Math.PI/4,    // L
-  -Math.PI/4,     // R
+galaxies.audio.channelAngles = [
+  Math.PI/4,     // L
+  -Math.PI/4,    // R
   0,             // C
   null,          // LFE
-  3*Math.PI/4,  // SL
-  -3*Math.PI/4    // SR
+  3*Math.PI/4,   // SL
+  -3*Math.PI/4   // SR
 ];
 
-var directionalSources = [];
-
-/*
-/// Start a mono source mixed for a fixed location. No reference will be kept,
-/// sound will play once and expire. Provided position should be relative to root object.
-function playSound( source, position, volume ) {
-  source.loop = false; // force sound to not loop
-  var combiner = audioCtx.createChannelMerger();
+/** Creates a sound that is mixed based on its position in 3D space.
+ * 
+ * properties:
+ * buffer, loop, start, dispose, baseVolume, position
+ **/
+galaxies.audio.PositionedSound = function( props ) {
   
-  for ( var iOutput=0; iOutput<6; iOutput++ ) {
-    
-    var toSource = new THREE.Vector3();
-    toSource.subVectors( position, listenerObject.position );
-    
-    // TODO - Evaluate this against the listener object direction for a more versatile system.
-    //        Transform the vector into the listener local space.
-    var bearing = Math.atan2( -toSource.x, -toSource.z );
-    var distance = toSource.length();
-    var inPlaneWeight = 0;
-    if (distance > 0) { inPlaneWeight = Math.sqrt( Math.pow(toSource.x,2) + Math.pow(toSource.z,2) ) / distance; }
-    
-    // base level based on distance
-    var gain = volume * 1 / Math.exp(distance * DISTANCE_ATTENUATION);
-    if ( channelAngles[iOutput] !== null ) {
-      // exponential falloff function
-      // calculate short distance between the angles
-      var angleDifference = ((channelAngles[iOutput] - bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
-      var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
-      
-      gain = (gain/2) * (1-inPlaneWeight) + 
-             gain * (directionAttenuation) * inPlaneWeight;
-    }
-    
-    var newGainNode = audioCtx.createGain();
-    newGainNode.gain.value = gain;   // start silent to avoid loud playback before initial mix call
-    source.connect( newGainNode );
-    newGainNode.connect( combiner, 0, iOutput );
-  }
+  if ( typeof(props.dispose) !=='boolean' ) { props.dispose = true; }
+  var dispose = props.dispose;
   
-  combiner.connect(audioCtx.destination);
-  source.start(0);
-}
-*/
+  if ( typeof(props.loop) !=='boolean' ) { props.loop = true; }
+  this.loop = props.loop;
 
-/// Creates a sound that is mixed based on its position in 3D space.
-function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
-  var buffer = sourceBuffer; // hold on to the buffer, so we can replay non-looping sounds
+  if ( typeof(props.start) !=='boolean' ) { props.start = true; }
   
-  if ( typeof(loop) ==='undefined' ) { loop = true; }
-  this.loop = loop;
-
-  if ( typeof(start) ==='undefined' ) { start = true; }
+  var buffer = props.source; // hold on to the buffer, so we can replay non-looping sounds
   
   this.toSource = new THREE.Vector3(); // vector from listener to source
   
-  this.muteVolume = audioCtx.createGain();
+  this.muteVolume = galaxies.audio.audioCtx.createGain();
   
-  this.preAmp = audioCtx.createGain();
+  this.preAmp = galaxies.audio.audioCtx.createGain();
   this.muteVolume.connect( this.preAmp );
   Object.defineProperty(this, "volume", { set:
     function (value) {
@@ -339,8 +186,8 @@ function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
       this.preAmp.gain.value = this._volume;
     }
   });
-  if ( typeof( baseVolume ) ==='undefined' ) { baseVolume = 1; }
-  this.volume = baseVolume;
+  if ( typeof( props.baseVolume ) !=='number' ) { props.baseVolume = 1; }
+  this.volume = props.baseVolume;
   
   // 6-channel mix
   this.bearing = 0;
@@ -361,30 +208,30 @@ function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
     }
     this.channels = [];
     if ( this.combiner != null ) {
-      this.combiner.disconnect( outNode );
+      this.combiner.disconnect( galaxies.audio.outNode );
       this.combiner = null;
     }
     if ( this.panner!=null ) {
       this.preAmp.disconnect( this.panner );
-      this.panner.disconnect( outNode );
+      this.panner.disconnect( galaxies.audio.outNode );
       this.panner = null;
     }
     //
     
-    if ( surroundMix ) {
+    if ( galaxies.audio.surroundMix ) {
       // initialize 6-channel mix
-      this.combiner = audioCtx.createChannelMerger();
+      this.combiner = galaxies.audio.audioCtx.createChannelMerger();
       for ( var i=0; i<6; i++ ) {
-        var newGainNode = audioCtx.createGain();
+        var newGainNode = galaxies.audio.audioCtx.createGain();
         newGainNode.gain.value = 0;   // start silent to avoid loud playback before initial mix call
         this.preAmp.connect( newGainNode );
         newGainNode.connect( this.combiner, 0, i );
         this.channels[i] = newGainNode;
       }
-      this.combiner.connect(outNode);
+      this.combiner.connect(galaxies.audio.outNode);
     } else { 
       // initialize stereo mix
-      this.panner = audioCtx.createPanner();
+      this.panner = galaxies.audio.audioCtx.createPanner();
       this.panner.panningModel = 'HRTF';
       this.panner.distanceModel = 'inverse';
       this.panner.refDistance = 2;
@@ -394,33 +241,33 @@ function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
       this.panner.coneOuterAngle = 0;
       this.panner.coneOuterGain = 0;
       this.preAmp.connect( this.panner );
-      this.panner.connect( outNode );
+      this.panner.connect( galaxies.audio.outNode );
     }
   }
   
   this.updatePosition = function( newPosition ) {
     // TODO - Evaluate this against the listener object direction for a more versatile system.
     //        Transform the vector into the listener local space.
-    this.toSource.subVectors( newPosition, listenerObject.position );
+    this.toSource.subVectors( newPosition, galaxies.audio.listenerObject.position );
     this.distance = this.toSource.length();
     
-    if ( surroundMix ) {
+    if ( galaxies.audio.surroundMix ) {
       this.bearing = Math.atan2( -this.toSource.x, -this.toSource.z );
       this.inPlaneWeight = 0;
       if (this.distance > 0) { this.inPlaneWeight = Math.sqrt( Math.pow(this.toSource.x,2) + Math.pow(this.toSource.z,2) ) / this.distance; }
       for(var iOutput = 0; iOutput<6; iOutput++ ) {
         
         // base level based on distance
-        var gain = DISTANCE_REF / (DISTANCE_REF + DISTANCE_ROLL * (this.distance - DISTANCE_REF)); // linear, to match panner algorithm in stereo mix
+        var gain = galaxies.audio.DISTANCE_REF / (galaxies.audio.DISTANCE_REF + galaxies.audio.DISTANCE_ROLL * (this.distance - galaxies.audio.DISTANCE_REF)); // linear, to match panner algorithm in stereo mix
         //var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION); // exponential
-        if ( channelAngles[iOutput] !== null ) {
+        if ( galaxies.audio.channelAngles[iOutput] !== null ) {
           // cosine falloff function
-          //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
+          //var directionAttenuation = (Math.cos( galaxies.audio.channelAngles[iOutput] - source.bearing ) + 1)/2;
           
           // exponential falloff function
           // calculate short distance between the angles
-          var angleDifference = ((channelAngles[iOutput] - this.bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
-          var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
+          var angleDifference = ((galaxies.audio.channelAngles[iOutput] - this.bearing) + galaxies.utils.PI_2 + Math.PI) % galaxies.utils.PI_2 - Math.PI;
+          var directionAttenuation = Math.exp( -angleDifference * angleDifference * galaxies.audio.DIRECTION_FOCUS );
           
           gain =  (gain/2) * (1-this.inPlaneWeight) + 
                   gain * (directionAttenuation) * this.inPlaneWeight;
@@ -428,7 +275,7 @@ function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
         this.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
       }          
     } else {
-      // exagerrate the horizontal position of the object in order to get better stereo separation
+      // exaggerate the horizontal position of the object in order to get better stereo separation
       this.panner.setPosition( newPosition.x, newPosition.y, newPosition.z );
     }
   }
@@ -437,25 +284,43 @@ function PositionedSound( sourceBuffer, position, baseVolume, loop, start ) {
     if ( this.source != null ) {
       this.source.stop(0);
     }
-    this.source = audioCtx.createBufferSource();
-    this.source.loop = this.loop;
-    this.source.buffer = buffer;
-    this.source.connect( this.muteVolume );
-    this.source.start(0);
+    try{
+      this.source = galaxies.audio.audioCtx.createBufferSource();
+      this.source.loop = this.loop;
+      this.source.buffer = buffer;
+      this.source.connect( this.muteVolume );
+      this.source.start(0);
+      
+      if ( dispose ) {
+        var ref = this;
+        this.source.onended = function() { galaxies.audio.unregisterPositionedSound( ref ); };
+      }
+    } catch(e) {
+      console.log("Unable to start sound", e );
+    }
   }
   
   this.init();
-  this.updatePosition( position ); // set initial mix
+  this.updatePosition( props.position ); // set initial mix
   
-  if ( start ) {
+  galaxies.audio.registerPositionedSound( this );
+  
+  if ( props.start ) {
     this.startSound();
   }
 }
 
 /// Object sound wraps a positioned sound, attaching the sound's position to an object.
-function ObjectSound( source, object, baseVolume, loop, start ) {
+galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start ) {
   this.object = object;
-  this.sound = new PositionedSound( source, rootPosition( object ), baseVolume, loop, start );
+  this.sound = new galaxies.audio.PositionedSound( {
+    source: source,
+    position: galaxies.utils.rootPosition( object ),
+    baseVolume: baseVolume,
+    loop: loop,
+    start: start,
+    dispose: false
+  });
  
   // Doppler
   this.lastDistance = 0;
@@ -471,212 +336,29 @@ function ObjectSound( source, object, baseVolume, loop, start ) {
  
   this.update = function( delta ) {
     if ( this.sound.source == null ) { return; }
-    this.sound.updatePosition( rootPosition( this.object ) );
+    this.sound.updatePosition( galaxies.utils.rootPosition( this.object ) );
     
     var deltaDistance = (this.lastDistance - this.sound.distance)/delta;
-    this.sound.source.playbackRate.value = 1 + (deltaDistance/DOPPLER_FACTOR);
+    this.sound.source.playbackRate.value = 1 + (deltaDistance/galaxies.audio.DOPPLER_FACTOR);
     this.lastDistance = this.sound.distance;
   }
-/*
-  if ( !source.loop ) {
-    //console.log( "start", this.source, directionalSources.length );
-    var selfReference = this; // self reference
-    source.onended = function() { removeSource(selfReference); };
-  }*/
 }
 
-// Plays a non-positioned sound
-function playSound( buffer ) {
-  var source = audioCtx.createBufferSource();
+
+// Plays a non-positioned sound. So vanilla.
+galaxies.audio.playSound = function ( buffer ) {
+  var source = galaxies.audio.audioCtx.createBufferSource();
   source.loop = false;
   source.buffer = buffer;
-  source.connect( outNode );
+  source.connect( galaxies.audio.outNode );
   source.start(0);
 }
 
 
+
+
+// Debug tool to display surround mix gains.
 /*
-/// A mono source that is mixed based on its position in space relative to the
-/// listener object.
-function DirectionalSource( source, object, baseVolume ) {
-  this.object = object;
-  this.source = source;
-  
-  this.lastDistance = 0;
-  this.velocity = 0;
-  
-  this.preAmp = audioCtx.createGain();
-  this.source.connect( this.preAmp );
-  if ( typeof( baseVolume ) ==='undefined' ) { baseVolume = 1; }
-  this.preAmp.gain.value = baseVolume;
-  
-  
-  // 6-channel mix
-  this.bearing = 0;
-  this.distance = 0;
-  this.inPlaneWeight = 0;
-  var combiner;
-  this.channels = [];
-  
-  // stereo mix
-  var panner;
-  
-  this.init = function() {
-    // init can be called more than once to change mix scheme, so first we must
-    // clear any channels or panners if they are already set.
-    for (var i=0; i<this.channels.length; i++ ) {
-      this.preAmp.disconnect( this.channels[i] );
-      this.channels[i].disconnect(this.combiner);
-    }
-    this.channels = [];
-    if ( this.combiner != null ) {
-      this.combiner.disconnect( audioCtx.destination );
-      this.combiner = null;
-    }
-    if ( this.panner!=null ) {
-      this.preAmp.disconnect( this.panner );
-      this.panner.disconnect( audioCtx.destination );
-      this.panner = null;
-    }
-    //
-    
-    if ( surroundMix ) {
-      // initialize 6-channel mix
-      this.combiner = audioCtx.createChannelMerger();
-      for ( var i=0; i<6; i++ ) {
-        var newGainNode = audioCtx.createGain();
-        newGainNode.gain.value = 0;   // start silent to avoid loud playback before initial mix call
-        this.preAmp.connect( newGainNode );
-        newGainNode.connect( this.combiner, 0, i );
-        this.channels[i] = newGainNode;
-      }
-      this.combiner.connect(audioCtx.destination);
-    } else { 
-      // initialize stereo mix
-      this.panner = audioCtx.createPanner();
-      this.panner.panningModel = 'HRTF';
-      this.panner.refDistance = 10;
-      this.panner.maxDistance = 10000;
-      this.panner.rolloffFactor = 1;
-      this.panner.coneInnerAngle = 360;
-      this.panner.coneOuterAngle = 0;
-      this.panner.coneOuterGain = 0;
-      this.preAmp.connect( this.panner );
-      this.panner.connect( audioCtx.destination );
-    }
-  }
-  
-  this.update = function( delta ) {
-    // update listener position
-    if ( (this.object != null) && (this.object.parent != null) ) {
-      // TODO - Evaluate this against the listener object direction for a more versatile system.
-      //        Transform the vector into the listener local space.
-      var toSource = new THREE.Vector3();
-      var objectRootPosition = rootPosition( this.object );
-      toSource.subVectors( objectRootPosition, listenerObject.position );
-      
-      this.distance = toSource.length();
-      var deltaDistance = (this.lastDistance - this.distance)/delta;
-      this.source.playbackRate.value = 1 + (deltaDistance/DOPPLER_FACTOR);
-      this.lastDistance = this.distance;
-      
-      if ( surroundMix ) {
-        this.bearing = Math.atan2( -toSource.x, -toSource.z );
-        this.inPlaneWeight = 0;
-        if (this.distance > 0) { this.inPlaneWeight = Math.sqrt( Math.pow(toSource.x,2) + Math.pow(toSource.z,2) ) / this.distance; }
-        for(var iOutput = 0; iOutput<6; iOutput++ ) {
-          
-          // base level based on distance
-          var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION);
-          if ( channelAngles[iOutput] !== null ) {
-            // cosine falloff function
-            //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
-            
-            // exponential falloff function
-            // calculate short distance between the angles
-            var angleDifference = ((channelAngles[iOutput] - this.bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
-            var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
-            
-            gain =  (gain/2) * (1-this.inPlaneWeight) + 
-                    gain * (directionAttenuation) * this.inPlaneWeight;
-          }
-          this.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
-        }          
-      } else {
-        // exagerrate the horizontal position of the object in order to get better stereo separation
-        this.panner.setPosition( objectRootPosition.x * 20, objectRootPosition.y, objectRootPosition.z );
-      }
-    }
-  }
-  
-  this.init();
-  
-  
-  this.source.start(0);
-  if ( !this.source.loop ) {
-    //console.log( "start", this.source, directionalSources.length );
-    var ds = this; // self reference
-    this.source.onended = function() { removeSource(ds); };
-  }
-  
-}
-*/
-
-/// Update the mix for directional sources.
-function mixChannels( delta ) {
-  
-  for( var i=0; i<directionalSources.length; i++ ) {
-    directionalSources[i].update( delta );
-    
-    /*
-    var source = directionalSources[i];
-    
-    // update listener position
-    if ( (source.object != null) && (source.object.parent != null) ) {
-      var toSource = new THREE.Vector3();
-      toSource.subVectors( rootPosition( source.object ), listenerObject.position );
-      
-      // TODO - Evaluate this against the listener object direction for a more versatile system.
-      //        Transform the vector into the listener local space.
-      source.bearing = Math.atan2( -toSource.x, -toSource.z );
-      source.distance = toSource.length();
-      source.inPlaneWeight = 0;
-      if (source.distance > 0) { source.inPlaneWeight = Math.sqrt( Math.pow(toSource.x,2) + Math.pow(toSource.z,2) ) / source.distance; }
-      
-      var deltaDistance = (source.lastDistance - source.distance)/delta;
-      
-      source.source.playbackRate.value = 1 + (deltaDistance/DOPPLER_FACTOR);
-      source.lastDistance = source.distance;
-    }
-    
-    for(var iOutput = 0; iOutput<6; iOutput++ ) {
-      
-      // base level based on distance
-      var gain = 1 / Math.exp(source.distance * DISTANCE_ATTENUATION);
-      if ( channelAngles[iOutput] !== null ) {
-        // cosine falloff function
-        //var directionAttenuation = (Math.cos( channelAngles[iOutput] - source.bearing ) + 1)/2;
-        
-        // exponential falloff function
-        // calculate short distance between the angles
-        var angleDifference = ((channelAngles[iOutput] - source.bearing) + PI_2 + Math.PI) % PI_2 - Math.PI;
-        var directionAttenuation = Math.exp( -angleDifference * angleDifference * DIRECTION_FOCUS );
-        
-        gain =  (gain/2) * (1-source.inPlaneWeight) + 
-                gain * (directionAttenuation) * source.inPlaneWeight;
-      }
-      //console.log( toSource, bearing, gain );
-      //gain *= 0.5; // global gain adjustment
-      //console.log( iOutput, iSource, gain );
-      source.channels[iOutput].gain.value = gain; //  apply resulting gain to channel
-    }*/
-  }
-  
-  //visualizeSource( directionalSources[0] );
-  
-}
-
-
 function visualizeSource( directionalSource ) {
   var visDivs = []; // L, R, C, LFE, SL, SR
   visDivs[0] = document.getElementById('fl');
@@ -693,28 +375,21 @@ function visualizeSource( directionalSource ) {
   
   //console.log( directionalSource.distance );
   document.getElementById('bearing').innerHTML = directionalSource.bearing.toFixed(2);
-}
-
-/*
-function removeSource( source ) {
-  directionalSources.splice( directionalSources.indexOf( source ), 1 );
 }*/
 
 
 
 
 
-
-
-// List of the channel indices used by SoundField.
-// Only L, R, SL, and SR channels are rotated, so we list the corresponding indices here.
-var channelMap = [0, 1, 4, 5];
-var playThrough = [2, 3];
-
 /// A multi-channel source that is mixed based on an arbitrary angle which
 /// rotates the soundfield.
-function SoundField( source ) {
-  this.source = audioCtx.createBufferSource();
+galaxies.audio.SoundField = function ( source ) {
+  // List of the channel indices used by SoundField.
+  // Only L, R, SL, and SR channels are rotated, so we list the corresponding indices here.
+  var channelMap = [0, 1, 4, 5];
+  var playThrough = [2, 3];
+  
+  this.source = galaxies.audio.audioCtx.createBufferSource();
   this.source.loop = true;
   this.source.buffer = source;
 
@@ -722,12 +397,12 @@ function SoundField( source ) {
   this.angularVelocity = 1;
   
   // Add input
-  var volumeNode = audioCtx.createGain();
+  var volumeNode = galaxies.audio.audioCtx.createGain();
   this.source.connect( volumeNode );
-  var splitter = audioCtx.createChannelSplitter(6);
+  var splitter = galaxies.audio.audioCtx.createChannelSplitter(6);
   volumeNode.connect( splitter );
-  var combiner = audioCtx.createChannelMerger(6);
-  combiner.connect(outNode);
+  var combiner = galaxies.audio.audioCtx.createChannelMerger(6);
+  combiner.connect(galaxies.audio.outNode);
   
   this.gains = [];
   
@@ -740,7 +415,7 @@ function SoundField( source ) {
   for ( var iOutput = 0; iOutput<channelMap.length; iOutput ++ ) {   // into each output channel
     this.gains[iOutput] = [];
     for (var iSource=0; iSource<channelMap.length; iSource++ ) {     // mix the source channels
-      var newGainNode = audioCtx.createGain();
+      var newGainNode = galaxies.audio.audioCtx.createGain();
       splitter.connect( newGainNode, channelMap[iSource], 0 );
       newGainNode.connect( combiner, 0, channelMap[iOutput] );
       this.gains[iOutput][iSource] = newGainNode;
@@ -754,97 +429,90 @@ function SoundField( source ) {
   this.setVolume(0.24);
   this.source.start(0);
   
-  
-}
-
-/// Update the mix of multichannel output based on the position of the source.
-function updateSoundField( delta ) {
-  soundField.angle += soundField.angularVelocity * delta;
-  
-  for( var iOutput = 0; iOutput<channelMap.length; iOutput++ ) {
-    for(var iSource = 0; iSource<channelMap.length; iSource++ ) {
-      var gain;
-      if ( channelAngles[channelMap[iSource]] !== null ) {
-        //gain = soundField.volume * Math.pow( (Math.cos( channelAngles[iOutput] - (channelAngles[iSource] + soundField.angle) ) + 1)/2, 1);
-        gain = (Math.cos( channelAngles[channelMap[iOutput]] - (channelAngles[channelMap[iSource]] + soundField.angle) ) + 1)/2;
+  this.update = function(delta) {
+    this.angle += this.angularVelocity * delta;
+    
+    for( var iOutput = 0; iOutput<channelMap.length; iOutput++ ) {
+      for(var iSource = 0; iSource<channelMap.length; iSource++ ) {
+        var gain;
+        if ( galaxies.audio.channelAngles[channelMap[iSource]] !== null ) {
+          //gain = soundField.volume * Math.pow( (Math.cos( galaxies.audio.channelAngles[iOutput] - (galaxies.audio.channelAngles[iSource] + soundField.angle) ) + 1)/2, 1);
+          gain = (Math.cos( galaxies.audio.channelAngles[channelMap[iOutput]] - (galaxies.audio.channelAngles[channelMap[iSource]] + this.angle) ) + 1)/2;
+        }
+        this.gains[iOutput][iSource].gain.value = gain; //  apply resulting gain to channel
       }
-      soundField.gains[iOutput][iSource].gain.value = gain; //  apply resulting gain to channel
     }
   }
 }
 
+galaxies.audio.registerPositionedSound = function( ps ) {
+  galaxies.audio.positionedSounds.push( ps );
+  //console.log("register sound", positionedSounds.length );
+}
+galaxies.audio.unregisterPositionedSound = function( ps ) {
+  var index = galaxies.audio.positionedSounds.indexOf(ps);
+  if ( index >= 0 ) {
+    galaxies.audio.positionedSounds.splice( index, 1 );
+    //console.log("unregister sound", positionedSounds.length );
+  }
+}
 
-function toggleTargetMix( value ) {
-  surroundMix = value;
-  galaxies.ui.setMixButtons( surroundMix );
+galaxies.audio.toggleTargetMix = function( value ) {
+  galaxies.audio.surroundMix = value;
+  galaxies.ui.setMixButtons( galaxies.audio.surroundMix );
   
-  // Re-initialize active sources using new mix
-  for( var i=0; i<obstacles.length; i++ ) {
-    if ( obstacles[i].passSound != null ) {
-      obstacles[i].passSound.sound.init();
-    }
+  // Re-initialize active sources, this will use the new surroundMix value
+  for( var i=0, len=galaxies.audio.positionedSounds.length; i<len; i++ ) {
+    galaxies.audio.positionedSounds[i].init();
   }
-  if ( ufo!=null ) {
-    ufo.ufoSound.sound.init();
-  }
-  // TODO - call init on whoosh sound
-  //if ( 
   
   // Set destination channel count to match
-  if ( ( surroundMix )  ) {
-    if ( audioCtx.destination.maxChannelCount >= 6 )  { audioCtx.destination.channelCount = 6; }
+  if ( ( galaxies.audio.surroundMix )  ) {
+    if ( galaxies.audio.audioCtx.destination.maxChannelCount >= 6 )  { galaxies.audio.audioCtx.destination.channelCount = 6; }
   } else {
-    if ( audioCtx.destination.maxChannelCount >= 2 ) { audioCtx.destination.channelCount = 2; }
+    if ( galaxies.audio.audioCtx.destination.maxChannelCount >= 2 ) { galaxies.audio.audioCtx.destination.channelCount = 2; }
   }
 
 }
 
 
-function toggleMuteState() {
-  if ( muteState === 'none' ) {
-    muteState = 'music';
-    setAllMute( false );
-    setMusicMute( true );
-  } else if ( muteState === 'music' ) {
-    muteState = 'all';
-    setAllMute( true );
-  } else {
-    muteState = 'none'
-    setAllMute( false );
+galaxies.audio.toggleMuteState = function() {
+  switch(galaxies.audio.muteState) {
+  case ('none'):
+    galaxies.audio.muteState = 'music';
+    galaxies.audio.setAllMute( false );
+    galaxies.audio.setMusicMute( true );
+    break;
+  case ('music'):
+    galaxies.audio.muteState = 'all';
+    galaxies.audio.setAllMute( true );
+    break;
+  case ('none'):
+  default:
+    galaxies.audio.muteState = 'none'
+    galaxies.audio.setAllMute( false );
+    break;
   }
 }
 
-function setAllMute( mute ) {
-  setMusicMute( false );
+// could be private
+galaxies.audio.setAllMute = function( mute ) {
+  galaxies.audio.setMusicMute( false );
   if ( mute ) {
-    outNode.gain.value = 0;
+    galaxies.audio.outNode.gain.value = 0;
   } else {
-    outNode.gain.value = 1;
+    galaxies.audio.outNode.gain.value = 1;
   }
 }
 
-function setMusicMute( mute ) {
+// could be private
+galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
-    soundField.setVolume(0);
+    galaxies.audio.soundField.setVolume(0);
   } else {
-    soundField.setVolume(0.24);
+    galaxies.audio.soundField.setVolume(0.24);
   }
 }
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
 
 
 

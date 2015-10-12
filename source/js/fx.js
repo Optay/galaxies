@@ -17,7 +17,7 @@ galaxies.fx = (function() {
     this.object = new THREE.Mesh( geometry, material.clone());
     scale = scale * ( Math.random() + 0.5 );
     this.object.scale.set( scale, scale, scale );
-    this.object.rotation.set( THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2), THREE.Math.randFloatSpread(PI_2) );
+    this.object.rotation.set( THREE.Math.randFloatSpread(galaxies.utils.PI_2), THREE.Math.randFloatSpread(galaxies.utils.PI_2), THREE.Math.randFloatSpread(galaxies.utils.PI_2) );
     this.velocity = new THREE.Vector3(0,0,0);
     this.rotationAxis = new THREE.Vector3( Math.random()-0.5, Math.random()-0.5, Math.random()-0.5 );
     this.rotationAxis.normalize();
@@ -38,14 +38,14 @@ galaxies.fx = (function() {
     this.lifeTimer += delta;
     if ( this.lifeTimer >= this.lifetime ) {
       this.active = false;
-      rootObject.remove( this.object );
+      galaxies.engine.rootObject.remove( this.object );
     }
   }
   Rubble.prototype.reset = function() {
     this.lifeTimer = 0;
     this.active = true;
     this.lifetime = 2;
-    rootObject.add( this.object );
+    galaxies.engine.rootObject.add( this.object );
   }
   
   // projectile hit particles
@@ -112,20 +112,20 @@ galaxies.fx = (function() {
         blending: THREE.NormalBlending//THREE.AdditiveBlending
       });
       projHitPool[i] = particleGroup;
-      rootObject.add( particleGroup.mesh );
+      galaxies.engine.rootObject.add( particleGroup.mesh );
       
       particleGroup.addPool( 1, emitterSettings, false );
     }
     
     // Rubble objects
     for (var i=0; i<rubblePoolSize; i++ ) {
-      var rubbleObject = new Rubble( geometries['asteroid'], rubbleMaterial, 0.1 );
+      var rubbleObject = new Rubble( galaxies.engine.geometries['asteroid'], rubbleMaterial, 0.1 );
       rubblePool[i] = rubbleObject;
     }
     
     // Debris objects
     for (var i=0; i<debrisPoolSize; i++ ) {
-      var debrisObject = new Rubble( geometries['debris'], materials['debris'], 0.2 );
+      var debrisObject = new Rubble( galaxies.engine.geometries['debris'], galaxies.engine.materials['debris'], 0.2 );
       debrisPool[i] = debrisObject;
     }
     
@@ -160,12 +160,12 @@ galaxies.fx = (function() {
     fireworksGroup.addPool( 3, cometParticleSettings, true );
     
     //fireworksGroup.mesh.rotation.x = Math.PI/2;
-    rootObject.add ( fireworksGroup.mesh );
+    galaxies.engine.rootObject.add ( fireworksGroup.mesh );
   
     // Planet splode
     planetRubbleHolder = new THREE.Object3D();
     planetRubbleHolder.scale.set(3,3,3);
-    rootObject.add( planetRubbleHolder );
+    galaxies.engine.rootObject.add( planetRubbleHolder );
     
     // Planet particle systems
     var partsDust = {
@@ -295,7 +295,7 @@ galaxies.fx = (function() {
 
     // Update emitter properties to fake drag
     var away = new THREE.Vector3();
-    away.subVectors( position, camera.position);
+    away.subVectors( position, galaxies.engine.camera.position);
     away.normalize();
     away.multiplyScalar( 40 );
     emitter.acceleration = away;
@@ -318,7 +318,7 @@ galaxies.fx = (function() {
     if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
     
     particleGroup.mesh.position.copy( position );
-    particleGroup.mesh.lookAt( rootObject.position );
+    particleGroup.mesh.lookAt( galaxies.engine.rootObject.position );
     particleGroup.triggerPoolEmitter(1);
 
   }
@@ -336,7 +336,7 @@ galaxies.fx = (function() {
       var rObject = set[index];
       rObject.object.position.copy( position );
       rObject.object.position.add( new THREE.Vector3( THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5) ) );
-      rootObject.add( rObject.object );
+      galaxies.engine.rootObject.add( rObject.object );
       
       //console.log( rObject.velocity, rObject.object.position, position );
       rObject.velocity.subVectors( rObject.object.position, position );
@@ -353,7 +353,7 @@ galaxies.fx = (function() {
   
   var showPlanetSplode = function() {
     // hide planet
-    rootObject.remove( planet );
+    galaxies.engine.rootObject.remove( galaxies.engine.planet );
     
     // rubble
     for ( var i=0; i<rubblePoolSize; i++ ) {
@@ -373,7 +373,7 @@ galaxies.fx = (function() {
     // particles
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       var group = planetParticleGroups[i];
-      rootObject.add( group.mesh );
+      galaxies.engine.rootObject.add( group.mesh );
       
       var emitter = planetParticleGroups[i].emitters[0]; // Only one per group.
       emitter.alive = 1;
@@ -385,22 +385,27 @@ galaxies.fx = (function() {
         var groupRef = group;
         setTimeout( function() {
           emitterRef.disable();
-          rootObject.remove( groupRef.mesh );
+          galaxies.engine.rootObject.remove( groupRef.mesh );
         }, groupRef.maxAgeMilliseconds );
       })();
     }
     
     // pose lux
-    characterAnimator.updateFrame(10);
+    galaxies.engine.characterAnimator.updateFrame(10);
     
     // play the sound
-    new PositionedSound( getSound('planetsplode'), rootObject.position, 16, false);
+    new galaxies.audio.PositionedSound({
+      source: galaxies.audio.getSound('planetsplode'),
+      position: galaxies.engine.rootObject.position,
+      baseVolume: 16,
+      loop: false
+    });
     
   }
   
   var showTeleportOut = function() {
-    character.add( teleportSprite );
-    teleportSprite.material.rotation = character.material.rotation;
+    galaxies.engine.character.add( teleportSprite );
+    teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
     teleportSprite.material.opacity = 0;
     teleportAnimator.play(-1); // negative loop count will loop indefinitely
     
@@ -408,25 +413,12 @@ galaxies.fx = (function() {
     createjs.Tween.removeTweens( teleportSprite.material );
     createjs.Tween.get( teleportSprite.material )
       .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
-      .set( { opacity: 0 }, character.material )
+      .set( { opacity: 0 }, galaxies.engine.character.material )
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportEffectComplete, this );
     
     teleporting = true;
-    /*
-    character.parent.add( teleportGroup.mesh );
-    
-    //character.material.blending = THREE.AdditiveBlending;
-    character.material.emissive = 0xffffff;
-    createjs.Tween.get( character.material )
-      .to({opacity: 0}, 1000);
-    
-    teleportGroup.mesh.position.copy( character.position );
-    teleportGroup.mesh.position.z += 1;
-    teleportGroup.mesh.position.y -= 0.5;
-    teleportEmitter.active = 1.0;
-    teleportEmitter.enable();
-    */
+
   }
   var teleportEffectComplete = function() {
     teleportAnimator.stop();
@@ -436,20 +428,20 @@ galaxies.fx = (function() {
   }
   var showTeleportIn = function( callback ) {
     // Set character to vertical position (this will work because user cannot move during transition).
-    angle = 0;
-    targetAngle = 0;
+    galaxies.engine.angle = 0;
+    galaxies.engine.targetAngle = 0;
     
-    character.add( teleportSprite );
-    teleportSprite.material.rotation = character.material.rotation;
+    galaxies.engine.character.add( teleportSprite );
+    teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
     teleportSprite.material.opacity = 0;
     teleportAnimator.play(-1); // negative loop count will loop indefinitely
-    character.material.opacity = 0;
+    galaxies.engine.character.material.opacity = 0;
     
     // fade in and out
     createjs.Tween.removeTweens( teleportSprite.material );
     createjs.Tween.get( teleportSprite.material )
       .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
-      .set( { opacity: 1 }, character.material )
+      .set( { opacity: 1 }, galaxies.engine.character.material )
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportEffectComplete, this )
       .call( callback, this );
@@ -477,15 +469,15 @@ galaxies.fx = (function() {
     }
     
     // lux flying away
-    if (isGameOver) {
-      character.position.y = character.position.y + CHARACTER_FLY_SPEED * delta;
-      character.rotation.z = character.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
-      character.material.rotation = character.rotation.z;
+    if (galaxies.engine.isGameOver) {
+      galaxies.engine.character.position.y = galaxies.engine.character.position.y + CHARACTER_FLY_SPEED * delta;
+      galaxies.engine.character.rotation.z = galaxies.engine.character.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
+      galaxies.engine.character.material.rotation = galaxies.engine.character.rotation.z;
     }
     
     if ( teleporting ) {
       teleportAnimator.update( delta );
-      teleportSprite.material.rotation = character.material.rotation;
+      teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
     }
     // teleport particles
     // TODO only update these when active
@@ -494,8 +486,8 @@ galaxies.fx = (function() {
   
   var shakeCamera = function( magnitude, duration ) {
     // Make sure camera is reset before applying shake tween
-    camera.rotation.x = 0; 
-    camera.rotation.y = 0;
+    galaxies.engine.camera.rotation.x = 0; 
+    galaxies.engine.camera.rotation.y = 0;
     
     if ( typeof(duration)==='undefined' ) {
       duration = 500;
@@ -510,10 +502,12 @@ galaxies.fx = (function() {
     var freqX = duration/17;
     var freqY = duration/18;
     
-    createjs.Tween.get(camera.rotation).to({x:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqX) ).
-      to( {x:0}, 0); // reset position
-    createjs.Tween.get(camera.rotation).to({y:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqY) ).
-      to( {y:0}, 0); // reset position
+    createjs.Tween.get(galaxies.engine.camera.rotation)
+      .to({x:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqX) )
+      .to( {x:0}, 0); // reset position
+    createjs.Tween.get(galaxies.engine.camera.rotation)
+      .to({y:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqY) )
+      .to( {y:0}, 0); // reset position
     //createjs.Tween.get(camera.rotation).to({x:0}, 1000, createjs.Ease.quadOut );
   }
             

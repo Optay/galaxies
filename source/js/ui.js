@@ -42,12 +42,14 @@ galaxies.ui = (function() {
   // pause menu
   var pauseOverlay = uiHolder.querySelector(".pause-overlay");
   var pauseHolder = uiHolder.querySelector(".pause-menu");
+  var pauseTitle = pauseHolder.querySelector(".pause-title");
   var resumeButton = pauseHolder.querySelector(".resume-button");
   var restartButton = pauseHolder.querySelector(".restart-button");
   var quitButton = pauseHolder.querySelector(".quit-button");
   
   // game over menu
   var gameOverHolder = uiHolder.querySelector(".game-over-menu");
+  var gameOverTitle = gameOverHolder.querySelector(".game-over-title");
   var restartButton2 = gameOverHolder.querySelector(".restart-button");
   var quitButton2 = gameOverHolder.querySelector(".quit-button");
   
@@ -165,7 +167,7 @@ galaxies.ui = (function() {
     
     var handleComplete = function() {
       // Initialize audio context before showing audio controls
-      initAudio( transitionToMenu );
+      galaxies.audio.initAudio( transitionToMenu );
       
       //transitionToMenu();
       
@@ -224,8 +226,9 @@ galaxies.ui = (function() {
     console.log("Transition loading layout to main menu.");
     
     // Start the music
-    soundField = new SoundField( getSound('music') );
-    soundField.setVolume(0.24); // 0.24
+    // This could be a singleton, but we're just going to instantiate one like this.
+    galaxies.audio.soundField = new galaxies.audio.SoundField( galaxies.audio.getSound('music') );
+    galaxies.audio.soundField.setVolume(0.24); // 0.24
     
     /*
     var test = document.createElement( 'img' );
@@ -236,7 +239,7 @@ galaxies.ui = (function() {
     // Hide loading logo
     loadingLogo.classList.add('fade-out');
     // Initialize the 3D scene
-    initScene();
+    galaxies.engine.initScene();
     
     
     
@@ -269,8 +272,12 @@ galaxies.ui = (function() {
     if ( !galaxies.utils.supportsEC3 ) {
       if ( galaxies.utils.isOSX() ) {
         recommendSafari.classList.remove('hidden');
+        window.getComputedStyle(recommendSafari).bottom; // reflow
+        recommendSafari.classList.add('browser-recommend-on');
       } else if ( galaxies.utils.isWindows() ) {
         recommendEdge.classList.remove('hidden');
+        window.getComputedStyle(recommendEdge).bottom; // reflow
+        recommendEdge.classList.add('browser-recommend-on');
       }
     }
     
@@ -279,8 +286,9 @@ galaxies.ui = (function() {
     audioControls.classList.remove("hidden");
 
     // Show mute button
-    muteButton.classList.add("fade-in");
     muteButton.classList.remove("hidden");
+    window.getComputedStyle(muteButton).right; // reflow
+    muteButton.classList.add("mute-button-on");
     
     // Show Dolby logo
     if ( galaxies.utils.supportsEC3 ) {
@@ -299,9 +307,8 @@ galaxies.ui = (function() {
   var showMenu = function() {
     //gameContainer.classList.add('hidden');
     inGameHolder.classList.add('hidden');
-    pauseHolder.classList.add('hidden');
-    pauseOverlay.classList.add('hidden');
-    gameOverHolder.classList.add('hidden');
+    hidePauseMenu();
+    hideGameOver();
     clearTitle();
     
     // Loading logo should be removed
@@ -314,8 +321,11 @@ galaxies.ui = (function() {
   
   var showPauseButton = function() {
     pauseButton.classList.remove('hidden');
+    window.getComputedStyle(pauseButton).left; // reflow
+    pauseButton.classList.add('pause-button-on');
   }
   var hidePauseButton = function() {
+    pauseButton.classList.remove('pause-button-on');
     pauseButton.classList.add('hidden');
   }
   
@@ -344,16 +354,24 @@ galaxies.ui = (function() {
     
     title.innerHTML = nextTitle.text;
     title.classList.remove('hidden');
+    window.getComputedStyle(title).top; // reflow
+    
+    title.classList.add('title-on');
     
     createjs.Tween.removeTweens( title );
-    createjs.Tween.get( title ).wait( nextTitle.time ).call( updateTitle );
+    createjs.Tween.get( title )
+      .wait( nextTitle.time )
+      .call( function() { title.classList.remove('title-on'); }, this )
+      .wait( 1000 ) // CSS transition time
+      .call( updateTitle );
   }
   var clearTitle = function() {
+    title.classList.remove('title-on');
     title.classList.add('hidden');
     titleQueue = [];
     
+    createjs.Tween.removeTweens( title );
     titleActive = false;
-
   }
   
   // Stop event from reaching other listeners.
@@ -373,10 +391,10 @@ galaxies.ui = (function() {
     inGameHolder.classList.remove('hidden');
     showPauseButton();
     
-    if ( gameInitialized ) {
-      restartGame();
+    if ( galaxies.engine.gameInitialized ) {
+      galaxies.engine.restartGame();
     } else {
-      initGame();
+      galaxies.engine.initGame();
     }
   }
   
@@ -384,12 +402,12 @@ galaxies.ui = (function() {
     e.preventDefault();
     
     // Change the mute state
-    toggleMuteState();
+    galaxies.audio.toggleMuteState();
     
     // Update the button class
-    if ( muteState === 'music' ) {
+    if ( galaxies.audio.muteState === 'music' ) {
       
-    } else if ( muteState === 'all' ) {
+    } else if ( galaxies.audio.muteState === 'all' ) {
       
     } else {
       
@@ -401,32 +419,44 @@ galaxies.ui = (function() {
   var onClickPause = function(e) {
     e.preventDefault();
     
-    pauseHolder.classList.remove('hidden');
     pauseOverlay.classList.remove('hidden');
-    pauseGame();
+    
+    pauseHolder.classList.remove('hidden');
+    window.getComputedStyle(pauseTitle).top; // reflow
+    pauseTitle.classList.add('pause-title-on');
+    
+    galaxies.engine.pauseGame();
   }
   var onClickResume = function(e) {
-    pauseHolder.classList.add('hidden');
-    pauseOverlay.classList.add('hidden');
-    resumeGame();
+    hidePauseMenu();
+    galaxies.engine.resumeGame();
   }
   var onClickRestart = function(e) {
+    hidePauseMenu();
+    hideGameOver();
+    
+    galaxies.engine.restartGame();
+  }
+  var onClickQuit = function(e) {
+    hidePauseMenu();
+    
+    galaxies.engine.endGame();
+  }
+  var hidePauseMenu = function() {
+    pauseTitle.classList.remove('pause-title-on');
+    window.getComputedStyle(pauseTitle).top; // reflow
+    
     pauseHolder.classList.add('hidden');
     pauseOverlay.classList.add('hidden');
     
-    gameOverHolder.classList.add('hidden');
-    
-    restartGame();
-  }
-  var onClickQuit = function(e) {
-    endGame();
   }
   
+  
   var onClickStereo = function(e) {
-    toggleTargetMix( false );
+    galaxies.audio.toggleTargetMix( false );
   }
   var onClickSurround = function(e) {
-    toggleTargetMix( true );
+    galaxies.audio.toggleTargetMix( true );
   }
   var setMixButtons = function( isSurround ) {
     if ( isSurround ) {
@@ -439,15 +469,23 @@ galaxies.ui = (function() {
   }
   
   function onOverButton(e) {
-    playSound( getSound('buttonover') );
+    galaxies.audio.playSound( galaxies.audio.getSound('buttonover') );
   }
   
   
   
   var showGameOver = function() {
     gameOverHolder.classList.remove('hidden');
+    
+    window.getComputedStyle(gameOverTitle).top; // reflow
+    gameOverTitle.classList.add('game-over-title-on');
   }
-  
+  var hideGameOver = function() {
+    gameOverTitle.classList.remove('game-over-title-on');
+    window.getComputedStyle(gameOverTitle).top; // reflow
+    
+    gameOverHolder.classList.add('hidden');
+  }
   
   var updateLevel = function( newPlanetNumber, roundNumber ) {
     levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();;

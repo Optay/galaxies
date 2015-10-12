@@ -13,7 +13,7 @@
 </head>
 
 
-<body onload="init()" style="background-color: #000000; margin: 0; padding: 0;overflow: hidden;">
+<body onload="galaxies.engine.init()" style="background-color: #000000; margin: 0; padding: 0;overflow: hidden;">
 
 
 <!-- ui elements, each child here is absolutely positioned -->
@@ -69,15 +69,15 @@
     
     <div class="pause-menu hidden">
         <div class="pause-title">PAUSED</div>
-        <div class="resume-button"></div>
-        <div class="restart-button"></div>
-        <div class="quit-button"></div>
+        <div class="resume-button delay-a fade-in"></div>
+        <div class="restart-button delay-b fade-in"></div>
+        <div class="quit-button delay-c fade-in"></div>
     </div>
     
     <div class="game-over-menu hidden">
         <div class="game-over-title">GAME OVER</div>
-        <div class="restart-button"></div>
-        <div class="quit-button"></div>
+        <div class="restart-button delay-a fade-in"></div>
+        <div class="quit-button delay-b fade-in"></div>
     </div>
     
     <div class="title hidden">TEST TITLE</div>
