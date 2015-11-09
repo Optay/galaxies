@@ -51,10 +51,25 @@ galaxies.Obstacle = function ( props ) {
   this.orient = props.orient;
   this.model = props.model;
   
-  var material;
-  if ( this.model != null ) {
-    material = this.model.material;
-  }
+  // Iterate through provided model object to find the actual mesh and its material.
+  // Only the first mesh/material is used.
+  var material = null;
+  var childrens = [];
+  childrens.push(this.model);
+  while ( childrens.length > 0 ) {
+    var child = childrens.shift();
+    if ( child==null ) { continue; }
+    
+    if ( child.material != null ) {
+      material = child.material;
+      break;
+    }
+    
+    for ( var i=0, len = child.children.length; i<len; i++ ) {
+      childrens.push( child.children[i] );
+    }
+  };
+  //
   
   //var axisHelper = new THREE.AxisHelper( 2 );
   //this.object.add( axisHelper );  
@@ -68,6 +83,8 @@ galaxies.Obstacle = function ( props ) {
     this.passSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound( props.passSound), this.object, 0, true );
     //directionalSources.push(passSound);
   }
+  if ( typeof( props.explosionGain ) !=='number' ) { props.explosionGain = 2; }
+  var explosionGain = props.explosionGain;
   
   var clearDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
   var startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
@@ -83,7 +100,7 @@ galaxies.Obstacle = function ( props ) {
     this.object.position.copy(position);
     this.object.lookAt( new THREE.Vector3() );
     
-    if ( material!=null) {
+    if ( material !== null) {
       material.transparent = false;
     }
     
@@ -117,7 +134,7 @@ galaxies.Obstacle = function ( props ) {
       if ( radius > clearDistance ) { this.deactivate(); }
       if ( this.isActive && (radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) ) {
         this.isActive = false;
-        if ( material!=null) {
+        if ( material!=null ) {
           material.transparent = true;
         }
       }
@@ -284,7 +301,7 @@ galaxies.Obstacle = function ( props ) {
     new galaxies.audio.PositionedSound({
       source: galaxies.audio.getSound(explodeSound),
       position: galaxies.utils.rootPosition(this.object),
-      baseVolume: 2,
+      baseVolume: explosionGain,
       loop: false
     });
     

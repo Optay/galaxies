@@ -124,7 +124,7 @@ galaxies.engine.onWindowResize = function() {
 galaxies.engine.onVisibilityChange = function( event ) {
   console.log( "document.hidden:", document.hidden );
   if ( document.hidden ) {
-    stopTimers();
+    galaxies.engine.stopTimers();
   } else {
     if ( !galaxies.engine.isPaused ) {
       galaxies.engine.startTimers();
@@ -137,7 +137,7 @@ galaxies.engine.onVisibilityChange = function( event ) {
 
 
 
-/// Entry Point
+/// REAL ENTRY POINT
 galaxies.engine.init = function() {
   // It would be nice not to be using both of these.
   // create.js ticker for tweens
@@ -174,12 +174,15 @@ galaxies.engine.initScene = function() {
   galaxies.engine.rootObject.add( light );
   
   var skyTexture = new THREE.CubeTexture([
-                    galaxies.queue.getResult('skyboxright1'),
-                    galaxies.queue.getResult('skyboxleft2'),
-                    galaxies.queue.getResult('skyboxtop3'),
-                    galaxies.queue.getResult('skyboxbottom4'),
-                    galaxies.queue.getResult('skyboxfront5'),
-                    galaxies.queue.getResult('skyboxback6') ] );
+    galaxies.queue.getResult('skyboxright1'),
+    galaxies.queue.getResult('skyboxleft2'),
+    galaxies.queue.getResult('skyboxtop3'),
+    galaxies.queue.getResult('skyboxbottom4'),
+    galaxies.queue.getResult('skyboxfront5'),
+    galaxies.queue.getResult('skyboxback6') ]);
+  skyTexture.generateMipMaps = false;
+  skyTexture.magFilter = THREE.LinearFilter,
+  skyTexture.minFilter = THREE.LinearFilter
   skyTexture.needsUpdate = true;
   
   /* Set up a material that uses a cubemap texture.  This material uses
@@ -711,9 +714,9 @@ galaxies.engine.initLevel = function() {
   // Rates for obstacles start low and asymptote to a max value.
   // Max values are first integer in formula. Initial value is first integer minus second integer.
   //var asteroidCount = Math.floor( 20 - (15 * (1/(1 + (level-1) * 0.1)) ) );
-  var asteroidRate = 3 - (2.3 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
-  var satelliteRate = 0.6 - (0.4 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
-  var cometRate = 0.6 - (0.5 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
+  var asteroidRate = 3 - (2.30 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
+  var satelliteRate = 0.6 - (0.40 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
+  var cometRate = 0.6 - (0.45 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
 
   galaxies.engine.spawnTimes['asteroid'] = 1/asteroidRate;
   galaxies.engine.spawnTimes['satellite'] = 1/satelliteRate;
@@ -737,11 +740,9 @@ galaxies.engine.initLevel = function() {
   
   
   if ( galaxies.engine.levelNumber >= 3 ) {
-  //if (true ) { // UFO test
+  //if ( true ) { // UFO test
     galaxies.engine.ufo.activate();
   }
-  
-  galaxies.engine.initRootRotation();
   
   galaxies.ui.updateLevel( galaxies.engine.planetNumber, galaxies.engine.roundNumber );
   
@@ -755,6 +756,7 @@ galaxies.engine.nextLevel = function() {
   galaxies.engine.clearLevel();
   
   if ( galaxies.engine.roundNumber == 1 ) {
+    galaxies.engine.initRootRotation();
     galaxies.engine.planetTransition();
   } else {
     galaxies.engine.initLevel();
@@ -907,7 +909,7 @@ galaxies.engine.onDocumentTouchMove = function( event ) {
       
       galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
       
-      document.getElementById('message').innerHTML = mouseX.toFixed(2) + ", " + mouseY.toFixed(2);
+      //document.getElementById('message').innerHTML = mouseX.toFixed(2) + ", " + mouseY.toFixed(2);
   }
         
 }
@@ -930,8 +932,8 @@ galaxies.engine.addObstacle = function( type ) {
   props.tumbleOnHit = true;
   props.spiral = 0;
   props.points = 100;
-  props.hitSound = 'fpo';
-  props.explodeSound = 'fpo';
+  props.hitSound = 'asteroidhit';
+  props.explodeSound = 'asteroidsplode';
   props.passSound = null;
   props.orient = false;
   props.explodeType = 'rubble';
@@ -970,12 +972,12 @@ galaxies.engine.addObstacle = function( type ) {
       model.position.y = -2;
       model.rotation.y = Math.random() * galaxies.utils.PI_2; // random roll to show window
       
-      var modelOrient = new THREE.Object3D();
+      var modelOrient = new THREE.Object3D(); // holder positioned at center of model and rotated to orient it.
       modelOrient.add(model);
       modelOrient.rotation.x = 1.3; // Face away from camera, but not completely aligned with cone surface
       modelOrient.rotation.z = 0.5; // Face direction of motion a little
       
-      props.anchor = new THREE.Object3D(); // holder, so we can properly center and orient the model
+      props.anchor = new THREE.Object3D(); // holder at center, z-axis faces forward, we made it!
       props.anchor.add(modelOrient);
       var satScale = 0.4;
       props.anchor.scale.set(satScale, satScale, satScale);
@@ -1007,6 +1009,7 @@ galaxies.engine.addObstacle = function( type ) {
       props.explodeType = 'fireworks';
       
       props.explodeSound = 'cometexplode';
+      props.explosionGain = 7;
       props.passSound = 'cometloop';
       
       var emitterSettings = {
@@ -1113,7 +1116,7 @@ galaxies.engine.animate = function() {
 galaxies.engine.update = function() {
   var delta = galaxies.engine.clock.getDelta();
   if ( delta === 0 ) { return; } // paused!
-  if ( delta > 1 ) { console.log(delta); }
+  if ( delta > 0.25 ) { delta = 0.25; } // Cap simulation at 4 ticks/second delta to prevent projectiles from passing through objects.
   
   // Test for hits, projectiles and ricochets
   var activeObstacleCount = 0;
@@ -1260,13 +1263,17 @@ galaxies.engine.update = function() {
   if ( galaxies.engine.levelTimer > galaxies.engine.LEVEL_TIME ) {
     galaxies.engine.levelComplete = true;
   }
-  if ( galaxies.engine.levelComplete && (activeObstacleCount === 0) ) {
+  if ( galaxies.engine.levelComplete &&
+      (activeObstacleCount === 0) &&
+      ((galaxies.engine.ufo.state === 'idle') ||
+      (galaxies.engine.ufo.state === 'inactive')) ) {
     galaxies.engine.nextLevel();
   }
   
   
   // AUDIO
   galaxies.audio.soundField.update(delta);
+  
   
   galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
   
@@ -1285,6 +1292,7 @@ function testUpdate( delta ) {
 */
 
 
+// Randomize the drift rotation
 galaxies.engine.initRootRotation = function() {
   galaxies.engine.driftAxis = new THREE.Vector3( Math.random()*2-1, Math.random()*2-1, Math.random()*2-1);
   galaxies.engine.driftAxis.normalize;
@@ -1508,13 +1516,45 @@ galaxies.engine.removeCombo = function( element ) {
 
 
 
-
-
-
-
-
-
-
+// SORT-OF ENTRY POINT
+galaxies.start = function() {
+  // Supported browser?
+  if ( !galaxies.utils.isSupportedBrowser() ) {
+    // Generate URL for redirect
+    var url = window.location.href;
+    url = url.substring(0, url.lastIndexOf("/") );
+    url = url + "/unsupported.html";
+    window.location.assign(url);
+    return;
+  }
+  
+  if ( galaxies.utils.isMobile() ) {
+    // touch to start
+    var ttsElement = document.body.querySelector('.touch-to-start');
+    ttsElement.classList.remove('hidden');
+    ttsElement.addEventListener('click', function() {
+      ttsElement.remove();
+      
+      // Play a dummy sound to free the beast!
+      // Play a sound the user-triggered event to enable sounds on the page.
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      galaxies.audio.audioCtx = new AudioContext();
+      
+      var playNode = galaxies.audio.audioCtx.createOscillator();
+      playNode.frequency.value = 4000;
+      playNode.connect( galaxies.audio.audioCtx.destination );
+      playNode.start(0);
+      playNode.stop(0);
+      
+      galaxies.engine.init();
+    });
+  } else {
+    // start on load
+    var ttsElement = document.body.querySelector('.touch-to-start');
+    ttsElement.remove();
+    galaxies.engine.init();
+  }
+}
 
 
 /*

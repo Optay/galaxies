@@ -32,12 +32,27 @@ module.exports = function(grunt) {
       }
     },
     compass: {                  // Task
+      dev: {                    // Target
+        options: {              // Target options
+          sassDir: '<%=dirs.src %>/css',
+          cssDir: '<%=dirs.dest %>/css',
+          specify: '<%=dirs.src %>/css/style.scss',
+          environment: 'development'
+        }
+      },
       dist: {                   // Target
         options: {              // Target options
           sassDir: '<%=dirs.src %>/css',
           cssDir: '<%=dirs.dest %>/css',
           specify: '<%=dirs.src %>/css/style.scss',
-          environment: 'development'//'production'
+          environment: 'production'
+        }
+      }
+    },
+    uglify: {
+      dist: {
+        files: {
+          '<%= dirs.dest %>/js/engine.js': ['<%= dirs.dest %>/js/engine.js']
         }
       }
     },
@@ -48,7 +63,7 @@ module.exports = function(grunt) {
       },
       css: {
         files: ['<%=dirs.src %>/css/*.scss'],
-        tasks: ['compass']
+        tasks: ['compass:dev']
       },
       html: {
         files: ['<%=dirs.src %>/html/*.html'],
@@ -65,6 +80,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-compass');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   
-  grunt.registerTask('build', ['concat', 'copy', 'compass'] );
+  grunt.registerTask('build', ['concat', 'copy', 'uglify', 'compass:dist'] );
 }

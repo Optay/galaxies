@@ -92,6 +92,7 @@ galaxies.fx = (function() {
   var planetParticleGroups = [];
   
   // Firework particle group for exploding comets
+  var FIREWORKS_DECELERATION = 15;
   var fireworksGroup;
   
   var teleportEmitter, teleportGroup;
@@ -133,9 +134,9 @@ galaxies.fx = (function() {
     var cometParticleSettings = {
         type: 'sphere',
         radius: 0.6,
-        acceleration: new THREE.Vector3(0,0,-40),//THREE.Vector3(0,-40,0),
-        speed: 10,
-        speedSpread: 5,
+        acceleration: new THREE.Vector3(0,0,-FIREWORKS_DECELERATION),//THREE.Vector3(0,-40,0),
+        speed: 5,
+        speedSpread: 3,
         sizeStart: 2,
         sizeStartSpread: 1,
         sizeEnd: 1,
@@ -154,7 +155,7 @@ galaxies.fx = (function() {
     starTexture.needsUpdate = true;
     fireworksGroup = new SPE.Group({
       texture: starTexture,
-      maxAge: 1,
+      maxAge: 1.5,
       blending: THREE.AdditiveBlending
     });
     fireworksGroup.addPool( 3, cometParticleSettings, true );
@@ -297,7 +298,7 @@ galaxies.fx = (function() {
     var away = new THREE.Vector3();
     away.subVectors( position, galaxies.engine.camera.position);
     away.normalize();
-    away.multiplyScalar( 40 );
+    away.multiplyScalar( FIREWORKS_DECELERATION );
     emitter.acceleration = away;
     //
     

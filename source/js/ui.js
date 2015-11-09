@@ -33,10 +33,10 @@ galaxies.ui = (function() {
   // in-game elements
   var inGameHolder = uiHolder.querySelector(".game-ui");
   var pauseButton = uiHolder.querySelector(".pause-button");
-  var levelDisplay = inGameHolder.querySelector(".level-display");
+  var levelDisplay = inGameHolder.querySelector(".level-display-text");
   var lifeDisplay = inGameHolder.querySelector(".life-display");
   var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
-  var scoreDisplay = inGameHolder.querySelector(".score-display");
+  var scoreDisplay = inGameHolder.querySelector(".score-display-text");
   
   
   // pause menu
@@ -127,24 +127,45 @@ galaxies.ui = (function() {
     // hook button elements
     playButton.addEventListener('click', onClickPlay );
     playButton.addEventListener('mouseover', onOverButton);
+    playButton.addEventListener('touchstart', onClickPlay );
+    playButton.addEventListener('touchstart', blockEvent );
     
     muteButton.addEventListener('click', onClickMute );
     muteButton.addEventListener('mousedown', blockEvent );
     muteButton.addEventListener('mouseover', onOverButton);
+    muteButton.addEventListener('touchstart', onClickMute );
+    muteButton.addEventListener('touchstart', blockEvent );
     
     pauseButton.addEventListener('click', onClickPause );
     pauseButton.addEventListener('mousedown', blockEvent );
     pauseButton.addEventListener('mouseover', onOverButton);
+    pauseButton.addEventListener('touchstart', onClickPause );
+    pauseButton.addEventListener('touchstart', blockEvent );
+    
     resumeButton.addEventListener('click', onClickResume );
     resumeButton.addEventListener('mouseover', onOverButton);
+    resumeButton.addEventListener('touchstart', blockEvent );
+    resumeButton.addEventListener('touchstart', onClickResume );
+    
     restartButton.addEventListener('click', onClickRestart );
     restartButton.addEventListener('mouseover', onOverButton);
+    restartButton.addEventListener('touchstart', blockEvent );
+    restartButton.addEventListener('touchstart', onClickRestart );
+    
     restartButton2.addEventListener('click', onClickRestart );
     restartButton2.addEventListener('mouseover', onOverButton);
+    restartButton2.addEventListener('touchstart', blockEvent );
+    restartButton2.addEventListener('touchstart', onClickRestart );
+    
     quitButton.addEventListener('click', onClickQuit );
     quitButton.addEventListener('mouseover', onOverButton);
+    quitButton.addEventListener('touchstart', blockEvent );
+    quitButton.addEventListener('touchstart', onClickQuit );
+    
     quitButton2.addEventListener('click', onClickQuit );
     quitButton2.addEventListener('mouseover', onOverButton);
+    quitButton2.addEventListener('touchstart', blockEvent );
+    quitButton2.addEventListener('touchstart', onClickQuit );
     
     stereoButton.addEventListener('click', onClickStereo);
     stereoButton.addEventListener('mouseover', onOverButton);
@@ -169,9 +190,6 @@ galaxies.ui = (function() {
       // Initialize audio context before showing audio controls
       galaxies.audio.initAudio( transitionToMenu );
       
-      //transitionToMenu();
-      
-      //initGame();
     }
     var handleProgress = function( e ) {
       progressElement.innerHTML = Math.round(e.progress * 100).toString();
@@ -281,14 +299,16 @@ galaxies.ui = (function() {
       }
     }
     
-    // Show mute button
-    audioControls.classList.add("fade-in");
-    audioControls.classList.remove("hidden");
-
+    // Show stereo/surround buttons
+    if (!galaxies.utils.isMobile() ) {
+      audioControls.classList.add("fade-in");
+      audioControls.classList.remove("hidden");
+    }
+    
     // Show mute button
     muteButton.classList.remove("hidden");
-    window.getComputedStyle(muteButton).right; // reflow
-    muteButton.classList.add("mute-button-on");
+    //window.getComputedStyle(muteButton).right; // reflow
+    muteButton.classList.add("fade-in");
     
     // Show Dolby logo
     if ( galaxies.utils.supportsEC3 ) {
@@ -329,8 +349,14 @@ galaxies.ui = (function() {
     pauseButton.classList.add('hidden');
   }
   
+  /**
+   * Show a title as yellow text that animates up and down from the bottom
+   * of the screen. A title of 0 time will not be removed until titles are
+   * manually cleared.
+   */
   var titleQueue = [];
   var titleActive = false;
+  var currentTitle = null;
   var showTitle = function( titleText, time ) {
     var newTitle = {
       text: titleText,
@@ -339,7 +365,7 @@ galaxies.ui = (function() {
     
     titleQueue.push( newTitle );
     
-    if ( !titleActive ) {
+    if ( (!titleActive) || (currentTitle.time===0) ) {
       updateTitle();
     }
   }
@@ -359,25 +385,30 @@ galaxies.ui = (function() {
     title.classList.add('title-on');
     
     createjs.Tween.removeTweens( title );
-    createjs.Tween.get( title )
-      .wait( nextTitle.time )
-      .call( function() { title.classList.remove('title-on'); }, this )
-      .wait( 1000 ) // CSS transition time
-      .call( updateTitle );
+    if ( nextTitle.time > 0 ) {
+      createjs.Tween.get( title )
+        .wait( nextTitle.time )
+        .call( function() { title.classList.remove('title-on'); }, this )
+        .wait( 1000 ) // CSS transition time
+        .call( updateTitle );
+    }
+    
+    currentTitle = nextTitle;
   }
   var clearTitle = function() {
     title.classList.remove('title-on');
     title.classList.add('hidden');
     titleQueue = [];
+    currentTitle = null;
     
     createjs.Tween.removeTweens( title );
     titleActive = false;
   }
   
   // Stop event from reaching other listeners.
-  // Used to keep ui buttons from causing fire events.
+  // Used to keep ui buttons from causing fire events on underlying game element.
   var blockEvent = function(e) {
-    e.preventDefault();
+    
     e.stopPropagation();
     
   }
@@ -420,6 +451,8 @@ galaxies.ui = (function() {
     e.preventDefault();
     
     pauseOverlay.classList.remove('hidden');
+    window.getComputedStyle(pauseOverlay).top; // reflow
+    pauseOverlay.classList.add('pause-overlay-on');
     
     pauseHolder.classList.remove('hidden');
     window.getComputedStyle(pauseTitle).top; // reflow
@@ -448,6 +481,7 @@ galaxies.ui = (function() {
     
     pauseHolder.classList.add('hidden');
     pauseOverlay.classList.add('hidden');
+    pauseOverlay.classList.remove('pause-overlay-on');
     
   }
   
@@ -479,6 +513,11 @@ galaxies.ui = (function() {
     
     window.getComputedStyle(gameOverTitle).top; // reflow
     gameOverTitle.classList.add('game-over-title-on');
+    
+    showTitle( "SCORE " +
+               scoreDisplay.innerHTML +
+               "<br>" +
+               levelDisplay.innerHTML, 0);
   }
   var hideGameOver = function() {
     gameOverTitle.classList.remove('game-over-title-on');

@@ -18,6 +18,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }
   else { ext = '.m4a'; }
   
+  //ext = '.foo'; // TEST, prevents any audio files from loading
+  
   console.log("Audio extension selected:", ext );
   
   // Add audio files
@@ -36,7 +38,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'cometexplode', src: 'comet_explode_01', type: createjs.AbstractLoader.BINARY },
     { id: 'cometloop', src: 'comet_fire_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'fpo1', src: 'UFO_laser_fire', type: createjs.AbstractLoader.BINARY },
-    { id: 'ufo', src: 'ufo_engine_loop_01', type: createjs.AbstractLoader.BINARY },
+    { id: 'ufo', src: 'ufo_engine_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'music', src: 'music_5_1_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'ufohit1', src: 'ufo_hit_01', type: createjs.AbstractLoader.BINARY },
     { id: 'ufohit2', src: 'ufo_hit_02', type: createjs.AbstractLoader.BINARY },

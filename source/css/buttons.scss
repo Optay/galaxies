@@ -39,7 +39,7 @@
   background-image: url('../images/button_audio_on.png');
   z-index: 22; /* needs to be over pause overlay */
   
-  transition: right $transition-time ease-out;
+  /*transition: right $transition-time ease-out;*/
 }
 .mute-button-on {
   right: 60px;
@@ -194,13 +194,13 @@
   height: 50px;
 }
 .stereo-button:hover, .surround-button:hover {
-  background-position: 0 -59px;/*33%; 117*/
+  background-position: 0 -58px;/*33%; 117*/
 }
 .stereo-button.active, .surround-button.active {
-  background-position: 0 -117px;/*67%;234*/
+  background-position: 0 -116px;/*67%;234*/
 }
 .stereo-button.active:hover, .surround-button.active:hover {
-  background-position: 0 -175px;/*100%;350*/
+  background-position: 0 -174px;/*100%;350*/
 }
 
 .stereo-button {
@@ -209,4 +209,12 @@
 }
 .surround-button {
   background-image: url('../images/button_surround.png');
+}
+
+.touch-to-start-button {
+  width: 106px;
+  height: 120px;
+  margin: auto;
+  background-size: 100%;
+  background-image: url('../images/button_touch_to_start_large.png');
 }

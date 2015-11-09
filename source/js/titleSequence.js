@@ -109,7 +109,7 @@ galaxies.TitleSequence = function() {
   
   var titleImageIds = ['', 'title5', 'title1', 'title2', 'title3', 'title4', 'title5'];
   var titleRotationAxis = new THREE.Vector3(1,0,0);
-  var titleScale = 100;
+  var titleScale = 80; //100
   var titleStartAngle = 0;//galaxies.utils.PI_2/titleImageIds.length * -0.2;
   
   var whooshObject = new THREE.Object3D();
@@ -126,7 +126,9 @@ galaxies.TitleSequence = function() {
     }
     
     var image = galaxies.queue.getResult(titleImageIds[i]);
-    var map = new THREE.Texture( image, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
+    var map = new THREE.Texture( image );
+    map.magFilter = THREE.LinearFilter;
+    map.minFilter = THREE.LinearMipMapLinearFilter;
     map.needsUpdate = true;
     
     var mat = new THREE.SpriteMaterial( {
@@ -141,6 +143,8 @@ galaxies.TitleSequence = function() {
 //titles[i].rotateOnAxis(titleRotationAxis, i * 0.1);//galaxies.utils.PI_2/len );
   
   var extraTextureLux = new THREE.Texture( galaxies.queue.getResult( 'titleExtraLux' ) );
+  extraTextureLux.magFilter = THREE.LinearFilter;
+  extraTextureLux.minFilter = THREE.LinearFilter;
   extraTextureLux.needsUpdate = true;
   titleExtras[3] = new THREE.Sprite(
     new THREE.SpriteMaterial( {
@@ -152,6 +156,8 @@ galaxies.TitleSequence = function() {
   titleExtras[3].scale.set( titleExtras[3].material.map.image.width/70, titleExtras[3].material.map.image.height/70, 1 );
   
   var extraTextureTrunkford = new THREE.Texture( galaxies.queue.getResult( 'titleExtraTrunkford' ) );
+  extraTextureTrunkford.magFilter = THREE.LinearFilter;
+  extraTextureTrunkford.minFilter = THREE.LinearFilter;
   extraTextureTrunkford.needsUpdate = true;
   titleExtras[5] = new THREE.Sprite(
     new THREE.SpriteMaterial( {

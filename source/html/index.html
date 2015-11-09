@@ -5,7 +5,11 @@
 <script>try{Typekit.load({ async: true });}catch(e){}</script>
 
 <meta charset="UTF-8">
-<title>Galaxies Engine Test</title>
+<meta name="viewport" content="user-scalable=no">
+<meta name="description" content="Play the Feisty Galaxies game in your browser. Armed with only his trusty space-aged badminton racket, our pink feisty monster hero, Luxamillion, must protect each planet from the onslaught of asteroids, spacecrafts, shooting stars, and UFOs helmed by the evil Dr. Pachydermus. Hear Dolby audio in Mac OS X El Capitan Safari 9 and Microsoft Edge.">
+<meta name="keywords" content="Game,Dolby,HTML5,WebGL,Surround Sound,3D Audio,Browser,Luxurious Animals,Lux Ahoy,Safari 9,El Capitan,Microsoft Edge,Animation,Galaxy,Space,Casual,Digital Plus,ec3,eac3,Luxamillion">
+
+<title>Feisty Galaxies</title>
 
 <link href="fonts/MyFontsWebfontsKit.css" type="text/css" rel="stylesheet">
 <link href="css/style.css" type="text/css" rel="stylesheet">
@@ -13,7 +17,7 @@
 </head>
 
 
-<body onload="galaxies.engine.init()" style="background-color: #000000; margin: 0; padding: 0;overflow: hidden;">
+<body onload="galaxies.start()">
 
 
 <!-- ui elements, each child here is absolutely positioned -->
@@ -56,8 +60,8 @@
     <div class="game-ui fullscreen hidden">
         <div class="pause-button"></div>
         <div class="game-logo"></div>
-        <div class="level-display" ></div>
-        <div class="score-display"></div>
+        <div class="level-display"><span class="level-display-text"></span></div>
+        <div class="score-display"><span class="score-display-text"></span></div>
         <div class="life-display">
             <div class="life-heart"></div>
             <div class="life-heart"></div>
@@ -88,9 +92,15 @@
     
     
     
-    <div class="mute-button hidden"></div>
+    <div class="mute-button mute-button-on hidden"></div>
     <div class="dolby-logo hidden"></div>
 
+    <div class="touch-to-start fullscreen hidden">
+        <div class="touch-to-start-center">
+            <div class="touch-to-start-logo"></div>
+            <div class="touch-to-start-button"></div>
+        </div>
+    </div>
     
 </div>
     

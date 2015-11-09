@@ -81,10 +81,10 @@ galaxies.utils.generatePlanetName = function( planetNumber ) {
   var name = 
     galaxies.utils.selectRandomElement( galaxies.words['verb'] ) +
     " the " +
-    galaxies.utils.selectRandomElement( galaxies.words['adjective'] ) +
-    "<br>" +
+    //galaxies.utils.selectRandomElement( galaxies.words['adjective'] ) +
+    //"<br>" +
     galaxies.utils.selectRandomElement( galaxies.words['size'] ) +
-    " " +
+    "<br>" +
     galaxies.utils.selectRandomElement( galaxies.words['noun'] ) +
     " " +
     galaxies.utils.selectRandomElement( galaxies.words['greek'] ) +
@@ -93,8 +93,9 @@ galaxies.utils.generatePlanetName = function( planetNumber ) {
     " " +
     planetNumber;
     
+  // TEST
   // longest name!
-  //name = "Safeguard the Extraterrestrial<br>Itty-Bitty Space Outpost Centurion Centurion 10";
+  //name = "Safeguard the Itty-Bitty<br>Space Outpost Centurion Centurion 10";
   
   name = name.toUpperCase();
     

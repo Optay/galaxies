@@ -24,11 +24,16 @@ galaxies.utils.getShakeEase = function ( frequency ) {
 // Identify desktop platforms to recommend correct browser with EC-3.
 galaxies.utils.isOSX = function() {
   var agt = navigator.userAgent;
-  return ( /Mac OS X/.test(agt) );
+  return ( /Mac OS X/.test(agt) && !/iphone/i.test(agt) && !/ipad/i.test(agt) && !/ipod/i.test(agt) );
 }
 galaxies.utils.isWindows = function() {
   var agt = navigator.userAgent;
   return ( /Windows/.test(agt) && !/phone/i.test(agt) );
+}
+
+galaxies.utils.isMobile = function() {
+  var agt = navigator.userAgent;
+  return /iPhone|iPad|iPod|Android|windows phone|iemobile|\bsilk\b/i.test(agt);
 }
 
 // Identify which audio format to use.
@@ -78,6 +83,34 @@ galaxies.utils.testAudioSupport = function( callback ) {
       audio.play();
   }  
 }
+
+// Will it run?
+// Exclude browsers that do not support WebGL and WebAudio.
+galaxies.utils.isSupportedBrowser = function() {
+  // Test for WebGL support
+  var canvas;
+  var ctx;
+  var exts;
+  
+  try {
+    canvas = document.createElement('canvas');
+    ctx = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  }
+  catch (e) {
+    return false;
+  }
+  if (ctx === undefined) { return false; }
+  canvas = undefined;
+  //
+  
+  // Test for WebAudio support
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
+  if ( AudioContext == null ) { return false; }
+  //
+  
+  return true;
+}
+
 
 /// Takes an array and returns its contents in a randomized order.
 galaxies.ExhaustiveArray = function() {

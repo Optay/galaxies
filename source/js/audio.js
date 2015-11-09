@@ -12,6 +12,8 @@ galaxies.audio = galaxies.audio || {};
 // Use surround when true, fallback to stereo mix when false, auto-detect value is set in initAudio
 galaxies.audio.surroundMix = false;
 
+galaxies.audio.globalGain = 1; // used to boost volume in OS X 10.11, Safari 9, which has a problem in the EC-3 decoder.
+
 // spatialization parameters
 galaxies.audio.DISTANCE_ATTENUATION = 0.1;//0.05;
 galaxies.audio.DISTANCE_REF = 2;
@@ -26,11 +28,13 @@ galaxies.audio.positionedSounds = [];
 
 // Create a new AudioBufferSource node for a given sound.
 galaxies.audio.getSound = function( id ) {
-  if ( typeof( galaxies.audio.loadedSounds[id]) === 'undefined' ) {
+  var buffer = galaxies.audio.loadedSounds[id].next();
+  //console.log( "getSound", id, buffer, typeof(buffer) );
+  if ( typeof( buffer ) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
     return null;
   }
-  return galaxies.audio.loadedSounds[id].next();
+  return buffer;
 }
 
 // This structure combines groups of sounds together for constructing exhaustive arrays.
@@ -58,7 +62,7 @@ galaxies.audio.sounds = {
 // Decode and package loaded audio data into exhaustive array objects.
 galaxies.audio.initAudio = function( complete ) {
   var AudioContext = window.AudioContext || window.webkitAudioContext;
-  galaxies.audio.audioCtx = new AudioContext();
+  galaxies.audio.audioCtx = galaxies.audio.audioCtx || new AudioContext(); // audio context will already have been defined in mobile touch-to-start event.
   galaxies.audio.listener = galaxies.audio.audioCtx.listener;
   //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
@@ -67,6 +71,15 @@ galaxies.audio.initAudio = function( complete ) {
   // Global mute
   galaxies.audio.outNode = galaxies.audio.audioCtx.createGain();
   galaxies.audio.outNode.connect( galaxies.audio.audioCtx.destination );
+
+  // Boost volume for EC-3 playback in Safari 9.0, OSX.
+  // There is a problem in that EC-3 decoder which results in muted playback.
+  // In order not to blast people in future versions of Safari
+  if ( galaxies.utils.supportsEC3 &&
+       galaxies.utils.isOSX() &&
+       /Version\/9.0 Safari/.test(navigator.userAgent) )
+  { galaxies.audio.globalGain = 5; }
+  galaxies.audio.outNode.gain.value = galaxies.audio.globalGain;
 
   var onComplete = complete;
   
@@ -104,13 +117,13 @@ galaxies.audio.initAudio = function( complete ) {
           console.log( "Error decoding audio file.", loadedId );
           
           // Add an empty buffer to the cache to prevent errors when trying to play this sound.
-          //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+          galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
           //loadedSounds[loadedId].add( null );
           fileComplete();
         } );
     } else {
       // Add an empty buffer
-      //loadedSounds[ loadedId ].add( audioCtx.createBuffer(2, 22050, 44100) );
+      galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
       //loadedSounds[loadedId].add( null );
       fileComplete();
     }
@@ -132,7 +145,10 @@ galaxies.audio.initAudio = function( complete ) {
     
     // audio
     // Set initial mix to 6-channel surround.
-    galaxies.audio.toggleTargetMix( ( galaxies.audio.audioCtx.destination.maxChannelCount === 6 ) );
+    // NOTE:Mobile platforms always get the surround mix. The stereo mix was crashing
+    // iPhone 6s, so this is the quick workaround.
+    var useSurround = (( galaxies.audio.audioCtx.destination.maxChannelCount === 6 ) || galaxies.utils.isMobile());
+    galaxies.audio.toggleTargetMix( useSurround );
     
     // fire callback
     onComplete();
@@ -383,7 +399,7 @@ function visualizeSource( directionalSource ) {
 
 /// A multi-channel source that is mixed based on an arbitrary angle which
 /// rotates the soundfield.
-galaxies.audio.SoundField = function ( source ) {
+galaxies.audio.SoundField = function ( buffer ) {
   // List of the channel indices used by SoundField.
   // Only L, R, SL, and SR channels are rotated, so we list the corresponding indices here.
   var channelMap = [0, 1, 4, 5];
@@ -391,7 +407,7 @@ galaxies.audio.SoundField = function ( source ) {
   
   this.source = galaxies.audio.audioCtx.createBufferSource();
   this.source.loop = true;
-  this.source.buffer = source;
+  this.source.buffer = buffer;
 
   this.angle = 0;
   this.angularVelocity = 1;
@@ -501,7 +517,7 @@ galaxies.audio.setAllMute = function( mute ) {
   if ( mute ) {
     galaxies.audio.outNode.gain.value = 0;
   } else {
-    galaxies.audio.outNode.gain.value = 1;
+    galaxies.audio.outNode.gain.value = galaxies.audio.globalGain;
   }
 }
 

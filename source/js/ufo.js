@@ -52,7 +52,7 @@ this.galaxies.Ufo = function() {
   var anchor = new THREE.Object3D();
   anchor.add( this.object );
   
-  var state = 'inactive'; // values for state: idle, in, out, orbit, inactive
+  this.state = 'inactive'; // values for state: idle, in, orbit, out, inactive
   var stepTimer = 0;
   var stepTime = 0;
   var transitionTime = 0;
@@ -214,10 +214,10 @@ this.galaxies.Ufo = function() {
   this.update = function( delta ) {
     stepTimer += delta;
     
-    switch ( state ) {
+    switch ( this.state ) {
     case 'idle':
       if ( stepTimer >= stepTime ) {
-        state = 'in';
+        this.state = 'in';
         stepTime = 4;
         transitionTime = 4;
         stepTimer = 0;
@@ -255,14 +255,14 @@ this.galaxies.Ufo = function() {
           console.log( i, inTween(i).toFixed(2) );
         }*/
         
-        console.log( 'idle -> in' );
+        //console.log( 'idle -> in' );
       }
       break;
     case 'in':
       angle = inTween( stepTimer );
       
       if ( stepTimer >= stepTime ) {
-        state = 'orbit';
+        this.state = 'orbit';
         stepTime = 1;//(Math.PI*2/3)/angularSpeed; // time between shots
         transitionTime = stepTime/4;
         stepTimer = 0;
@@ -270,14 +270,14 @@ this.galaxies.Ufo = function() {
         lastPosition = this.object.position.clone();
         //targetPosition = orbitPositions[step];
         targetPosition = orbitPosition;
-        console.log( 'in -> orbit' );
+        //console.log( 'in -> orbit' );
       }
       break;
     case 'orbit':
       angle += angularSpeed * delta;
       
       if ( stepTimer >= stepTime ) {
-        console.log( 'orbit step' );
+        //console.log( 'orbit step' );
         
         // Fire
         laserChargeEmitter.alive = 1.0;
@@ -285,7 +285,7 @@ this.galaxies.Ufo = function() {
           new galaxies.audio.PositionedSound({
             source: galaxies.audio.getSound('ufoshoot'),
             position: galaxies.utils.rootPosition(this.object),
-            baseVolume: 1,
+            baseVolume: 1.5,
             loop: false
           });
           
@@ -321,7 +321,7 @@ this.galaxies.Ufo = function() {
       //console.log( angle, stepTimer, lastAngle, targetAngle );
       
       if ( stepTimer >= stepTime ) {
-        console.log( 'orbit -> idle' );
+        //console.log( 'orbit -> idle' );
         this.reset();
       }
       
@@ -374,7 +374,7 @@ this.galaxies.Ufo = function() {
   }
   
   this.leave = function() {
-    state = 'out';
+    this.state = 'out';
     stepTimer = 0;
     stepTime = 4;
     transitionTime = 4;
@@ -405,7 +405,7 @@ this.galaxies.Ufo = function() {
     createjs.Tween.removeTweens( this.model.rotation );
     createjs.Tween.get(this.model.rotation).to({y: Math.PI/3}, 2000, createjs.Ease.quadIn );
     
-    console.log( 'orbit -> out' );
+    //console.log( 'orbit -> out' );
   }
   
   this.hit = function() {
@@ -430,7 +430,7 @@ this.galaxies.Ufo = function() {
   
   // put object at step 0 and idle it for a random time
   this.reset = function() {
-    state = 'idle';
+    this.state = 'idle';
     stepTimer = 0;
     
     hitCounter = 0;
@@ -442,7 +442,7 @@ this.galaxies.Ufo = function() {
       return;
     } else {
       //stepTime = 0; // for testing
-      stepTime = Math.random() * 15 + 10; // 10 to 25 second interval
+      stepTime = Math.random() * 5 + 5; // 5 to 10 second interval
     }
     
     this.isHittable = false;
@@ -471,7 +471,7 @@ this.galaxies.Ufo = function() {
     
   }
   this.deactivate = function() {
-    state = 'inactive';
+    this.state = 'inactive';
     
     this.isHittable = false;
     lastPosition = idlePosition;
