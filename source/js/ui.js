@@ -37,6 +37,7 @@ galaxies.ui = (function() {
   var lifeDisplay = inGameHolder.querySelector(".life-display");
   var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
   var scoreDisplay = inGameHolder.querySelector(".score-display-text");
+  var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
   
   
   // pause menu
@@ -94,26 +95,7 @@ galaxies.ui = (function() {
   var init = function() {
     createjs.CSSPlugin.install();
     
-    /*
-    // Loading indicator transition, setup
-    // Create hidden background images and listen for them to complete loading,
-    // then add fade-in class to scrolling background elements.
-    var element2 = document.createElement("img");
-    element2.addEventListener('load', function() { imageLoaded('.bg2'); } );
-    element2.setAttribute('src', 'images/stars_tile.png');
-    
-    var element1 = document.createElement("img");
-    element1.addEventListener('load', function() { imageLoaded('.bg1'); } );
-    element1.setAttribute('src', 'images/loader_background.jpg');
-    
-    function imageLoaded( selector ) {
-      initBgKeyframes();
-      console.log("image loaded");
-      var holder = document.getElementById("menuHolder").querySelector(selector).parentNode;
-      holder.classList.add('fade-in');
-      holder.classList.remove('invisible');
-    }
-    */
+
     function logoAppear() {
       loadingLogo.classList.add('logo-loading-layout');
 /*      logo.style.width = 0;
@@ -541,6 +523,9 @@ galaxies.ui = (function() {
       }
     }
   }
+  var updatePowerupCharge = function( newValue ) {
+    powerupCharge.innerHTML = newValue.toFixed(2);
+  }
 
   return {
     init: init,
@@ -554,16 +539,12 @@ galaxies.ui = (function() {
     updateLevel: updateLevel,
     updateScore: updateScore,
     updateLife: updateLife,
+    updatePowerupCharge: updatePowerupCharge,
     setMixButtons: setMixButtons
   };
   
   
 }());
-
-
-
-
-
 
 
 

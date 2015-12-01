@@ -4,7 +4,7 @@ this.galaxies = this.galaxies || {};
 
 this.galaxies.Ufo = function() {
   this.points = 2000;
-  
+  this.hitThreshold = 0.7;
   /*
   var geometry = new THREE.CylinderGeometry( 0.4, 0.4, 0.25, 8, 1, false);
   
@@ -17,14 +17,14 @@ this.galaxies.Ufo = function() {
   this.object = new THREE.Mesh( geometry, material );*/
   
   this.object = new THREE.Object3D();
-  this.model = galaxies.engine.geometries['ufo'];
+  this.model = galaxies.resources.geometries['ufo'];
   /*new THREE.Mesh(
     geometries['ufo'],
     new THREE.MeshFaceMaterial( [ materials['ufo2'], materials['ufo'], materials['ufo3'] ] )
   );
   */
-  this.model.children[0].material = galaxies.engine.materials['ufo'];
-  this.model.children[1].material = galaxies.engine.materials['ufocanopy'];
+  this.model.children[0].material = galaxies.resources.materials['ufo'];
+  this.model.children[1].material = galaxies.resources.materials['ufocanopy'];
   
   
   this.model.scale.set(0.6, 0.6, 0.6);
@@ -408,12 +408,17 @@ this.galaxies.Ufo = function() {
     //console.log( 'orbit -> out' );
   }
   
-  this.hit = function() {
-    hitCounter++;
+  this.hit = function( forceDestroy ) {
+    if ( forceDestroy ) {
+      hitCounter = HITS;
+    } else {
+      hitCounter++;
+    }
+    
     if ( hitCounter >= HITS ) {
       this.leave();
       
-      galaxies.engine.showCombo( this.points, this.object );
+      galaxies.engine.showCombo( this.points, 1, this.object );
     }
     
     smokeEmitter.alive = 1.0;

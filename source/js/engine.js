@@ -14,7 +14,7 @@ this.galaxies = this.galaxies || {};
 
 galaxies.engine = galaxies.engine || {};
 
-galaxies.engine.invulnerable = false;
+galaxies.engine.invulnerable = true;//false;
 
 galaxies.engine.gameInitialized = false;
 
@@ -25,9 +25,6 @@ galaxies.engine.driftObject; // outer world container that rotates slowly to pro
 galaxies.engine.rootObject; // inner object container that contains all game objects
 
 galaxies.engine.driftSpeed = 0.05;
-
-galaxies.engine.geometries = {};
-galaxies.engine.materials = {};
 
 galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
@@ -52,7 +49,7 @@ galaxies.engine.levelComplete = false;
 
 galaxies.engine.spawnTimers = {};
 galaxies.engine.spawnTimes = {};
-galaxies.engine.obstacleTypes = ['asteroid', 'satellite', 'comet'];
+galaxies.engine.obstacleTypes = ['asteroid', 'asteroidmetal', 'asteroidrad', 'comet'];//['asteroid', 'satellite', 'comet'];
 
 // View, play parameters
 galaxies.engine.speedScale = 1;
@@ -60,17 +57,22 @@ galaxies.engine.speedScale = 1;
 // "constants"
 // Some of these are fixed, some are dependent on window size and are recalculated in 
 // the window resize function.
-galaxies.engine.CONE_ANGLE = 11.4 * Math.PI/360;
+galaxies.engine.CONE_ANGLE = 11.4 * Math.PI/360; // Half-angle of the interior of the cone
 galaxies.engine.CAMERA_Z = 40;
 galaxies.engine.CAMERA_VIEW_ANGLE = 45; // Will be applied to smallest screen dimension, horizontal or vertical. TODO
 galaxies.engine.ROUNDS_PER_PLANET = 3; // 3
-galaxies.engine.SHOOT_TIME = 0.4;
-galaxies.engine.PROJ_HIT_THRESHOLD = 0.7;
-galaxies.engine.RICOCHET_HIT_THRESHOLD = 1.1;
+
+galaxies.engine.SHOOT_TIME = 0.6; // 0.4 in original
+
+galaxies.engine.POWERUP_DURATION = 10;
+galaxies.engine.POWERUP_CHARGED = 100;
+galaxies.engine.powerups = ['clone', 'spread', 'golden'];
+
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 3;
 galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.95 * galaxies.engine.CHARACTER_HEIGHT/2 );
 galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS + (galaxies.engine.CHARACTER_HEIGHT * 0.08);//2;
+
 galaxies.engine.CONE_SLOPE = Math.tan( galaxies.engine.CONE_ANGLE );
 galaxies.engine.CAMERA_SLOPE = Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE*Math.PI/360 );
 galaxies.engine.VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * galaxies.engine.CAMERA_SLOPE/ (galaxies.engine.CONE_SLOPE + galaxies.engine.CAMERA_SLOPE);
@@ -84,8 +86,11 @@ galaxies.engine.obstacles = [];
 galaxies.engine.inactiveObstacles = [];
 
 // Pool obstacles separately to avoid having to create new meshes.
+// TODO - initialize obstacle-type-keyed objects more intelligently (too much repitition).
 galaxies.engine.obstaclePool = {};
 galaxies.engine.obstaclePool['asteroid'] = [];
+galaxies.engine.obstaclePool['asteroidmetal'] = [];
+galaxies.engine.obstaclePool['asteroidrad'] = [];
 galaxies.engine.obstaclePool['satellite'] = [];
 galaxies.engine.obstaclePool['comet'] = [];
 
@@ -93,6 +98,9 @@ galaxies.engine.obstaclePool['comet'] = [];
 galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 galaxies.engine.projectiles = [];
 
+// Neutral targets
+galaxies.engine.neutrals = [];
+galaxies.engine.inactiveNeutrals = [];
 
 
 
@@ -109,12 +117,18 @@ galaxies.engine.onWindowResize = function() {
   galaxies.engine.renderer.setSize( window.innerWidth, window.innerHeight );
 
   // Recalculate "constants"
-  var aspectAdjust = (galaxies.engine.camera.aspect + 1) /2;
-  var cameraSlope = aspectAdjust * Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE * Math.PI/360 );
+  
+  // Averages height/width circles to make active play area.
+  //var aspectAdjust = (galaxies.engine.camera.aspect + 1) /2;
+  //var cameraSlope = aspectAdjust * Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE * Math.PI/360 );
+  
+  // Sets active play area by diagonal window size
+  var diagonal = Math.sqrt( Math.pow(galaxies.engine.camera.aspect,2) + 1 );
+  var cameraSlope = diagonal * Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE * Math.PI/360 );
   
   galaxies.engine.OBSTACLE_VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * cameraSlope/ (galaxies.engine.CONE_SLOPE + cameraSlope);
-  galaxies.engine.OBSTACLE_START_RADIUS = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 2;//OBSTACLE_VISIBLE_RADIUS * 1.2;
-  galaxies.Projectile.prototype.PROJECTILE_LIFE = (galaxies.engine.OBSTACLE_VISIBLE_RADIUS - galaxies.engine.PROJ_START_Y)/galaxies.Projectile.prototype.PROJECTILE_SPEED;
+  //galaxies.engine.OBSTACLE_START_RADIUS = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.1;//OBSTACLE_VISIBLE_RADIUS * 1.2;
+  galaxies.Projectile.prototype.PROJECTILE_LIFE = 0.95 * (galaxies.engine.OBSTACLE_VISIBLE_RADIUS - galaxies.engine.PROJ_START_Y)/galaxies.Projectile.prototype.PROJECTILE_SPEED;
   
   //console.log( OBSTACLE_VISIBLE_RADIUS );
 }
@@ -150,6 +164,7 @@ galaxies.engine.init = function() {
   document.addEventListener("visibilitychange", galaxies.engine.onVisibilityChange );
   
   galaxies.ui.init();
+  
 }
 
 // Create 3D scene, camera, light, skybox
@@ -246,130 +261,9 @@ galaxies.engine.initScene = function() {
 
 galaxies.engine.initGame = function() {
   
-  // Parse and cache loaded geometry.
-  var objLoader = new THREE.OBJLoader();
-  var parsed = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
-  galaxies.engine.geometries['asteroid'] = parsed.children[0].geometry;
-  var projmodel = objLoader.parse( galaxies.queue.getResult('projmodel') );
-  galaxies.engine.geometries['proj'] = projmodel.children[0].geometry;
-  var satmodel = objLoader.parse( galaxies.queue.getResult('satellitemodel') );
-  galaxies.engine.geometries['satellite'] = satmodel.children[0].geometry;
-  var moonmodel = objLoader.parse( galaxies.queue.getResult('moonmodel') );
-  galaxies.engine.geometries['moon'] = moonmodel.children[0].geometry;
-  var ufomodel = objLoader.parse( galaxies.queue.getResult('ufomodel') );
-  //geometries['ufo'] = ufomodel.children[0].geometry;
-  galaxies.engine.geometries['ufo'] = ufomodel;
-  var debrismodel = objLoader.parse( galaxies.queue.getResult('satellitedebrismodel') );
-  galaxies.engine.geometries['debris'] = debrismodel.children[0].geometry;
+  galaxies.resources = new galaxies.Resources();
   
-  
-  /*
-  ufomodel.traverse( function ( child ) {
-    if ( child instanceof THREE.Mesh ) {
-      geoemetries['ufo'].push( child );
-    }
-  } );
-  */
-  
-  
-  
-  // define materials
-  var asteroidColor = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
-  asteroidColor.needsUpdate = true;
-  var asteroidNormal = new THREE.Texture( galaxies.queue.getResult('asteroidnormal'), THREE.UVMapping );
-  asteroidNormal.needsUpdate = true;
-  
-  galaxies.engine.materials['asteroid'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0x000000,
-      opacity: 0.4,
-      transparent: false,
-      map: asteroidColor,
-      normalMap: asteroidNormal,
-      shading: THREE.SmoothShading
-  } );
-  
-  var satColor = new THREE.Texture( galaxies.queue.getResult('satellitecolor'), THREE.UVMapping );
-  satColor.needsUpdate = true;
-  
-  galaxies.engine.materials['satellite'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0x202020,
-      shininess: 50,
-      opacity: 0.4,
-      transparent: false,
-      map: satColor,
-      shading: THREE.SmoothShading
-  } );
-  
-  
-  var moonOcclusion = new THREE.Texture( galaxies.queue.getResult('moonocclusion'), THREE.UVMapping );
-  moonOcclusion.needsUpdate = true;
-  var moonNormal = new THREE.Texture( galaxies.queue.getResult('moonnormal'), THREE.UVMapping );
-  moonNormal.needsUpdate = true;
-  
-  galaxies.engine.materials['moon'] = new THREE.MeshPhongMaterial( {
-      color: 0xaaaaaa,
-      specular: 0x000000,
-      map: moonOcclusion,
-      normalMap: moonNormal,
-      shading: THREE.SmoothShading
-  } );
-  
-  var ufoColor = new THREE.Texture( galaxies.queue.getResult('ufocolor') );
-  ufoColor.needsUpdate = true;
-  galaxies.engine.materials['ufo'] = new THREE.MeshPhongMaterial( {
-      color: 0xffffff,
-      specular: 0x661313,
-      shininess: 90,
-      transparent: false,
-      map: ufoColor,
-      shading: THREE.SmoothShading,
-      depthTest: true
-  } );
-  galaxies.engine.materials['ufocanopy'] = new THREE.MeshPhongMaterial( {
-    color: 0x222222,
-    specular: 0x080808,
-    shininess: 100,
-    opacity: 0.9,
-    transparent: true,
-    shading: THREE.SmoothShading,
-    blending: THREE.AdditiveBlending
-  });
-
-  var projColor = new THREE.Texture( galaxies.queue.getResult('projcolor'), THREE.UVMapping );
-  projColor.needsUpdate = true;
-  
-  galaxies.engine.materials['proj'] = new THREE.MeshBasicMaterial( {
-      color: 0xcccccc,
-      
-      map: projColor,
-      shading: THREE.SmoothShading
-  } );
-  
-  galaxies.engine.materials['debris'] = new THREE.MeshPhongMaterial( {
-    color: 0x999999,
-    specular: 0x202020,
-    shininess: 50,
-    opacity: 1,
-    transparent: true,
-    shading: THREE.SmoothShading
-  });
-
-  
-  
-  
-  
-  
-
-  /*
-  var planetGeometry = new THREE.SphereGeometry(1, 32, 32);
-  var planetMaterial = new THREE.MeshPhongMaterial( {
-      color: 0xff0000,
-      specular: 0xffcc55,
-      shininess: 5} );
-*/
-  galaxies.engine.planet = new THREE.Mesh( galaxies.engine.geometries['moon'], galaxies.engine.materials['moon'] );
+  galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
   
   galaxies.engine.characterRotator = new THREE.Object3D();
@@ -439,9 +333,22 @@ galaxies.engine.initGame = function() {
   galaxies.engine.character = new THREE.Sprite( characterMaterial );
   galaxies.engine.character.position.set( galaxies.engine.CHARACTER_HEIGHT * 0.77 * 0.15, galaxies.engine.CHARACTER_POSITION, 0 ); // note that character is offset horizontally because sprites are not centered
   galaxies.engine.character.scale.set(galaxies.engine.CHARACTER_HEIGHT*0.77, galaxies.engine.CHARACTER_HEIGHT, galaxies.engine.CHARACTER_HEIGHT * 0.77); // 0.77 is the aspect ratio width/height of the sprites
-  //character.scale.set(5, 5, 5);
   galaxies.engine.characterRotator.add( galaxies.engine.character );
 
+  var cloneMaterial = new THREE.SpriteMaterial({
+    map: characterMap,
+    color: 0xaaffaa,
+    transparent: true,
+    opacity: 1.0
+  } );
+  galaxies.engine.clone = new THREE.Sprite( cloneMaterial );
+  galaxies.engine.clone.position.set( -galaxies.engine.CHARACTER_HEIGHT * 0.77 * 0.15, -galaxies.engine.CHARACTER_POSITION, 0 );
+  galaxies.engine.clone.scale.set(galaxies.engine.CHARACTER_HEIGHT*0.77, galaxies.engine.CHARACTER_HEIGHT, galaxies.engine.CHARACTER_HEIGHT * 0.77);
+  
+  
+  
+  galaxies.engine.setPowerup();
+  
   galaxies.engine.addInputListeners();
 
   //
@@ -515,10 +422,14 @@ galaxies.engine.initGame = function() {
 } // initGame
 
 /*
-var testObjects = [];
+var testObjects = [];*/
 var testObject;
+
 function addTestObject() {
+  testObject = new galaxies.Capsule();
+}
   
+  /*
   //var colorMap = new THREE.Texture( galaxies.queue.getResult('asteriodColor'), THREE.UVMapping );
   var colorMap = new THREE.Texture( galaxies.queue.getResult('asteroidcolor'), THREE.UVMapping );
   colorMap.needsUpdate = true;
@@ -535,7 +446,7 @@ function addTestObject() {
       shading: THREE.SmoothShading //THREE.FlatShading
       } );
   
-  testObject = new THREE.Mesh( galaxies.engine.geometries['debris'], galaxies.engine.materials['debris'] );
+  testObject = new THREE.Mesh( galaxies.resources.geometries['debris'], galaxies.resources.materials['debris'] );
   testObject.position.set( 0, 0, 10 );
   galaxies.engine.rootObject.add( testObject );
   var scale = 10;
@@ -646,6 +557,20 @@ function addTestObject() {
 //} // test objects
 
 
+function testUpdate( delta ) {
+  testObject.update(delta);
+}
+  /*
+   *for (var i=0, len = testObjects.length; i<len; i++ ) {
+    testObjects[i].tick(delta); // particle system
+  }*/
+  /*
+  testObject.rotation.y = testObject.rotation.y + 1*delta;
+}
+*/
+
+
+
 galaxies.engine.startGame = function() {
   
   
@@ -718,15 +643,22 @@ galaxies.engine.initLevel = function() {
   var satelliteRate = 0.6 - (0.40 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
   var cometRate = 0.6 - (0.45 * (1/(1 + (galaxies.engine.levelNumber-1) * 0.1)) );
 
+  asteroidRate /= 3; // TEST - Tone it down while we're testing roid types.
   galaxies.engine.spawnTimes['asteroid'] = 1/asteroidRate;
-  galaxies.engine.spawnTimes['satellite'] = 1/satelliteRate;
+  galaxies.engine.spawnTimes['asteroidmetal'] = 1/asteroidRate;
+  galaxies.engine.spawnTimes['asteroidrad'] = 1/asteroidRate;
+  //galaxies.engine.spawnTimes['satellite'] = 1/satelliteRate;
   galaxies.engine.spawnTimes['comet'] = 1/cometRate;
   
-  // Initialize timers to reduce initial spawn time by 50-100%.
+  // Initialize timers, so first wave spawns immediately
   for(var i=0, len = galaxies.engine.obstacleTypes.length; i<len; i++ ) {
     galaxies.engine.spawnTimers[ galaxies.engine.obstacleTypes[i] ] =
-      (0.5 + Math.random() * 0.5) * galaxies.engine.spawnTimes[ galaxies.engine.obstacleTypes[i] ];
+      galaxies.engine.spawnTimes[ galaxies.engine.obstacleTypes[i] ];
+    /*galaxies.engine.spawnTimers[ galaxies.engine.obstacleTypes[i] ] =
+      (0.5 + Math.random() * 0.5) * galaxies.engine.spawnTimes[ galaxies.engine.obstacleTypes[i] ];*/
   }
+  
+  console.log("Spawn timers initialized");
   
   //console.log( level, asteroidRate.toFixed(2), satelliteRate.toFixed(2), cometRate.toFixed(2) );
   
@@ -741,12 +673,12 @@ galaxies.engine.initLevel = function() {
   
   if ( galaxies.engine.levelNumber >= 3 ) {
   //if ( true ) { // UFO test
-    galaxies.engine.ufo.activate();
+    //galaxies.engine.ufo.activate();
   }
   
   galaxies.ui.updateLevel( galaxies.engine.planetNumber, galaxies.engine.roundNumber );
   
-  galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 3 );
+  galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 1.5 );
   
 
 }
@@ -784,7 +716,7 @@ galaxies.engine.planetTransition = function() {
   console.log("begin planet transition");
   
   // If planet is in the scene, then we must do the out-transition first.
-  // If planet is not in the scene, then we skip this step (happens on the first level new games).
+  // If planet is not in the scene, then we skip this step (happens on the first level of new games).
   if ( galaxies.engine.planet.parent != null ) {
     galaxies.fx.showTeleportOut();
     new galaxies.audio.PositionedSound({
@@ -794,6 +726,7 @@ galaxies.engine.planetTransition = function() {
       loop: false
     });
     
+    // 1500 is the teleport time as defined in FX and foolishly inaccessible.
     createjs.Tween.removeTweens(galaxies.engine.character);
     createjs.Tween.get(galaxies.engine.character)
       .wait(1500)
@@ -801,6 +734,14 @@ galaxies.engine.planetTransition = function() {
   } else {
     galaxies.engine.startPlanetMove();
   }
+  
+  // These should be constants available everywhere.
+  //var totalTransitionTime = 1500 + 6500 + 1500;
+  createjs.Tween.get( galaxies.engine.camera.position )
+    .to({z:galaxies.engine.CAMERA_Z/2}, 1500, createjs.Ease.quadInOut)
+    .wait(6500)
+    .to({z:galaxies.engine.CAMERA_Z}, 1500, createjs.Ease.quadInOut);
+  
 }
 
 galaxies.engine.startPlanetMove = function() {
@@ -828,7 +769,7 @@ galaxies.engine.startPlanetMove = function() {
       galaxies.engine.scene.add( galaxies.engine.planet ); // First level planet must be added here
       galaxies.engine.randomizePlanet();
       
-      galaxies.ui.showTitle( galaxies.utils.generatePlanetName( galaxies.engine.planetNumber ), 5 );
+      galaxies.ui.showTitle( galaxies.utils.generatePlanetName( galaxies.engine.planetNumber ), 4 );
     }, null, this)
     .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
   
@@ -876,7 +817,7 @@ galaxies.engine.randomizePlanet = function() {
 
 
 galaxies.engine.onDocumentMouseDown = function( event ) {
-	event.preventDefault();
+	//event.preventDefault();
 
     galaxies.engine.isFiring = true;
 }
@@ -922,175 +863,77 @@ galaxies.engine.addObstacle = function( type ) {
     var obstacle = galaxies.engine.obstaclePool[type].pop();
     obstacle.reset();
     galaxies.engine.obstacles.push( obstacle );
-    return;
+    return obstacle;
   }
   
   // Nothing in pool, make a new one.
-  var props = {};
-  props.speed = 0.2;
-  props.tumble = false;
-  props.tumbleOnHit = true;
-  props.spiral = 0;
-  props.points = 100;
-  props.hitSound = 'asteroidhit';
-  props.explodeSound = 'asteroidsplode';
-  props.passSound = null;
-  props.orient = false;
-  props.explodeType = 'rubble';
-  props.type = type;
-  
-  switch(type) {
-    case 'asteroid':
-    //case 'never':
-    //default:
-      props.speed = 0.2;
-      props.tumble = true;
-      props.points = 100;
-      props.hitSound = 'asteroidhit';
-      props.explodeSound = 'asteroidsplode';
-      
-      var material = new THREE.MeshPhongMaterial();
-      material.setValues( galaxies.engine.materials['asteroid'] );
-      props.model = new THREE.Mesh( galaxies.engine.geometries['asteroid'], material );
-      props.model.scale.set( 0.5, 0.5, 0.5 );
-      props.anchor = props.model; // no container object in this case
-      break;
-    case 'satellite':
-    //default:
-    //case 'never':
-      props.speed = 0.5;
-      props.spiral = 0.7;
-      props.points = 250;
-      props.orient = true;
-      props.explodeType = 'debris';
-      props.hitSound = 'metalhit';
-      props.explodeSound = 'satellitesplode';
-      
-      var material = new THREE.MeshPhongMaterial();
-      material.setValues( galaxies.engine.materials['satellite'] );
-      var model = new THREE.Mesh( galaxies.engine.geometries['satellite'], material );
-      model.position.y = -2;
-      model.rotation.y = Math.random() * galaxies.utils.PI_2; // random roll to show window
-      
-      var modelOrient = new THREE.Object3D(); // holder positioned at center of model and rotated to orient it.
-      modelOrient.add(model);
-      modelOrient.rotation.x = 1.3; // Face away from camera, but not completely aligned with cone surface
-      modelOrient.rotation.z = 0.5; // Face direction of motion a little
-      
-      props.anchor = new THREE.Object3D(); // holder at center, z-axis faces forward, we made it!
-      props.anchor.add(modelOrient);
-      var satScale = 0.4;
-      props.anchor.scale.set(satScale, satScale, satScale);
-      
-      props.model = modelOrient;
-      
-      /*
-      var ref = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), new THREE.MeshLambertMaterial() );
-      props.anchor.add( ref );
-      var ref2 = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), new THREE.MeshLambertMaterial() );
-      modelOrient.add( ref2 );
-      var ref3 = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), new THREE.MeshLambertMaterial() );
-      model.add( ref3 );
-      */
-      
-      
-      
-      
-      
-      break;
-    case 'comet':
-    //case 'never':
-    //default:
-      props.speed = 1.2;
-      props.spiral = 1;
-      props.points = 500;
-      props.orient = true;
-      props.tumbleOnHit = false;
-      props.explodeType = 'fireworks';
-      
-      props.explodeSound = 'cometexplode';
-      props.explosionGain = 7;
-      props.passSound = 'cometloop';
-      
-      var emitterSettings = {
-        type: 'cube',
-        positionSpread: new THREE.Vector3(0.6, 0.6, 0.6),
-        //radius: 0.1,
-        velocity: new THREE.Vector3(0, 0, -5),
-        velocitySpread: new THREE.Vector3(0.2, 0.2, 2),
-        //speed: 1,
-        sizeStart: 6,
-        sizeStartSpread: 4,
-        sizeEnd: 2,
-        opacityStart: 0.8,
-        opacityEnd: 0.1,
-        colorStart: new THREE.Color("rgb(6, 6, 20)"),
-        //colorStartSpread: new THREE.Vector3(42/255, 0, 0),
-        colorEnd: new THREE.Color("rgb(255, 77, 0)"),
-        particlesPerSecond: 10,
-        particleCount: 200,
-        alive: 1.0,
-        duration: null
-      };
-      
-      var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
-      texture.needsUpdate = true;
-      var particleGroup = new SPE.Group({
-        texture: texture,
-        maxAge: 1.5,
-        blending: THREE.AdditiveBlending//THREE.AdditiveBlending
-      });
-      particleGroup.addEmitter( new SPE.Emitter( emitterSettings) );
-      props.particleGroup = particleGroup;
-      props.anchor = particleGroup.mesh;
-      
-      // solid core (for when particles are thin at edge of screen )
-      var mat = new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true, blending: THREE.AdditiveBlending } );
-      var core = new THREE.Sprite( mat );
-      props.anchor.add( core );
-      
-      break;
-      
-  }
-  
-  var obstacle = new galaxies.Obstacle( props );
+  var obstacle = new galaxies.Obstacle.create( type );
   galaxies.engine.obstacles.push( obstacle );
-  
+  return obstacle;
 }
 
-
-
-
-
-
-
-
-galaxies.engine.shoot = function() {
+galaxies.engine.shoot = function( indestructible ) {
+  if ( typeof(indestructible) !== 'boolean' ) {
+    indestructible = false;
+  }
+  
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
   
   //console.log("shoot");
     
   // Instantiate shot object
-  var projMesh = new THREE.Mesh( galaxies.engine.geometries['proj'], galaxies.engine.materials['proj'] );
+  var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
   var projScale = 0.1;
   projMesh.scale.set(projScale, projScale, projScale );
   
-  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle );
+  //var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle );
+  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, 0, indestructible );
   galaxies.engine.projectiles.push( proj );
     
   // play animation
   galaxies.engine.characterAnimator.play();
   
   // delay adding the projectile and the sound to synchronize with the animation
-  createjs.Tween.get( galaxies.engine.character ).wait(250).call( galaxies.engine.shootSync, [proj], this );
-    
+  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  .call( galaxies.engine.shootSync, [proj], this )
+  .call( galaxies.engine.shootSound );
 }
+
+// Fire two projectiles: one forwards, one backwards
+galaxies.engine.shoot2 = function() {
+  if ( galaxies.engine.shotTimer>0 ) { return; }
+  galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
+  
+  // Instantiate shot object
+  for ( var i=0; i<2; i++ ) {
+    var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
+    var projScale = 0.1;
+    projMesh.scale.set(projScale, projScale, projScale );
+    
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, (Math.PI * i) );
+    galaxies.engine.projectiles.push( proj );
+      
+    // delay adding the projectile and the sound to synchronize with the animation
+    createjs.Tween.get( galaxies.engine.character ).wait(250)
+    .call( galaxies.engine.shootSync, [proj], this );
+  }
+  // play animation
+  galaxies.engine.characterAnimator.play();
+  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  .call( galaxies.engine.shootSound );
+
+}
+
 
 // When the correct point in the character animation is reached,
 // realign the projectile with the current angle and let it fly.
 galaxies.engine.shootSync = function( proj ) {
   
+  proj.updatePosition( galaxies.engine.angle );
+  proj.addToScene();
+}
+galaxies.engine.shootSound = function() {
   // play sound
   new galaxies.audio.PositionedSound({
     source: galaxies.audio.getSound('shoot'),
@@ -1098,10 +941,34 @@ galaxies.engine.shootSync = function( proj ) {
     baseVolume: 10,
     loop: false
   });
-  proj.updatePosition( galaxies.engine.angle );
-  proj.addToScene();
+}
+
+
+galaxies.engine.shoot3 = function() {
+  if ( galaxies.engine.shotTimer>0 ) { return; }
+  galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
+
+  
+  for ( var i=-1; i<=1; i++ ) {
+    // Instantiate shot object
+    var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
+    var projScale = 0.1;
+    projMesh.scale.set(projScale, projScale, projScale );
+    
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i );
+    galaxies.engine.projectiles.push( proj );
+      
+    // delay adding the projectile and the sound to synchronize with the animation
+    createjs.Tween.get( galaxies.engine.character ).wait(250).call( galaxies.engine.shootSync, [proj], this );
+  }
+  // play animation
+  galaxies.engine.characterAnimator.play();
+  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  .call( galaxies.engine.shootSound );
   
 }
+
+
 
 
 galaxies.engine.animate = function() {
@@ -1135,15 +1002,22 @@ galaxies.engine.update = function() {
       if ( (obstacleJ.state === 'inactive') || ( obstacleJ.state === 'waiting' )) { continue; }
       
       var dist = obstacleI.object.position.distanceTo( obstacleJ.object.position );
-      if ( dist < galaxies.engine.RICOCHET_HIT_THRESHOLD ) {
+      if ( dist < (obstacleI.hitThreshold + obstacleJ.hitThreshold) ) {
         if ( (obstacleI.state!=='ricocheting') && (obstacleJ.state!=='ricocheting') ) {
           // push overlapping obstacles apart
-          var overlap = galaxies.engine.RICOCHET_HIT_THRESHOLD - dist;
+          var overlap = (obstacleI.hitThreshold + obstacleJ.hitThreshold) - dist;
           
-          var shift= obstacleJ.object.position.clone();
+          var shift = obstacleJ.object.position.clone();
           shift.sub( obstacleI.object.position );
           shift.z = 0;
           shift.setLength( overlap/2 );
+          // In case of perfectly overlapping objects (as when child obstacles are spawned).
+          // We apply CONE_SLOPE here to keep objects cozy with eachother as hit detection is done
+          // on the cone, but offset is applied in-plane (where small distances go further).
+          if ( shift.length() === 0 ) {
+            shift.set( THREE.Math.randFloatSpread(1), THREE.Math.randFloatSpread(1), 0 );
+            shift.setLength( galaxies.engine.CONE_SLOPE * overlap/2 );
+          }
           
           obstacleI.object.position.sub( shift );
           obstacleJ.object.position.add( shift );
@@ -1161,9 +1035,9 @@ galaxies.engine.update = function() {
     }
     for (var iProj=0, projLen = galaxies.engine.projectiles.length; iProj<projLen; iProj++ ) {
       var proj = galaxies.engine.projectiles[iProj];
-      if ( obstacleI.isActive && (proj.object.position.distanceTo( obstacleI.object.position ) < galaxies.engine.PROJ_HIT_THRESHOLD ) ) {
-        obstacleI.hit( proj.object.position );
-        proj.destroy();
+      if ( obstacleI.isActive && (proj.object.position.distanceTo( obstacleI.object.position ) < obstacleI.hitThreshold ) ) {
+        obstacleI.hit( proj.object.position, 0, proj.indestructible );
+        proj.hit();
       }
     }
   }
@@ -1172,13 +1046,26 @@ galaxies.engine.update = function() {
       var proj = galaxies.engine.projectiles[iProj];
       var ufoRootPosition = galaxies.engine.ufo.object.localToWorld( new THREE.Vector3() );
       ufoRootPosition = galaxies.engine.rootObject.worldToLocal( ufoRootPosition );
-      if ( proj.object.position.distanceTo( ufoRootPosition ) < galaxies.engine.PROJ_HIT_THRESHOLD ) {
-        galaxies.engine.ufo.hit();
-        proj.destroy();
+      if ( proj.object.position.distanceTo( ufoRootPosition ) < galaxies.engine.ufo.hitThreshold ) {
+        galaxies.engine.ufo.hit( proj.indestructible );
+        proj.hit();
       }
     }
   }
-  //
+  // Neutral objects
+  for (var i=0, iLen = galaxies.engine.neutrals.length; i<iLen; i++ ){
+    var neutral = galaxies.engine.neutrals[i];
+    for (var iProj=0, projLen = galaxies.engine.projectiles.length; iProj<projLen; iProj++ ) {
+      var proj = galaxies.engine.projectiles[iProj];
+      if ( proj.object.position.distanceTo( neutral.object.position ) < neutral.hitThreshold) {
+        neutral.hit();
+      //if ( object.isActive && (proj.object.position.distanceTo( obstacleI.object.position ) < galaxies.engine.PROJ_HIT_THRESHOLD ) ) {
+        proj.hit();
+      }
+    }
+    
+  }
+  
   
   // Remove inactive obstacles
   for (var i=0; i<galaxies.engine.inactiveObstacles.length; i++ ) {
@@ -1192,7 +1079,16 @@ galaxies.engine.update = function() {
   for (var i=0, len = galaxies.engine.obstacles.length; i<len; i++ ) {
     var obstacle = galaxies.engine.obstacles[i]
     obstacle.update( delta );
-    galaxies.utils.conify( obstacle.object );
+  }
+  
+  // Update neutrals
+  for (var i=0, iLen = galaxies.engine.inactiveNeutrals.length; i<iLen; i++ ){
+    galaxies.engine.neutrals.splice( galaxies.engine.inactiveNeutrals[i], 1 );
+  }
+  galaxies.engine.inactiveNeutrals = [];
+  for (var i=0, iLen = galaxies.engine.neutrals.length; i<iLen; i++ ){
+    var neutral = galaxies.engine.neutrals[i];
+    neutral.update(delta);
   }
   
   // Update projectiles
@@ -1213,9 +1109,18 @@ galaxies.engine.update = function() {
   
   if ( galaxies.engine.shotTimer>0) { galaxies.engine.shotTimer -= delta; }
   if ( galaxies.engine.isFiring ) {
-    galaxies.engine.shoot();
+    galaxies.engine.shootFunction();
+    //galaxies.engine.shoot( true );
+    //galaxies.engine.shoot3();
   }
   //
+  
+  if ( galaxies.engine.powerupTimer > 0 ) {
+    galaxies.engine.powerupTimer -= delta;
+    if ( galaxies.engine.powerupTimer <=0 ) {
+      galaxies.engine.setPowerup('');
+    }
+  }
   
   // update ufo
   galaxies.engine.ufo.update(delta);
@@ -1243,6 +1148,9 @@ galaxies.engine.update = function() {
     galaxies.engine.character.material.rotation = galaxies.engine.angle;
     galaxies.engine.characterAnimator.update( delta );
     
+    galaxies.engine.clone.material.rotation = Math.PI + galaxies.engine.angle;
+    
+    
     if ( galaxies.engine.planet.parent === galaxies.engine.rootObject ) {
       galaxies.engine.planet.rotation.z = galaxies.engine.planetAngle-(galaxies.engine.angle/4);
     }
@@ -1256,6 +1164,7 @@ galaxies.engine.update = function() {
       if ( galaxies.engine.spawnTimers[ type ] >= galaxies.engine.spawnTimes[type] ) {
         galaxies.engine.spawnTimers[ type ] -= galaxies.engine.spawnTimes[type];
         galaxies.engine.addObstacle( type );
+        console.log("spawn obstacle");
       }
     }
   }
@@ -1277,19 +1186,11 @@ galaxies.engine.update = function() {
   
   galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
   
+  // TEST
   //testUpdate( delta );
 }
 
-/*
-function testUpdate( delta ) {
-  /*
-   *for (var i=0, len = testObjects.length; i<len; i++ ) {
-    testObjects[i].tick(delta); // particle system
-  }*/
-  /*
-  testObject.rotation.y = testObject.rotation.y + 1*delta;
-}
-*/
+
 
 
 // Randomize the drift rotation
@@ -1300,7 +1201,8 @@ galaxies.engine.initRootRotation = function() {
 }
 
 galaxies.engine.hitPlayer = function() {
-  if ( galaxies.engine.isGameOver ) {return;} // prevent any rogue obstacles from causing double-death
+  if ( galaxies.engine.isGameOver ) { return; } // prevent any rogue obstacles from causing double-death
+  if ( galaxies.engine.isGracePeriod ) { return; }
   
   galaxies.engine.playerLife--;
   galaxies.ui.updateLife( galaxies.engine.playerLife );
@@ -1311,12 +1213,24 @@ galaxies.engine.hitPlayer = function() {
     return;
   }
   
+  // Hop player sprite to show its been hit
   if ( !createjs.Tween.hasActiveTweens( galaxies.engine.character.position ) ) {
     createjs.Tween.get( galaxies.engine.character.position )
       .to({y:galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT}, 250, createjs.Ease.quadOut)
       .to({y:galaxies.engine.CHARACTER_POSITION}, 250, createjs.Ease.quadOut);
   }
+  
+  galaxies.engine.isGracePeriod = true;
+  galaxies.engine.character.material.opacity = 0.5;
+  createjs.Tween.get( galaxies.engine.character ).wait(2000).call( galaxies.engine.endGracePeriod );
 }
+
+galaxies.engine.endGracePeriod = function() {
+  galaxies.engine.isGracePeriod = false;
+  galaxies.engine.character.material.opacity = 1;
+}
+
+
 
 // Stop time objects. These are called on user pause and also
 // when window is minimized.
@@ -1394,6 +1308,8 @@ galaxies.engine.resetGame = function() {
   
   galaxies.engine.levelNumber = galaxies.engine.START_LEVEL_NUMBER;
   galaxies.engine.score = 0;
+  galaxies.engine.powerupCharge = 0;
+  galaxies.engine.powerupCount = 0;
   galaxies.engine.playerLife = 3;
   
   galaxies.engine.addInputListeners();
@@ -1411,16 +1327,21 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.character.rotation.set(0,0,0);
   galaxies.engine.character.material.rotation = galaxies.engine.angle;
   galaxies.engine.character.position.y = galaxies.engine.CHARACTER_POSITION;
+
+  galaxies.engine.camera.position.setZ( galaxies.engine.CAMERA_Z );
   
   galaxies.ui.updateLevel( 1, 1 );
   galaxies.ui.updateLife( galaxies.engine.playerLife );
   galaxies.ui.updateScore( galaxies.engine.score );
+  galaxies.ui.updatePowerupCharge( galaxies.engine.powerupCharge );
   galaxies.ui.clearTitle();
+  
   
   // Clear transition tweens (mostly used in the planet transition)
   createjs.Tween.removeTweens( galaxies.engine.character );
   createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
   createjs.Tween.removeTweens( galaxies.engine.planet.position );
+  createjs.Tween.removeTweens( galaxies.engine.camera );
   
 }
 galaxies.engine.clearLevel = function() {
@@ -1434,6 +1355,8 @@ galaxies.engine.clearLevel = function() {
   galaxies.engine.obstacles = [];
   
   galaxies.engine.ufo.deactivate();
+  
+  galaxies.engine.endGracePeriod();
 }
 
 // Capture events on document to prevent ui from blocking clicks
@@ -1472,7 +1395,7 @@ galaxies.engine.handleContextRestored = function() {
 
 
 
-galaxies.engine.showCombo = function( value, obj ) {
+galaxies.engine.showCombo = function( value, multiplier, obj ) {
   var vector = new THREE.Vector3();
   
   //obj.updateMatrixWorld();
@@ -1492,7 +1415,7 @@ galaxies.engine.showCombo = function( value, obj ) {
   
   var divElem = document.createElement('div');
   divElem.classList.add("points");
-  var newContent = document.createTextNode( value.toString() ); 
+  var newContent = document.createTextNode( (value*multiplier).toString() ); 
   divElem.style.left = screenX + 'px';
   divElem.style.top = screenY + 'px';
   divElem.appendChild(newContent); //add the text node to the newly created div.
@@ -1505,9 +1428,29 @@ galaxies.engine.showCombo = function( value, obj ) {
   
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
   
-  galaxies.engine.score += value;
+  galaxies.engine.score += value * multiplier;
   galaxies.ui.updateScore( galaxies.engine.score );
-    
+  
+  galaxies.engine.powerupCharge += Math.pow( value/100, 2 ) / galaxies.engine.POWERUP_CHARGED; // The 100 is to reduce scores from 100, 250, 500 to 1, 2.5, 5
+  if ( galaxies.engine.powerupCharge >= 1 ) {
+    console.log("powerup charged", galaxies.engine.powerupCapsule );
+    galaxies.engine.powerupCharge = 0;
+    if (galaxies.engine.powerupCapsule == null ) {
+      console.log("spawn capsule");
+      
+      var range = Math.min( galaxies.engine.powerupCount, galaxies.engine.powerups.length-1 );
+      var type = galaxies.engine.powerups[ Math.round(Math.random()*range) ];
+      
+      galaxies.engine.powerupCapsule = new galaxies.Capsule( type );
+      
+      
+      
+    }
+  }
+  galaxies.ui.updatePowerupCharge( galaxies.engine.powerupCharge );
+  
+  
+  // Check if powerup is fully charged
 }
 
 galaxies.engine.removeCombo = function( element ) {
@@ -1555,6 +1498,30 @@ galaxies.start = function() {
     galaxies.engine.init();
   }
 }
+
+
+galaxies.engine.setPowerup = function ( newPowerup ) {
+  galaxies.engine.characterRotator.remove( galaxies.engine.clone );
+  galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
+  
+  switch(newPowerup) {
+    case 'spread':
+      galaxies.engine.shootFunction = galaxies.engine.shoot3;
+      break;
+    case 'clone':
+      galaxies.engine.characterRotator.add( galaxies.engine.clone );
+      galaxies.engine.shootFunction = galaxies.engine.shoot2;
+      break;
+    case 'golden':
+      galaxies.engine.shootFunction = function() { galaxies.engine.shoot(true); };
+      break;
+    default:
+      galaxies.engine.shootFunction = galaxies.engine.shoot;
+      break;
+  }
+  
+}
+
 
 
 /*

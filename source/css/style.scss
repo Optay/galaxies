@@ -330,7 +330,7 @@ body {
 /*****************
  * in-game
  *****************/
-.level-display, .score-display {
+.level-display, .score-display, .powerup-charge-display {
   margin: 20px;
   
   color: $score-color;
@@ -358,6 +358,12 @@ body {
   font-size: 28px;
   line-height: 34px;
   vertical-align: top;
+}
+
+.powerup-charge-display {
+  position: absolute;
+  top: 40px;
+  left: 0;
 }
 
 

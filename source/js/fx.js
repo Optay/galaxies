@@ -120,13 +120,13 @@ galaxies.fx = (function() {
     
     // Rubble objects
     for (var i=0; i<rubblePoolSize; i++ ) {
-      var rubbleObject = new Rubble( galaxies.engine.geometries['asteroid'], rubbleMaterial, 0.1 );
+      var rubbleObject = new Rubble( galaxies.resources.geometries['asteroid'], rubbleMaterial, 0.1 );
       rubblePool[i] = rubbleObject;
     }
     
     // Debris objects
     for (var i=0; i<debrisPoolSize; i++ ) {
-      var debrisObject = new Rubble( galaxies.engine.geometries['debris'], galaxies.engine.materials['debris'], 0.2 );
+      var debrisObject = new Rubble( galaxies.resources.geometries['debris'], galaxies.resources.materials['debris'], 0.2 );
       debrisPool[i] = debrisObject;
     }
     

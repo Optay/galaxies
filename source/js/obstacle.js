@@ -8,19 +8,20 @@
 this.galaxies = this.galaxies || {};
 
 
-/// Rename this 'Obstacle'
 galaxies.Obstacle = function ( props ) {
+
+  this.type = props.type;
+  
   var PLANET_DISTANCE = 1.25;
   var RICOCHET_SPEED = 0.35;
-  
-  this.type = props.type;
+  this.hitThreshold = 0.7;
+  if ( typeof(props.hitThreshold) === 'number' ) { this.hitThreshold = props.hitThreshold; }
   
   this.particleGroup = props.particleGroup;
   this.points = props.points;
   this.explodeType = props.explodeType;
   
   var angle = 0;
-  //var angularSpeed = this.speed/radius;
   
   var tumble = props.tumble;
   var tumbling = tumble;
@@ -32,14 +33,16 @@ galaxies.Obstacle = function ( props ) {
   var baseSpeed = props.speed;
   var velocity = new THREE.Vector3();
   
-  //this.falling = false;
   var fallSpeed = 8;
   var fallTimer = 0;
   var fallTime = 0;
   var spiralTime = props.spiral * 60 + 1;
   
-  //this.ricochet = false;
-  this.ricochetCount = 0;
+  this.ricochetCount = 1;
+  
+  if ( typeof(props.life)!=='number' ) { props.life = 2; }
+  this.baseLife = props.life;
+  this.life = props.life;
   
   // state values: waiting, falling, ricocheting, inactive
   this.state = 'waiting';
@@ -71,6 +74,9 @@ galaxies.Obstacle = function ( props ) {
   };
   //
   
+  this.spawnType = props.spawnType;
+  this.spawnNumber = props.spawnNumber;
+  
   //var axisHelper = new THREE.AxisHelper( 2 );
   //this.object.add( axisHelper );  
   
@@ -86,11 +92,23 @@ galaxies.Obstacle = function ( props ) {
   if ( typeof( props.explosionGain ) !=='number' ) { props.explosionGain = 2; }
   var explosionGain = props.explosionGain;
   
-  var clearDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
-  var startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
-  if (this.passSound != null ) {
+  var clearDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.0;//1.2;
+  var startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.1;//1.2;
+/*  if (this.passSound != null ) {
     startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 2;
-  }
+  }*/
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   this.reset = function() {
     angle = Math.random()*Math.PI*2;
@@ -104,9 +122,12 @@ galaxies.Obstacle = function ( props ) {
       material.transparent = false;
     }
     
+    this.life = this.baseLife;
+    
     this.state = 'waiting';
     this.isActive = false;
-    fallTime = Math.random() * 3; // random delay to make obstacles arrive less uniformly
+    //fallTime = Math.random() * 3; // random delay to make obstacles arrive less uniformly
+    fallTime = 0;
     fallTimer = 0;
     velocity.set(0,0,0);
 
@@ -228,6 +249,7 @@ galaxies.Obstacle = function ( props ) {
     if ( this.particleGroup != null ) {
       this.particleGroup.tick(delta);
     }
+    galaxies.utils.conify( this.object );
     
   } 
   
@@ -255,14 +277,11 @@ galaxies.Obstacle = function ( props ) {
     
   }
   
-  this.hit = function( hitPosition, ricochet ) {
-    //if ( this.ricochet ) {
-    if ( this.passSound !== null ) {
-      this.passSound.volume = 0;
-    }
+  this.hit = function( hitPosition, ricochet, forceDestroy ) {
+    this.life--;
     
-    if ( this.state === 'ricocheting' ) {
-      galaxies.engine.showCombo( (this.ricochetCount * this.points), this.object );
+    if ( forceDestroy || (this.life <=0 ) ) {
+      galaxies.engine.showCombo( this.points, this.ricochetCount, this.object );
       this.splode();
       return;
     }
@@ -273,28 +292,27 @@ galaxies.Obstacle = function ( props ) {
       baseVolume: 2,
       loop: false
     });
-    this.state= 'ricocheting';
     
-    //this.ricochet = true;
-    
-    if ( typeof(ricochet) === 'undefined' ) {
-      this.ricochetCount = 1;
-    } else {
-      this.ricochetCount = ricochet+1;
+    if ( this.life === 1 ) {
+      this.state= 'ricocheting';
+      
+      if ( typeof(ricochet) === 'number' ) {
+        this.ricochetCount = ricochet+1;
+      }
+      
+      if ( tumbleOnHit ) {
+        tumbling = true;
+        tumbleSpeed = baseTumbleSpeed * this.ricochetCount * 2.5;
+      }
+      
+      //console.log( this.ricochetCount );
+      
+      velocity.copy( this.object.position );
+      velocity.sub( hitPosition );
+      velocity.z = 0;
+      velocity.setLength( RICOCHET_SPEED * galaxies.engine.speedScale );
+      //console.log(velocity);
     }
-    
-    if ( tumbleOnHit ) {
-      tumbling = true;
-      tumbleSpeed = baseTumbleSpeed * this.ricochetCount * 2.5;
-    }
-    
-    //console.log( this.ricochetCount );
-    
-    velocity.copy( this.object.position );
-    velocity.sub( hitPosition );
-    velocity.z = 0;
-    velocity.setLength( RICOCHET_SPEED * galaxies.engine.speedScale );
-    //console.log(velocity);
   }
   
   this.splode = function() {
@@ -318,6 +336,19 @@ galaxies.Obstacle = function ( props ) {
       default:
         galaxies.fx.showRubble( this.object.position, velocity );
     }
+    
+    for (var i=0; i<this.spawnNumber; i++ ) {
+      var child = galaxies.engine.addObstacle( this.spawnType );
+      child.object.position.copy( this.object.position );
+      var offset = new THREE.Vector3(
+                                     THREE.Math.randFloatSpread( 1 ),
+                                     THREE.Math.randFloatSpread( 1 ),
+                                     0 );
+      offset.setLength( this.hitThreshold * galaxies.engine.CONE_SLOPE );
+      child.object.position.add(offset);
+    }
+    
+    
     
     this.deactivate();
   }
@@ -343,4 +374,154 @@ galaxies.Obstacle = function ( props ) {
   
   this.reset();
   
+}
+
+/// Factory function for creating standard obstacles.
+galaxies.Obstacle.create = function( type ) {
+  var props = {};
+  props.speed = 0.2;
+  props.tumble = false;
+  props.tumbleOnHit = true;
+  props.spiral = 0;
+  props.points = 100;
+  props.hitSound = 'asteroidhit';
+  props.explodeSound = 'asteroidsplode';
+  props.passSound = null;
+  props.orient = false;
+  props.explodeType = 'rubble';
+  props.type = type;
+  props.spawnType = '';
+  props.spawnNumber = 0;
+  
+  switch(type) {
+    case 'satellite':
+      props.speed = 0.5;
+      props.spiral = 0.7;
+      props.points = 250;
+      props.orient = true;
+      props.explodeType = 'debris';
+      props.hitSound = 'metalhit';
+      props.explodeSound = 'satellitesplode';
+      
+      var material = new THREE.MeshPhongMaterial();
+      material.setValues( galaxies.resources.materials['satellite'] );
+      var model = new THREE.Mesh( galaxies.resources.geometries['satellite'], material );
+      model.position.y = -2;
+      model.rotation.y = Math.random() * galaxies.utils.PI_2; // random roll to show window
+      
+      var modelOrient = new THREE.Object3D(); // holder positioned at center of model and rotated to orient it.
+      modelOrient.add(model);
+      modelOrient.rotation.x = 1.3; // Face away from camera, but not completely aligned with cone surface
+      modelOrient.rotation.z = 0.5; // Face direction of motion a little
+      
+      props.anchor = new THREE.Object3D(); // holder at center, z-axis faces forward, we made it!
+      props.anchor.add(modelOrient);
+      var satScale = 0.4;
+      props.anchor.scale.set(satScale, satScale, satScale);
+      
+      props.model = modelOrient;
+      
+      break;
+    case 'comet':
+      props.speed = 1.2;
+      props.spiral = 1;
+      props.points = 500;
+      props.orient = true;
+      props.tumbleOnHit = false;
+      props.explodeType = 'fireworks';
+      
+      props.explodeSound = 'cometexplode';
+      props.explosionGain = 7;
+      
+      var emitterSettings = {
+        type: 'cube',
+        positionSpread: new THREE.Vector3(0.6, 0.6, 0.6),
+        velocity: new THREE.Vector3(0, 0, -5),
+        velocitySpread: new THREE.Vector3(0.2, 0.2, 2),
+        sizeStart: 6,
+        sizeStartSpread: 4,
+        sizeEnd: 2,
+        opacityStart: 0.8,
+        opacityEnd: 0.1,
+        colorStart: new THREE.Color("rgb(6, 6, 20)"),
+        colorEnd: new THREE.Color("rgb(255, 77, 0)"),
+        particlesPerSecond: 10,
+        particleCount: 200,
+        alive: 1.0,
+        duration: null
+      };
+      
+      var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
+      texture.needsUpdate = true;
+      var particleGroup = new SPE.Group({
+        texture: texture,
+        maxAge: 1.5,
+        blending: THREE.AdditiveBlending//THREE.AdditiveBlending
+      });
+      particleGroup.addEmitter( new SPE.Emitter( emitterSettings) );
+      props.particleGroup = particleGroup;
+      props.anchor = particleGroup.mesh;
+      
+      // solid core (for when particles are thin at edge of screen )
+      var mat = new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true, blending: THREE.AdditiveBlending } );
+      var core = new THREE.Sprite( mat );
+      props.anchor.add( core );
+      
+      break;
+    
+    case 'asteroidmetal':
+      props.life = 3;
+      props.speed = 0.1;
+      props.tumble = true;
+      props.points = 100;
+      props.hitThreshold = 0.6;
+      props.hitSound = 'asteroidhit';
+      props.explodeSound = 'asteroidsplode';
+      var material = new THREE.MeshPhongMaterial();
+      material.setValues( galaxies.resources.materials['asteroidmetal'] );
+      props.model = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
+      props.model.scale.set( 0.45, 0.45, 0.45 );
+      props.anchor = props.model; // no container object in this case
+      
+      props.spawnType = 'asteroid';
+      props.spawnNumber = 2;
+      break;
+    case 'asteroidrad':
+      props.life = 3;
+      props.speed = 0.05;
+      props.tumble = true;
+      props.points = 100;
+      props.hitThreshold = 0.7;
+      props.hitSound = 'asteroidhit';
+      props.explodeSound = 'asteroidsplode';
+      var material = new THREE.MeshPhongMaterial();
+      material.setValues( galaxies.resources.materials['asteroidrad'] );
+      props.model = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
+      props.model.scale.set( 0.5, 0.5, 0.5 );
+      props.anchor = props.model; // no container object in this case
+      
+      props.spawnType = 'asteroid';
+      props.spawnNumber = 3;
+      break;
+    case 'asteroid':
+    default:
+      props.life = 1;
+      props.speed = 0.2;
+      props.tumble = true;
+      props.points = 100;
+      props.hitThreshold = 0.4;
+      props.hitSound = 'asteroidhit';
+      props.explodeSound = 'asteroidsplode';
+      
+      var material = new THREE.MeshPhongMaterial();
+      material.setValues( galaxies.resources.materials['asteroid'] );
+      props.model = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
+      props.model.scale.set( 0.375, 0.375, 0.375 );
+      props.anchor = props.model; // no container object in this case
+      props.type = 'asteroid';
+      
+      break;
+      
+  }
+  return new galaxies.Obstacle(props);
 }
