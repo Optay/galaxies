@@ -12,6 +12,33 @@ this.galaxies = this.galaxies || {};
 
 
 galaxies.Resources = function() {
+  this.skyTexture = new THREE.CubeTexture([
+    galaxies.queue.getResult('skyboxright1'),
+    galaxies.queue.getResult('skyboxleft2'),
+    galaxies.queue.getResult('skyboxtop3'),
+    galaxies.queue.getResult('skyboxbottom4'),
+    galaxies.queue.getResult('skyboxfront5'),
+    galaxies.queue.getResult('skyboxback6') ]);
+  this.skyTexture.generateMipMaps = false;
+  this.skyTexture.magFilter = THREE.LinearFilter,
+  this.skyTexture.minFilter = THREE.LinearFilter
+  this.skyTexture.needsUpdate = true;
+  
+  this.skyRefract = new THREE.CubeTexture([
+      galaxies.queue.getResult('skyboxright1'),
+      galaxies.queue.getResult('skyboxleft2'),
+      galaxies.queue.getResult('skyboxtop3'),
+      galaxies.queue.getResult('skyboxbottom4'),
+      galaxies.queue.getResult('skyboxfront5'),
+      galaxies.queue.getResult('skyboxback6') ]);
+  this.skyRefract.generateMipMaps = false;
+  this.skyRefract.magFilter = THREE.LinearFilter,
+  this.skyRefract.minFilter = THREE.LinearFilter
+  this.skyRefract.mapping = THREE.CubeRefractionMapping;
+  this.skyRefract.needsUpdate = true;
+
+
+  
   this.geometries = {};
   this.materials = {};
   

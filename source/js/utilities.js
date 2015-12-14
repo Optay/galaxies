@@ -153,7 +153,10 @@ galaxies.ExhaustiveArray = function() {
   
 }
 
-
+// modulo without keeping dividend sign.
+galaxies.utils.mod = function( a, n ) {
+  return (a - Math.floor( a/n ) * n);
+}
 
 galaxies.utils.flatLength = function( vector ) {
   return Math.sqrt( Math.pow(vector.x, 2) + Math.pow(vector.y,2) );

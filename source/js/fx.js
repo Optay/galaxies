@@ -53,12 +53,12 @@ galaxies.fx = (function() {
     type: 'cube',
     positionSpread: new THREE.Vector3(0.1, 0.1, 0.1),
     //radius: 0.1,
-    velocity: new THREE.Vector3(0, 0, 7),
-    velocitySpread: new THREE.Vector3(3, 3, 10),
+    velocity: new THREE.Vector3(0, 0, 4),
+    velocitySpread: new THREE.Vector3(3, 3, 6),
     //speed: 1,
-    sizeStart: 0.2,
+    sizeStart: 0.4,
     sizeStartSpread: 0.1,
-    sizeEnd: 0.15,
+    sizeEnd: 0.3,
     opacityStart: 1,
     opacityEnd: 0,
     colorStart: new THREE.Color("hsl(0, 0%, 70%)"),
@@ -451,6 +451,34 @@ galaxies.fx = (function() {
       
   }
   
+  var distortionPool = [];
+  var showDistortionCircle = function( position, radius ) {
+    // Transform position to equivalent screen space behind planet distance
+    var pos = position.clone();
+    pos.sub(galaxies.engine.camera.position);
+    var baseDistance = pos.length();
+    pos.setLength( 2*galaxies.engine.CAMERA_Z );
+    radius = radius * pos.length()/baseDistance;
+    pos.add(galaxies.engine.camera.position);
+    //
+    
+    var material = new THREE.MeshBasicMaterial( {
+      color: 0xffffff,
+      envMap: galaxies.resources.skyRefract,
+      refractionRatio: 0.9,
+      transparent: true,
+      opacity: 1
+      } );
+    var geometry = new THREE.SphereGeometry(radius, 24, 24);
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.position.copy( pos );
+    galaxies.engine.rootObject.add( mesh );
+    
+    // Add to collection pool
+    distortionPool.push( mesh );
+  }
+  
+  
   
   
   var update = function( delta ) {
@@ -483,6 +511,25 @@ galaxies.fx = (function() {
     // teleport particles
     // TODO only update these when active
     // teleportGroup.tick(delta );
+    
+    
+    // step through distortion collection
+    // change radius and refractive index
+    // remove objects when refractive index is 0
+    for ( var i=0, len=distortionPool.length; i<len; i++ ) {
+      var distortion = distortionPool[i];
+      
+      if (distortion.material.refractionRatio>=1) {
+        continue;
+      }
+      distortion.material.refractionRatio = distortion.material.refractionRatio + delta * 0.1;
+      distortion.material.opacity = (1 - distortion.material.refractionRatio)/ 0.1;
+      var scale = 1 - 0.3 * distortion.material.opacity;
+      distortion.scale.set( scale, scale, scale);
+      if (distortion.material.refractionRatio>=1) {
+        galaxies.engine.rootObject.remove( distortion );
+      }
+    }
   }
   
   var shakeCamera = function( magnitude, duration ) {
@@ -522,6 +569,7 @@ galaxies.fx = (function() {
     showTeleportOut: showTeleportOut,
     showTeleportIn: showTeleportIn,
     shakeCamera: shakeCamera,
-    showDebris: showDebris
+    showDebris: showDebris,
+    showDistortionCircle: showDistortionCircle
   };
 })();

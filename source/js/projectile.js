@@ -27,8 +27,9 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   }
   angle += angleOffset;
   
+  // spread is expected to be -1 to 1
   if ( typeof(spread) != 'number' ) { spread = 0; }
-  this.spreadAngle = spread * 30 * Math.PI/180; // spread angle is 40 degrees
+  this.spreadAngle = spread * 45 * Math.PI/180;
   
   // set initial direction
   var direction = new THREE.Vector3( -Math.sin(angle), Math.cos(angle), 0 );

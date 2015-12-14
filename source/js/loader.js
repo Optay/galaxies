@@ -96,8 +96,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'title3', src: 'title_03_dolby.png' },
     { id: 'title4', src: 'title_04_trunkford.png' },
     { id: 'titleExtraLux', src: 'title_luxamillion_planet.png' },
-    { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' }
-    
+    { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' },
+    { id: 'heart', src: 'heart_life.png' },
+    { id: 'star', src: 'star_collect.png' }
     
   ];
   for (var i=0; i<imageItems.length; i++ ) {
