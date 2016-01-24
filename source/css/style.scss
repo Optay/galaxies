@@ -330,7 +330,7 @@ body {
 /*****************
  * in-game
  *****************/
-.level-display, .score-display, .powerup-charge-display {
+.level-display, .score-display, .powerup-charge-display, .timer-display {
   margin: 20px;
   
   color: $score-color;
@@ -342,6 +342,11 @@ body {
   line-height: 35px;
 }
 
+.timer-display {
+  position: absolute;
+  top: 40px;
+  right: 0;
+}
 .level-display {
   position: absolute;
   top: 0;
@@ -387,6 +392,28 @@ body {
 .life-heart.empty {
   background-position: top;
 }
+
+.star-display {
+  position: absolute;
+  top: 0;
+  right: 180px;
+  margin-top: 27px;
+}
+.collect-star {
+  width: 28px;
+  height: 28px;
+  float: left;
+  margin-right: 5px;
+  //display: inline-block;
+  
+  background: url('../images/collect_star.png');
+  background-size: cover;
+  background-position: bottom;
+}
+.collect-star.empty {
+  background-position: top;
+}
+
 
 
 .game-logo {

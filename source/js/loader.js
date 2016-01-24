@@ -59,8 +59,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'trunkfordlaugh2', src:'trunkford_laugh_02', type: createjs.AbstractLoader.BINARY },
     { id: 'trunkfordlaugh3', src:'trunkford_laugh_03', type: createjs.AbstractLoader.BINARY },
     { id: 'trunkfordlaugh4', src:'trunkford_laugh_04', type: createjs.AbstractLoader.BINARY },
-    { id: 'buttonover', src:'button_rollover', type: createjs.AbstractLoader.BINARY }
-    
+    { id: 'buttonover', src:'button_rollover', type: createjs.AbstractLoader.BINARY },
+    { id: 'starcollect', src:'star', type: createjs.AbstractLoader.BINARY },
+    { id: 'heartcollect', src:'heart', type: createjs.AbstractLoader.BINARY },
+    { id: 'powerupcollect', src: 'powerup', type: createjs.AbstractLoader.BINARY },
     
     
     
@@ -98,7 +100,17 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'titleExtraLux', src: 'title_luxamillion_planet.png' },
     { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' },
     { id: 'heart', src: 'heart_life.png' },
-    { id: 'star', src: 'star_collect.png' }
+    { id: 'star', src: 'star_collect.png' },
+    { id: 'planetjupiter', src: 'planet_jupiter.png' },
+    { id: 'planetmars', src: 'planet_mars.png' },
+    { id: 'planetpluto', src: 'planet_1.png' },
+    { id: 'planetneptune', src: 'planet_2.png' },
+    { id: 'planeturanus', src: 'planet_3.png' },
+    { id: 'planetsaturn', src: 'planet_4.png' },
+    { id: 'planetjupiter', src: 'planet_5.png' },
+    { id: 'planetmars', src: 'planet_6.png' },
+    { id: 'planetearth', src: 'planet_7.png' },
+    { id: 'sparkle', src: 'sparticle.png' },
     
   ];
   for (var i=0; i<imageItems.length; i++ ) {

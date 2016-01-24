@@ -6,20 +6,28 @@ this.galaxies = this.galaxies || {};
 window.addEventListener("load", function(event) {
   var datgui = new dat.GUI();
   
+  datgui.close();
+  
   console.log("debug init");
   
   var userValues = {
-    fireMode: '',
-    gotoLevel10: function() { setLevel(10); },
-    gotoLevel1: function() { setLevel(1); },
+    pluto: function() { setLevel(1); },
+    neptune: function() { setLevel(4); },
+    uranus: function() { setLevel(7); },
+    saturn: function() { setLevel(10); },
+    jupiter: function() { setLevel(13); },
+    mars: function() { setLevel(16); },
+    earth: function() { setLevel(19); },
     invulnerable: true
   };
   
-  var fireModeController = datgui.add( userValues, 'fireMode', ['plain', 'golden', 'spread', 'clone'] );
-  fireModeController.onChange( galaxies.engine.setFireMode );
-  
-  datgui.add(userValues, 'gotoLevel1' );
-  datgui.add(userValues, 'gotoLevel10' );
+  datgui.add(userValues, 'pluto' );
+  datgui.add(userValues, 'neptune' );
+  datgui.add(userValues, 'uranus' );
+  datgui.add(userValues, 'saturn' );
+  datgui.add(userValues, 'jupiter' );
+  datgui.add(userValues, 'mars' );
+  datgui.add(userValues, 'earth' );
   
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
   invulnerableController.onChange( setInvulnerable );
@@ -29,9 +37,16 @@ window.addEventListener("load", function(event) {
   }
   
   function setLevel( newLevel ) {
-    galaxies.engine.levelNumber = 10;
+    galaxies.engine.levelNumber = newLevel;
+    
     galaxies.engine.clearLevel();
+    galaxies.engine.initRootRotation();
+    galaxies.engine.planetTransition();
+    /*
+    galaxies.engine.clearLevel();
+    galaxies.engine.updateScene();
     galaxies.engine.initLevel();
+    */
   }
   
 });

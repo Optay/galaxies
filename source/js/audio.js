@@ -28,6 +28,7 @@ galaxies.audio.positionedSounds = [];
 
 // Create a new AudioBufferSource node for a given sound.
 galaxies.audio.getSound = function( id ) {
+  //console.log( "getSound", id );
   var buffer = galaxies.audio.loadedSounds[id].next();
   //console.log( "getSound", id, buffer, typeof(buffer) );
   if ( typeof( buffer ) === 'undefined' ) {
@@ -56,7 +57,11 @@ galaxies.audio.sounds = {
   'satellitesplode': ['satellitesplode'],
   'asteroidhit': ['asteroidhit1', 'asteroidhit2', 'asteroidhit3', 'asteroidhit4'],
   'trunkfordlaugh': ['trunkfordlaugh1', 'trunkfordlaugh2', 'trunkfordlaugh3', 'trunkfordlaugh4' ],
-  'buttonover': ['buttonover']
+  'buttonover': ['buttonover'],
+  'heartcollect': ['heartcollect'],
+  'starcollect': ['starcollect'],
+  'powerupcollect': ['powerupcollect'],
+  
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
@@ -71,6 +76,8 @@ galaxies.audio.initAudio = function( complete ) {
   // Global mute
   galaxies.audio.outNode = galaxies.audio.audioCtx.createGain();
   galaxies.audio.outNode.connect( galaxies.audio.audioCtx.destination );
+  galaxies.audio.simpleOutNode = galaxies.audio.audioCtx.createGain();
+  galaxies.audio.simpleOutNode.connect( galaxies.audio.audioCtx.destination );
 
   // Boost volume for EC-3 playback in Safari 9.0, OSX.
   // There is a problem in that EC-3 decoder which results in muted playback.
@@ -193,7 +200,6 @@ galaxies.audio.PositionedSound = function( props ) {
   this.toSource = new THREE.Vector3(); // vector from listener to source
   
   this.muteVolume = galaxies.audio.audioCtx.createGain();
-  
   this.preAmp = galaxies.audio.audioCtx.createGain();
   this.muteVolume.connect( this.preAmp );
   Object.defineProperty(this, "volume", { set:
@@ -300,7 +306,7 @@ galaxies.audio.PositionedSound = function( props ) {
     if ( this.source != null ) {
       this.source.stop(0);
     }
-    try{
+    try {
       this.source = galaxies.audio.audioCtx.createBufferSource();
       this.source.loop = this.loop;
       this.source.buffer = buffer;
@@ -358,6 +364,69 @@ galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start )
     this.sound.source.playbackRate.value = 1 + (deltaDistance/galaxies.audio.DOPPLER_FACTOR);
     this.lastDistance = this.sound.distance;
   }
+}
+
+/** A simpler sound object that works the same way as Positioned Sound. May include
+ * a stereo spatial mix, but it will be simple.
+ * 
+ * properties:
+ * buffer, loop, start, dispose, baseVolume, position
+ **/
+galaxies.audio.SimpleSound = function( props ) {
+  if ( typeof(props.dispose) !=='boolean' ) { props.dispose = true; }
+  var dispose = props.dispose;
+  
+  if ( typeof(props.loop) !=='boolean' ) { props.loop = true; }
+  this.loop = props.loop;
+
+  if ( typeof(props.start) !=='boolean' ) { props.start = true; }
+  
+  var buffer = props.source; // hold on to the buffer, so we can replay non-looping sounds
+  
+  this.toSource = new THREE.Vector3(); // vector from listener to source
+  
+  this.muteVolume = galaxies.audio.audioCtx.createGain();
+  this.preAmp = galaxies.audio.audioCtx.createGain();
+  this.muteVolume.connect( this.preAmp );
+  Object.defineProperty(this, "volume", { set:
+    function (value) {
+      this._volume = value;
+      this.preAmp.gain.value = this._volume;
+    }
+  });
+  if ( typeof( props.baseVolume ) !=='number' ) { props.baseVolume = 1; }
+  this.volume = props.baseVolume;
+  
+  this.startSound = function() {
+    //console.log("SimpleSound start");
+    if ( this.source != null ) {
+      this.source.stop(0);
+    }
+    try{
+      this.source = galaxies.audio.audioCtx.createBufferSource();
+      this.source.loop = this.loop;
+      this.source.buffer = buffer;
+      this.source.connect( this.muteVolume );
+      this.source.start(0);
+      
+      //this.source.onended = function() { console.log("SimpleSound ended"); };
+      
+    } catch(e) {
+      console.log("Unable to start sound", e );
+    }
+  }
+  
+  this.init = function() {
+    this.preAmp.connect( galaxies.audio.simpleOutNode );
+    
+  }
+  
+  this.init();
+  
+  if ( props.start ) {
+    this.startSound();
+  }  
+  
 }
 
 
@@ -442,7 +511,7 @@ galaxies.audio.SoundField = function ( buffer ) {
     volumeNode.gain.value = value;
   }
   
-  this.setVolume(0.24);
+  this.setVolume(0.24); // global music volume. should be a const
   this.source.start(0);
   
   this.update = function(delta) {
@@ -516,8 +585,10 @@ galaxies.audio.setAllMute = function( mute ) {
   galaxies.audio.setMusicMute( false );
   if ( mute ) {
     galaxies.audio.outNode.gain.value = 0;
+    galaxies.audio.simpleOutNode.gain.value = 0;
   } else {
     galaxies.audio.outNode.gain.value = galaxies.audio.globalGain;
+    galaxies.audio.simpleOutNode.gain.value = galaxies.audio.globalGain;
   }
 }
 
@@ -526,7 +597,7 @@ galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
     galaxies.audio.soundField.setVolume(0);
   } else {
-    galaxies.audio.soundField.setVolume(0.24);
+    galaxies.audio.soundField.setVolume(0.24); // global music volume, should be a const
   }
 }
 

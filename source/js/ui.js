@@ -34,8 +34,11 @@ galaxies.ui = (function() {
   var inGameHolder = uiHolder.querySelector(".game-ui");
   var pauseButton = uiHolder.querySelector(".pause-button");
   var levelDisplay = inGameHolder.querySelector(".level-display-text");
+  var timerDisplay = inGameHolder.querySelector(".timer-display");
   var lifeDisplay = inGameHolder.querySelector(".life-display");
   var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
+  var starDisplay = inGameHolder.querySelector(".star-display");
+  var collectStars = starDisplay.querySelectorAll(".collect-star");
   var scoreDisplay = inGameHolder.querySelector(".score-display-text");
   var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
   
@@ -508,6 +511,10 @@ galaxies.ui = (function() {
     gameOverHolder.classList.add('hidden');
   }
   
+  var updateTimer = function( time ) {
+    timerDisplay.innerHTML = time.toFixed(0);
+  }
+  
   var updateLevel = function( newPlanetNumber, roundNumber ) {
     levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();;
   }
@@ -523,6 +530,18 @@ galaxies.ui = (function() {
       }
     }
   }
+  
+  var updateStars = function( starsCollected ) {
+    for ( var i=0; i<collectStars.length; i++ ) {
+      if ( (i+1)<=starsCollected ) {
+        collectStars[i].classList.remove('empty');
+      } else {
+        collectStars[i].classList.add('empty');
+      }
+    }
+  }
+  
+  
   var updatePowerupCharge = function( newValue ) {
     powerupCharge.innerHTML = newValue.toFixed(2);
   }
@@ -537,8 +556,10 @@ galaxies.ui = (function() {
     showTitle: showTitle,
     clearTitle: clearTitle,
     updateLevel: updateLevel,
+    updateTimer: updateTimer,
     updateScore: updateScore,
     updateLife: updateLife,
+    updateStars: updateStars,
     updatePowerupCharge: updatePowerupCharge,
     setMixButtons: setMixButtons
   };

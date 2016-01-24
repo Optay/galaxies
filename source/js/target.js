@@ -15,11 +15,13 @@ galaxies.BaseTarget = function() {
   
   this.timer = 0;
   this.lifetime = 10;
-  
+  this.isActive = false;
 }
-/*
-galaxies.BaseTarget.prototype.destroy = function() {
-}*/
+
+galaxies.BaseTarget.prototype.activate = function() {
+  this.isActive = true;
+}
+
 
 
 
@@ -32,6 +34,8 @@ galaxies.BaseTarget.prototype.destroy = function() {
 galaxies.Capsule = function( isHeart ) {
   galaxies.BaseTarget.call(this);
   
+  //isHeart = true; // test hearts
+  
   if ( isHeart ) {
     // Sprite
     var map = new THREE.Texture( galaxies.queue.getResult('heart') );
@@ -41,10 +45,10 @@ galaxies.Capsule = function( isHeart ) {
       map: map,
       color: 0xffffff,
       transparent: true,
-      opacity: 1.0
+      opacity: 0.0
     } );
     this.model = new THREE.Sprite( heartMaterial );
-    var scale = 0.6; // scale it down a little
+    var scale = 0.45; // scale it down a little
     this.model.scale.set( scale, scale, scale );    
   } else {
     // Capsule mesh
@@ -52,7 +56,9 @@ galaxies.Capsule = function( isHeart ) {
     var mat = new THREE.MeshPhongMaterial( {
         color: 0xaaaaaa,
         specular: 0xffffff,
-        shininess: 5} );
+        shininess: 5,
+        opacity: 0.0,
+        transparent: true } );
     this.model = new THREE.Mesh( geometry, mat );
   }
   
@@ -78,7 +84,7 @@ galaxies.Capsule = function( isHeart ) {
   
   this.angle = 0;
   
-  this.distance = galaxies.engine.VISIBLE_RADIUS * 0.9;// 3.1; // distance from origin of capsule position
+  this.distance = galaxies.engine.VISIBLE_RADIUS * 0.97;// 3.1; // distance from origin of capsule position
   this.orbitAngle = 0;
   this.orbitRadius = 0.2; // magnitude of oscillation
   this.orbitVelocity = 0.7; // speed of oscillation
@@ -93,6 +99,19 @@ galaxies.Capsule.prototype.hit = function() {
   // release the powerup
   console.log("Capsule.hit");
   galaxies.engine.setPowerup( this.powerup );
+  
+  var soundId = 'powerupcollect';
+  if ( this.powerup === 'heart' ) {
+    soundId = 'heartcollect';
+    
+    galaxies.fx.showHearticles( this.object.position );
+  }
+  new galaxies.audio.PositionedSound({
+    source: galaxies.audio.getSound(soundId),
+    position: galaxies.utils.rootPosition( this.object ),
+    baseVolume: 2,
+    loop: false
+  });
   
   this.clear();
 }
@@ -110,6 +129,12 @@ galaxies.Capsule.prototype.appear = function() {
                      Math.sin(this.angle) * this.distance,
                      0 );
   this.orbitAngle = 0;
+  
+  // fade in
+  createjs.Tween.removeTweens( this.model.material );
+  createjs.Tween.get( this.model.material )
+    .to( { opacity: 1 }, 500 )
+    .call( this.activate, null, this );
 }
 
 galaxies.Capsule.prototype.updatePowerup = function() {
@@ -132,8 +157,18 @@ galaxies.Capsule.prototype.updatePowerup = function() {
 }
 
 galaxies.Capsule.prototype.update = function( delta ) {
+  
   this.timer += delta;
-  if ( this.timer > this.lifetime ) { this.clear(); return; }
+  if ( this.isActive && (this.timer > this.lifetime) ) {
+    // fade out
+    this.isActive = false;
+    createjs.Tween.removeTweens( this.model.material );
+    createjs.Tween.get( this.model.material )
+      .to( { opacity: 0 }, 500 )
+      .call( this.clear, null, this );
+    
+    return;
+  }
   
   if ( this.timer > this.typeTime ) {
     this.typeTime = this.typeTime + this.typeInterval;
@@ -169,10 +204,10 @@ galaxies.Star = function( angle ) {
     map: map,
     color: 0xffffff,
     transparent: true,
-    opacity: 1.0
+    opacity: 0.0
   } );
   this.model = new THREE.Sprite( starMaterial );
-  var starScale = 0.7; // scale it down a little
+  var starScale = 0.525; // scale it down a little
   this.model.scale.set( starScale, starScale, starScale );
 
   
@@ -191,7 +226,7 @@ galaxies.Star = function( angle ) {
   galaxies.engine.rootObject.add( this.object );
   galaxies.engine.neutrals.push(this);
   
-  var distance = galaxies.engine.VISIBLE_RADIUS * 0.91;
+  var distance = galaxies.engine.VISIBLE_RADIUS * 0.98;
   this.object.position.set( Math.cos(angle) * distance,
                             Math.sin(angle) * distance,
                             0 );
@@ -204,11 +239,25 @@ galaxies.Star = function( angle ) {
 
   this.axis = new THREE.Vector3(0,0,1);
   this.speed = 1;
+  
+  // fade in
+  createjs.Tween.removeTweens( this.model.material );
+  createjs.Tween.get( this.model.material )
+    .to( { opacity: 1 }, 500 )
+    .call( this.activate, null, this );
 }
 galaxies.Star.prototype = Object.create( galaxies.BaseTarget.prototype );
 galaxies.Star.prototype.constructor = galaxies.Star;
 galaxies.Star.prototype.hit = function() {
   galaxies.engine.collectStar();
+  new galaxies.audio.PositionedSound({
+    source: galaxies.audio.getSound('starcollect'),
+    position: galaxies.utils.rootPosition( this.object ),
+    baseVolume: 4,
+    loop: false
+  });
+  
+  galaxies.fx.showStaricles( this.object.position );
   
   this.clear();
 }
@@ -220,8 +269,19 @@ galaxies.Star.prototype.clear = function() {
 }
 
 galaxies.Star.prototype.update = function( delta ) {
+  
   this.timer += delta;
-  if ( this.timer > this.lifetime ) { this.clear(); return; }
+  if ( this.isActive && (this.timer > this.lifetime) ) {
+    this.isActive = false;
+    
+    // fade out
+    createjs.Tween.removeTweens( this.model.material );
+    createjs.Tween.get( this.model.material )
+      .to( { opacity: 0 }, 500 )
+      .call( this.clear, null, this );
+      
+    return;
+  }
   
   //this.object.rotateOnAxis( this.axis, this.speed * delta );
   //this.object.rotation.set(0,0, this.object.rotation.z + this.speed * delta);

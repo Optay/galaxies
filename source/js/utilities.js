@@ -117,22 +117,13 @@ galaxies.ExhaustiveArray = function() {
   var objects = [];
   var index = 0;
   
-  var shuffle = function() {
-    for (var i=0; i<objects.length; i++ ) {
-      var randomIndex = Math.floor( Math.random() * (i+1) );
-      var temp = objects[randomIndex];
-      objects[randomIndex] = objects[i];
-      objects[i] = temp;
-    }
-  }
-  
   this.add = function( item ) {
     objects.push(item);
   }
   
   this.init = function() {
     index = 0;
-    shuffle();
+    galaxies.utils.shuffleArray(objects);
   }
   
   this.next = function() {
@@ -142,16 +133,27 @@ galaxies.ExhaustiveArray = function() {
       index++;
       if ( index >= objects.length ) {
         index = 0;
-        shuffle();
+        galaxies.utils.shuffleArray(objects);
       }
     }
     
     return nextObject;
   }
   
-  shuffle();
+  galaxies.utils.shuffleArray(objects);
   
 }
+
+// Fisher-Yates shuffle
+galaxies.utils.shuffleArray = function( array ) {
+  for (var i=0, len = array.length; i<len; i++ ) {
+    var randomIndex = Math.floor( Math.random() * (i+1) );
+    var temp = array[randomIndex];
+    array[randomIndex] = array[i];
+    array[i] = temp;
+  }  
+}
+
 
 // modulo without keeping dividend sign.
 galaxies.utils.mod = function( a, n ) {

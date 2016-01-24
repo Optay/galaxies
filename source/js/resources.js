@@ -12,6 +12,8 @@ this.galaxies = this.galaxies || {};
 
 
 galaxies.Resources = function() {
+  
+  // Skybox
   this.skyTexture = new THREE.CubeTexture([
     galaxies.queue.getResult('skyboxright1'),
     galaxies.queue.getResult('skyboxleft2'),
@@ -37,7 +39,44 @@ galaxies.Resources = function() {
   this.skyRefract.mapping = THREE.CubeRefractionMapping;
   this.skyRefract.needsUpdate = true;
 
-
+  // Background Planets
+  this.bgPlanetTextures = [];
+  this.bgPlanetTextures[0] = {texture: new THREE.Texture( galaxies.queue.getResult('planetpluto') ), scale: 0.55};
+  this.bgPlanetTextures[1] = {texture: new THREE.Texture( galaxies.queue.getResult('planetneptune') ), scale: 1};
+  this.bgPlanetTextures[2] = {texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ), scale: 1};
+  this.bgPlanetTextures[3] = {texture: new THREE.Texture( galaxies.queue.getResult('planetsaturn') ), scale: 2};
+  this.bgPlanetTextures[4] = {texture: new THREE.Texture( galaxies.queue.getResult('planetjupiter') ), scale: 1};
+  this.bgPlanetTextures[5] = {texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ), scale: 1};
+  this.bgPlanetTextures[6] = {texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ), scale: 1};
+  
+  this.levelTitles = [];
+  this.levelTitles[0] = "Defend<br>The Plutonian Perimeter";
+  this.levelTitles[1] = "Protect<br>The Neptunian Neutral Zone";
+  this.levelTitles[2] = "Guard<br>The Uranian Outer Realm";
+  this.levelTitles[3] = "Preserve<br>The Saturnian Sector";
+  this.levelTitles[4] = "Safeguard<br>The Jovian Galactic Region";
+  this.levelTitles[5] = "Secure<br>The Martian Microcosm";
+  this.levelTitles[6] = "Save<br>The Terrestrial Territories";
+  for( var i=0, len=this.levelTitles.length; i<len; i++ ) {
+    this.levelTitles[i] = this.levelTitles[i].toUpperCase();
+  }
+  
+  
+  for ( var i=0, len=this.bgPlanetTextures.length; i<len; i++ ) {
+    //this.bgPlanetTextures[i].texture.minFilter = THREE.LinearFilter;
+    this.bgPlanetTextures[i].texture.needsUpdate = true;
+  }
+  
+  // Light angles by level
+  this.lightAngles = [
+    [0,20],
+    [135,20],
+    [-90,20],
+    [45,20],
+    [30,30],
+    [170,-20],
+    [0,25]
+  ];
   
   this.geometries = {};
   this.materials = {};
@@ -74,20 +113,24 @@ galaxies.Resources = function() {
       normalMap: asteroidNormal,
       shading: THREE.SmoothShading
   } );
-  this.materials['asteroidmetal'] = new THREE.MeshPhongMaterial( {
-      color: 0xffaaaa,
-      specular: 0x770000,
-      shininess: 100,
-      opacity: 0.4,
-      transparent: false,
-      map: asteroidColor,
+  
+  this.materials['asteroidice'] = new THREE.MeshPhongMaterial( {
+      color: 0x242a2a,
+      emissive: 0x11111f,
+      specular: 0xddddff,
+      shininess: 10,
+      opacity: 0.9,
+      transparent: true,
+      //map: asteroidColor,
       normalMap: asteroidNormal,
-      shading: THREE.SmoothShading
+      shading: THREE.SmoothShading,
+      blending: THREE.AdditiveBlending
+
   } );
   this.materials['asteroidrad'] = new THREE.MeshPhongMaterial( {
       color: 0xaaffaa,
       specular: 0x00ff00,
-      opacity: 0.4,
+      opacity: 0.9,
       transparent: false,
       map: asteroidColor,
       normalMap: asteroidNormal,
@@ -164,9 +207,9 @@ galaxies.Resources = function() {
     transparent: true,
     shading: THREE.SmoothShading
   });
-
   
- 
-    
+  
+  
+  
   
 };

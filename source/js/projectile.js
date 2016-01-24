@@ -98,7 +98,7 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   }
 }
 
-galaxies.Projectile.prototype.PROJECTILE_SPEED = 2.0; // 3.0 in original
+galaxies.Projectile.prototype.PROJECTILE_SPEED = 3.0; // 3.0 in original
 galaxies.Projectile.prototype.PROJECTILE_LIFE = 0; // This will be set by initial call to window resize
 
 

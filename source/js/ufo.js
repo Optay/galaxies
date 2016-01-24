@@ -58,7 +58,7 @@ this.galaxies.Ufo = function() {
   var transitionTime = 0;
   
   var hitCounter = 0;
-  var HITS = 2;
+  var HITS = 3;
   
   var angle = Math.random() * galaxies.utils.PI_2; // random start angle
   var angularSpeed = 0.7;
@@ -322,7 +322,7 @@ this.galaxies.Ufo = function() {
       
       if ( stepTimer >= stepTime ) {
         //console.log( 'orbit -> idle' );
-        this.reset();
+        this.deactivate();
       }
       
       break;
@@ -433,40 +433,38 @@ this.galaxies.Ufo = function() {
     
   }
   
-  // put object at step 0 and idle it for a random time
+  // bring it in
   this.reset = function() {
     this.state = 'idle';
     stepTimer = 0;
     
     hitCounter = 0;
     smokeEmitter.alive = 0.0;
-
     
     if ( galaxies.engine.isGameOver ) {
       this.deactivate();
       return;
     } else {
-      //stepTime = 0; // for testing
-      stepTime = Math.random() * 5 + 5; // 5 to 10 second interval
+      stepTime = 0; // comes in immediately
     }
     
     this.isHittable = false;
+    
+    // Update positions to work with variable camera position
+    var currentOrbitPosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
+    orbitPosition = galaxies.utils.getConifiedDepth( currentOrbitPosition );
+    var idleZ = galaxies.engine.CAMERA_Z + 10;
+    idlePosition = new THREE.Vector3(1,0,idleZ);
+    //
     
     lastPosition = idlePosition;
     targetPosition = idlePosition;
     this.object.position.copy( idlePosition );
     
+    
     // silence it!
     this.ufoSound.volume = 0;
     
-    /*
-    step = 0;
-    transitionAngle = angle + Math.random() * 3 * Math.PI;
-    stepAngle = transitionAngle;
-    this.alive = true;
-    lastPosition = targetPositions[0];
-    this.object.position.copy( targetPositions[0] );
-    */
   }
   
   this.activate = function() {
