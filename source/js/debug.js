@@ -42,11 +42,6 @@ window.addEventListener("load", function(event) {
     galaxies.engine.clearLevel();
     galaxies.engine.initRootRotation();
     galaxies.engine.planetTransition();
-    /*
-    galaxies.engine.clearLevel();
-    galaxies.engine.updateScene();
-    galaxies.engine.initLevel();
-    */
   }
   
 });

@@ -28,9 +28,7 @@ galaxies.audio.positionedSounds = [];
 
 // Create a new AudioBufferSource node for a given sound.
 galaxies.audio.getSound = function( id ) {
-  //console.log( "getSound", id );
   var buffer = galaxies.audio.loadedSounds[id].next();
-  //console.log( "getSound", id, buffer, typeof(buffer) );
   if ( typeof( buffer ) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
     return null;
@@ -69,9 +67,7 @@ galaxies.audio.initAudio = function( complete ) {
   var AudioContext = window.AudioContext || window.webkitAudioContext;
   galaxies.audio.audioCtx = galaxies.audio.audioCtx || new AudioContext(); // audio context will already have been defined in mobile touch-to-start event.
   galaxies.audio.listener = galaxies.audio.audioCtx.listener;
-  //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
-  //console.log( "Output channels:", galaxies.audio.audioCtx.destination.channelCountMode, galaxies.audio.audioCtx.destination.channelCount, galaxies.audio.audioCtx.destination.maxChannelCount );
   
   // Global mute
   galaxies.audio.outNode = galaxies.audio.audioCtx.createGain();
@@ -103,8 +99,6 @@ galaxies.audio.initAudio = function( complete ) {
   for( var i=0; i<soundIds.length; i++ ) {
     galaxies.audio.loadedSounds[ soundIds[i] ] = new galaxies.ExhaustiveArray();
     for ( var j=0; j<galaxies.audio.sounds[ soundIds[i] ].length; j++ ) {
-      //console.log( sounds[soundIds[i]][j] );
-      //console.log( galaxies.queue.getResult( sounds[soundIds[i]][j]) );
       decodeFile( soundIds[i], galaxies.audio.sounds[soundIds[i]][j] );
     }
   }
@@ -112,11 +106,9 @@ galaxies.audio.initAudio = function( complete ) {
   function decodeFile( soundId, fileId ) {
     var loadedId = soundId;
     var result = galaxies.queue.getResult( fileId, true );
-    //console.log( result );
     if ( result != null ) {
       galaxies.audio.audioCtx.decodeAudioData( result,
         function(buffer) {
-          //console.log("decoded", loadedId );
           galaxies.audio.loadedSounds[ loadedId ].add( buffer );  
           fileComplete();
         },
@@ -125,13 +117,11 @@ galaxies.audio.initAudio = function( complete ) {
           
           // Add an empty buffer to the cache to prevent errors when trying to play this sound.
           galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
-          //loadedSounds[loadedId].add( null );
           fileComplete();
         } );
     } else {
       // Add an empty buffer
       galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
-      //loadedSounds[loadedId].add( null );
       fileComplete();
     }
   }
@@ -268,8 +258,6 @@ galaxies.audio.PositionedSound = function( props ) {
   }
   
   this.updatePosition = function( newPosition ) {
-    // TODO - Evaluate this against the listener object direction for a more versatile system.
-    //        Transform the vector into the listener local space.
     this.toSource.subVectors( newPosition, galaxies.audio.listenerObject.position );
     this.distance = this.toSource.length();
     
@@ -281,10 +269,7 @@ galaxies.audio.PositionedSound = function( props ) {
         
         // base level based on distance
         var gain = galaxies.audio.DISTANCE_REF / (galaxies.audio.DISTANCE_REF + galaxies.audio.DISTANCE_ROLL * (this.distance - galaxies.audio.DISTANCE_REF)); // linear, to match panner algorithm in stereo mix
-        //var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION); // exponential
         if ( galaxies.audio.channelAngles[iOutput] !== null ) {
-          // cosine falloff function
-          //var directionAttenuation = (Math.cos( galaxies.audio.channelAngles[iOutput] - source.bearing ) + 1)/2;
           
           // exponential falloff function
           // calculate short distance between the angles
@@ -398,7 +383,6 @@ galaxies.audio.SimpleSound = function( props ) {
   this.volume = props.baseVolume;
   
   this.startSound = function() {
-    //console.log("SimpleSound start");
     if ( this.source != null ) {
       this.source.stop(0);
     }
@@ -438,31 +422,6 @@ galaxies.audio.playSound = function ( buffer ) {
   source.connect( galaxies.audio.outNode );
   source.start(0);
 }
-
-
-
-
-// Debug tool to display surround mix gains.
-/*
-function visualizeSource( directionalSource ) {
-  var visDivs = []; // L, R, C, LFE, SL, SR
-  visDivs[0] = document.getElementById('fl');
-  visDivs[1] = document.getElementById('fr');
-  visDivs[2] = document.getElementById('c');
-  visDivs[4] = document.getElementById('sl');
-  visDivs[5] = document.getElementById('sr');
-  
-  for( var i=0; i< visDivs.length; i++ ) {
-    if ( typeof( visDivs[i] ) !== 'undefined' ) {
-      visDivs[i].innerHTML = directionalSource.channels[i].gain.value.toFixed(2);
-    }
-  }
-  
-  //console.log( directionalSource.distance );
-  document.getElementById('bearing').innerHTML = directionalSource.bearing.toFixed(2);
-}*/
-
-
 
 
 

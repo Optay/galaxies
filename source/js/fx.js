@@ -32,7 +32,6 @@ galaxies.fx = (function() {
                               this.object.position.y + this.velocity.y*delta,
                               this.object.position.z + this.velocity.z*delta );
     
-    //this.object.material.opacity = (this.lifetime - this.lifeTimer)/this.lifetime;
     var scale = this.baseScale * (this.lifetime - this.lifeTimer)/this.lifetime;
     this.object.scale.set( scale, scale, scale );
     
@@ -83,13 +82,10 @@ galaxies.fx = (function() {
   var emitterSettings = {
     type: SPE.distributions.BOX,
     position: { spread: new THREE.Vector3(0.1, 0.1, 0.1) },
-    //radius: 0.1,
     velocity: { value: new THREE.Vector3(0, 0, 0),
                 spread: new THREE.Vector3(3, 3, 3) },
-    //speed: 1,
     size: { value: [ 0.8, 0.0 ],
             spread: [0.1] },
-    //opacity: { value:[ 1, 0 ] },
     color: { value: [ new THREE.Color("hsl(0, 0%, 70%)"),
                       new THREE.Color("hsl(0, 0%, 70%)") ] },
     particleCount: 20,
@@ -101,16 +97,13 @@ galaxies.fx = (function() {
   var init = function() {
     
     // Projectile hit particles
-    //var texture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
     var texture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     texture.needsUpdate = true;
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
         texture: { value: texture },
         blending: THREE.AdditiveBlending,
-        transparent: true/*,
-        depthTest: true,
-        depthWrite: true*/
+        transparent: true
       });
       projHitPool[i] = particleGroup;
       galaxies.engine.rootObject.add( particleGroup.mesh );
@@ -161,22 +154,15 @@ galaxies.fx = (function() {
       type: SPE.distributions.SPHERE,
       particleCount: 200,
       duration: 0.1,
-  //      particlesPerSecond: 1000,
-  //      activeMultiplier: 1, // Tweak this to match the effect of the now-deprecated pps value
       maxAge: { value: 0.7,
                 spread: 0.5 },
       position: { radius: 0.6 },
-  //      speed: 5,
-  //      speedSpread: 3,
       velocity: { value: new THREE.Vector3(20) },
-                  //spread: new THREE.Vector3(2) }, // like this?
       acceleration: { value: new THREE.Vector3(-14) },
-      //drag: { value: 1 },
-      color: { value: [new THREE.Color("rgb(255, 255, 255)"), new THREE.Color("rgb(255, 150, 100)") ],//, new THREE.Color("rgb(0, 0, 0)"), ],
-               spread: [new THREE.Vector3(), new THREE.Vector3(0.5, 0.7, 1)] },//new THREE.Vector3(0.5, 0.7, 1)] },
+      color: { value: [new THREE.Color("rgb(255, 255, 255)"), new THREE.Color("rgb(255, 150, 100)") ],
+               spread: [new THREE.Vector3(), new THREE.Vector3(0.5, 0.7, 1)] },
       opacity: { value: [1, 1, 1, 0.1] },
       size: { value: [10, 3, 1, 0.1 ] },
-              //spread: [1, 0] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
@@ -188,7 +174,6 @@ galaxies.fx = (function() {
     });
     fireworksGroup.addPool( 10, cometParticleSettings, true ); // 3
     
-    //fireworksGroup.mesh.rotation.x = Math.PI/2;
     galaxies.engine.rootObject.add ( fireworksGroup.mesh );
   
     // Planet splode
@@ -279,7 +264,6 @@ galaxies.fx = (function() {
                spread: 360 },
       drag: { value: 0.5 },
       color: { value: new THREE.Color( 0xffff00 ) },
-                //spread: new THREE.Vector3(0.0, 0.1, 0.1) },
       opacity: { value: [1,0.5] },
       size: { value: [1,0],
               spread: 0.5 }
@@ -312,67 +296,12 @@ galaxies.fx = (function() {
     
 
     
-    /*
-    var teleportParticles = {
-      type: 'sphere',
-      radius: 0.6,
-      speed: 1,
-      sizeStart: 1,
-      sizeStartSpread: 0,
-      sizeEnd: 1,
-      opacityStart: 1,
-      opacityEnd: 0,
-      colorStart: new THREE.Color(1.000, 0.800, 0.300),
-      colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
-      colorEnd: new THREE.Color(0.500, 0.500, 0.800),
-      particlesPerSecond: 100,
-      particleCount: 100,
-      alive: 0.0,
-      duration: 0.25
-    };
-    teleportGroup = new SPE.Group({
-      texture: starTexture,
-      maxAge: 0.5,
-      blending: THREE.AdditiveBlending
-    });
-    teleportEmitter = new SPE.Emitter( teleportParticles );
-    teleportGroup.addEmitter( teleportEmitter );
-    */
+
   } // init
   
   var showFireworks = function( position ) {
     // New rev of SPE does not require fancy workaround as we no longer have to fake particle drag.
     fireworksGroup.triggerPoolEmitter( 1, position );
-
-    /*
-    // Reproduces functionality of ShaderParticleGroup triggerPoolEmitter method.
-    // This is necessary to access properties of the emitter that is being activated.
-    var emitter = fireworksGroup.getFromPool();
-
-    if ( emitter === null ) {
-        console.log( 'SPE.Group pool ran out.' );
-        return;
-    }
-
-    if ( position instanceof THREE.Vector3 ) {
-        emitter._position.copy( position );
-    }
-
-    // Update emitter properties to fake drag
-    var away = new THREE.Vector3();
-    away.subVectors( position, galaxies.engine.camera.position);
-    away.normalize();
-    away.multiplyScalar( FIREWORKS_DECELERATION );
-    emitter.acceleration = away;
-    //
-    
-    emitter.enable();
-
-    setTimeout( function() {
-        emitter.disable();
-        fireworksGroup.releaseIntoPool( emitter );
-    }, fireworksGroup.maxAgeMilliseconds );
-    */
   }
   
   var showStaricles = function( position, type ) {
@@ -380,16 +309,12 @@ galaxies.fx = (function() {
     var emitter = staricles[type];
     if ( !emitter ) { emitter = staricles['star']; }
     
-    console.log( emitter );
-    
     emitter.position.value.copy( position );
     emitter.position.value = emitter.position.value;
     emitter.enable();
   }
   
   var showHit = function( position ) {
-    //console.log("fx show hit at position", position );
-    
     var particleGroup = projHitPool[ projHitIndex ];
     projHitIndex ++;
     if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
@@ -461,17 +386,6 @@ galaxies.fx = (function() {
       var emitter = planetParticleGroups[i].emitters[0]; // Only one per group.
       emitter.enable();
       
-      /*
-      // closure to hold references to the groups and emitters
-      (function() {
-        var emitterRef = emitter;
-        var groupRef = group;
-        setTimeout( function() {
-          emitterRef.disable();
-          galaxies.engine.rootObject.remove( groupRef.mesh );
-        }, (emitterRef.options.maxAge.value + emitterRef.options.maxAge.spread)*1000 );
-      })();
-      */
     }
     
     // pose lux
@@ -488,37 +402,6 @@ galaxies.fx = (function() {
   }
   
 
-  
-  var distortionPool = [];
-  var showDistortionCircle = function( position, radius ) {
-    return; // TEST - no distortion sphere
-  
-    // Transform position to equivalent screen space behind planet distance
-    var pos = position.clone();
-    pos.sub(galaxies.engine.camera.position);
-    var baseDistance = pos.length();
-    pos.setLength( 2*galaxies.engine.CAMERA_Z );
-    radius = radius * pos.length()/baseDistance;
-    pos.add(galaxies.engine.camera.position);
-    //
-    
-    var material = new THREE.MeshBasicMaterial( {
-      color: 0xffffff,
-      envMap: galaxies.resources.skyRefract,
-      refractionRatio: 0.9,
-      transparent: true,
-      opacity: 1
-      } );
-    var geometry = new THREE.SphereGeometry(radius, 24, 24);
-    var mesh = new THREE.Mesh( geometry, material );
-    mesh.position.copy( pos );
-    galaxies.engine.rootObject.add( mesh );
-    
-    // Add to collection pool
-    distortionPool.push( mesh );
-  }
-  
-  
   
   
   var update = function( delta ) {
@@ -549,24 +432,6 @@ galaxies.fx = (function() {
     }
     
     
-    
-    // step through distortion collection
-    // change radius and refractive index
-    // remove objects when refractive index is 0
-    for ( var i=0, len=distortionPool.length; i<len; i++ ) {
-      var distortion = distortionPool[i];
-      
-      if (distortion.material.refractionRatio>=1) {
-        continue;
-      }
-      distortion.material.refractionRatio = distortion.material.refractionRatio + delta * 0.1;
-      distortion.material.opacity = (1 - distortion.material.refractionRatio)/ 0.1;
-      var scale = 1 - 0.3 * distortion.material.opacity;
-      distortion.scale.set( scale, scale, scale);
-      if (distortion.material.refractionRatio>=1) {
-        galaxies.engine.rootObject.remove( distortion );
-      }
-    }
     
       // GLOW VIEW VECTORS
       for (var i=0, len = glowbjects.length; i<len; i++ ) {
@@ -600,7 +465,6 @@ galaxies.fx = (function() {
     createjs.Tween.get(galaxies.engine.camera.rotation)
       .to({y:magnitude, override:true }, duration, galaxies.utils.getShakeEase(freqY) )
       .to( {y:0}, 0); // reset position
-    //createjs.Tween.get(camera.rotation).to({x:0}, 1000, createjs.Ease.quadOut );
   }
   
   // GLOW
@@ -683,7 +547,6 @@ galaxies.fx = (function() {
     showPlanetSplode: showPlanetSplode,
     shakeCamera: shakeCamera,
     showDebris: showDebris,
-    showDistortionCircle: showDistortionCircle,
     addGlowbject: addGlowbject,
     showStaricles: showStaricles,
   };

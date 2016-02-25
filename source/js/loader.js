@@ -14,6 +14,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   
   // Set audio extension
   var ext;
+  // Don't use EC3 in the mobile version
   //if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
   if ( false ) { ext = '.mp4'; }
   else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }

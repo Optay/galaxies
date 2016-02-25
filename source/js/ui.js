@@ -180,7 +180,6 @@ galaxies.ui = (function() {
       progressElement.innerHTML = Math.round(e.progress * 100).toString();
       // update ring
       progressRing.update( e.progress );
-      //console.log( "Progress", e.progress );
     }
     
     galaxies.loadAssets( handleProgress, handleComplete );
@@ -233,24 +232,10 @@ galaxies.ui = (function() {
     galaxies.audio.soundField = new galaxies.audio.SoundField( galaxies.audio.getSound('music') );
     galaxies.audio.soundField.setVolume(0.24); // 0.24
     
-    /*
-    var test = document.createElement( 'img' );
-    test.src = galaxies.queue.getResult('lux').src;
-    document.getElementById('menuHolder').appendChild(test);
-    */
-    
     // Hide loading logo
     loadingLogo.classList.add('fade-out');
     // Initialize the 3D scene
     galaxies.engine.initScene();
-    
-    
-    
-    // Resize title card and reposition
-    /*
-    loadingLogo.classList.remove('logo-loading-layout');
-    loadingLogo.classList.add("logo-final-layout");
-    */
     
     // Start title sequence
     titleSequence = new galaxies.TitleSequence();
@@ -403,7 +388,6 @@ galaxies.ui = (function() {
     loadingHolder.classList.add('hidden');
     titleSequence.deactivate();
     
-    //gameContainer.classList.remove('hidden');
     inGameHolder.classList.remove('hidden');
     showPauseButton();
     

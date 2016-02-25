@@ -44,10 +44,6 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   
   galaxies.utils.conify(this.object);
   
-  //object.rotation.x = object.rotation.z + Math.PI/2;
-  //this.direction = direction.multiplyScalar( SPEED );
-  //console.log( object.position, direction );
-  
   this.lifeTimer = 0;
   
   this.updatePosition = function( newAngle ) {

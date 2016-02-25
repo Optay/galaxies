@@ -5,24 +5,9 @@ this.galaxies = this.galaxies || {};
 this.galaxies.Ufo = function() {
   this.points = 2000;
   this.hitThreshold = 0.7;
-  /*
-  var geometry = new THREE.CylinderGeometry( 0.4, 0.4, 0.25, 8, 1, false);
-  
-  var objectColor = new THREE.Color( 1,1,1 );
-  var material = new THREE.MeshLambertMaterial( {
-      color: objectColor.getHex(),
-      emissive: 0x333333,
-      shading: THREE.SmoothShading } );
-  
-  this.object = new THREE.Mesh( geometry, material );*/
   
   this.object = new THREE.Object3D();
   this.model = galaxies.resources.geometries['ufo'];
-  /*new THREE.Mesh(
-    geometries['ufo'],
-    new THREE.MeshFaceMaterial( [ materials['ufo2'], materials['ufo'], materials['ufo3'] ] )
-  );
-  */
   this.model.children[0].material = galaxies.resources.materials['ufo'];
   this.model.children[1].material = galaxies.resources.materials['ufocanopy'];
   
@@ -40,11 +25,8 @@ this.galaxies.Ufo = function() {
     map: trunkMap,
     color: 0xffffff,
     transparent: true,
-    //depthTest: false,
-    //depthWrite: false,
     side: THREE.DoubleSide
   } );
-  //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
   var trunkford = new THREE.Mesh( new THREE.PlaneGeometry(1.23,1), trunkMat ); // 1.23 is aspect ratio of texture
   trunkford.position.set( 0, 0.4, 0.4 );
   trunkford.scale.set(0.6, 0.6, 1);
@@ -79,7 +61,6 @@ this.galaxies.Ufo = function() {
     velocity: {
       value: new THREE.Vector3(-1,0,0)
     },
-    //acceleration: new THREE.Vector3(0,0,-40),//THREE.Vector3(0,-40,0),
     color: {
       value: [ new THREE.Color(0.300, 1.000, 0.300),
                new THREE.Color(0.500, 1.000, 0.800) ],
@@ -153,7 +134,6 @@ this.galaxies.Ufo = function() {
   var laserOrient = new THREE.Object3D();
   laserOrient.position.set(-0.5, 0, 0);
   laserOrient.rotation.set(0,2.03,0); // This angle set so beam of given length intersects with planet.
-  //this.object.add( laserOrient ); // For testing
 
   var laserGeometry = new THREE.PlaneGeometry( 1, 0.3 ); // beam is scaled on reset to match orbital distance
   var laserTexture = new THREE.Texture(
@@ -168,20 +148,6 @@ this.galaxies.Ufo = function() {
   var laserBeam = new THREE.Mesh( laserGeometry, laserMaterial );
   laserBeam.position.set(0.5, 0, 0);
   laserOrient.add( laserBeam );
-
-//  var axisHelper = new THREE.AxisHelper(1);
-//  this.object.add( axisHelper );
-  
-
-  /*
-  var targetPositions = [
-    new THREE.Vector3(0.5,0,41),
-    new THREE.Vector3(3.3,0,0),
-    new THREE.Vector3(2.9,0,0),
-    new THREE.Vector3(2.5,0,0),
-    new THREE.Vector3(0.5,0,41)
-  ];
-  */
   
   // Sound!
   this.ufoSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound('ufo'), this.object, 0 );
@@ -199,21 +165,6 @@ this.galaxies.Ufo = function() {
   orbitPositions[1].z = galaxies.utils.getConifiedDepth( orbitPositions[1] );
   orbitPositions[2].z = galaxies.utils.getConifiedDepth( orbitPositions[2] );
   var orbitPosition = orbitPositions[1];
-  
-  /*
-  var laserMaterial = new THREE.SpriteMaterial( {
-    color: 0xffffff,
-    fog: true,
-    opacity: 1,
-    transparent: true
-  } );
-  var laser = new THREE.Sprite( laserMaterial );
-  laser.position.set( OBSTACLE_VISIBLE_RADIUS * 0.75 + 1, 0, 0 );
-  laser.scale.set( OBSTACLE_VISIBLE_RADIUS * 1.5, 1, 1);
-  var laserHolder = new THREE.Object3D();
-  laserHolder.add( laser );
-  */
-  //rootObject.add( laserHolder );
   
   
   var tween = createjs.Ease.quadInOut;
@@ -269,13 +220,7 @@ this.galaxies.Ufo = function() {
           loop: false
         });
         
-        /*
-        console.log( angle );
-        for (var i=0; i<transitionTime; i+=0.1 ) {
-          console.log( i, inTween(i).toFixed(2) );
-        }*/
-        
-        //console.log( 'idle -> in' );
+
       }
       break;
     case 'in':
@@ -288,17 +233,13 @@ this.galaxies.Ufo = function() {
         stepTimer = 0;
         step = 0;
         lastPosition = this.object.position.clone();
-        //targetPosition = orbitPositions[step];
         targetPosition = orbitPosition;
-        //console.log( 'in -> orbit' );
       }
       break;
     case 'orbit':
       angle += angularSpeed * delta;
       
       if ( stepTimer >= stepTime ) {
-        //console.log( 'orbit step' );
-        
         // Fire
         laserChargeEmitter.enable();
         createjs.Tween.get(laserBeam).wait(1000).call( function() {
@@ -314,7 +255,6 @@ this.galaxies.Ufo = function() {
   
           createjs.Tween.get(laserBeam.material).to({opacity:0}, 300, createjs.Ease.quadOut).call( function() {
             this.object.remove(laserOrient);
-            //laserBeam.material.opacity = 1; // for testing
           }, null, this );
           
           laserOrient.rotation.z = (Math.round( Math.random() )* 2 - 1) * Math.PI/16;
@@ -326,10 +266,6 @@ this.galaxies.Ufo = function() {
           }
 
         }, null, this );
-        
-        //lastPosition = this.object.position.clone();
-        //targetPosition = orbitPositions[step];
-        
         step++;
         stepTimer = 0;
         stepTime = 2;
@@ -338,10 +274,8 @@ this.galaxies.Ufo = function() {
       break;
     case 'out':
       angle = THREE.Math.mapLinear( stepTimer, 0, transitionTime/2, lastAngle, targetAngle );
-      //console.log( angle, stepTimer, lastAngle, targetAngle );
       
       if ( stepTimer >= stepTime ) {
-        //console.log( 'orbit -> idle' );
         this.deactivate();
       }
       
@@ -365,31 +299,7 @@ this.galaxies.Ufo = function() {
     laserChargeGroup.tick(delta);
     smokeGroup.tick(delta);
     
-    /*
-    if ( angle > stepAngle ) {
-      lastPosition = this.object.position.clone();
-      step++;
-      if ( step === (targetPositions.length-1) ) {
-        // fire!
-        hitPlayer();
-        stepAngle = angle + galaxies.utils.PI_2;
-        transitionAngle = angle + galaxies.utils.PI_2;
-      } else if ( step >= targetPositions.length ) {
-        this.reset();
-      } else {
-        // step down
-        stepAngle = angle + (galaxies.utils.PI_2);
-        transitionAngle = angle + (Math.PI/2);
-      }
-    }
-    
-    var progress = 1 - (transitionAngle - angle)/ (Math.PI/2);
-    progress = tween( THREE.Math.clamp(progress,0,1) );
-    this.object.position.lerpVectors( lastPosition, targetPositions[step], progress );
-    
-    if ( this.alive && !this.isHittable && (angle>transitionAngle) && (step==1) ) {
-      this.isHittable = true;
-    }*/
+
     
   }
   
@@ -410,16 +320,6 @@ this.galaxies.Ufo = function() {
     lastAngle = angle;
     
     targetAngle = (Math.floor(angle / Math.PI) + 1 ) * Math.PI;
-    /*
-    if ( Math.abs( shortAngle ) < Math.PI/2 ) {
-      targetAngle = 0;
-    } else {
-      if ( shortAngle < 0 ) {
-        targetAngle = -Math.PI;
-      } else {
-        targetAngle = Math.PI;
-      }
-    }*/
     
     // Tip to show bubble
     createjs.Tween.removeTweens( this.model.rotation );
@@ -451,7 +351,6 @@ this.galaxies.Ufo = function() {
         if ( self.state === 'orbit' ) { self.isHittable = true; }
       })
       .to( {x: 0}, 750, createjs.Ease.quadInOut );
-    //
     
     
     if ( hitCounter >= HITS ) {

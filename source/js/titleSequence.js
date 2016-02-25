@@ -41,7 +41,6 @@ galaxies.TitleSequence = function() {
       .to( {x:0, y:10, z: galaxies.engine.CAMERA_Z+20}, 0 )
       .call( function() {
         whooshSound.sound.startSound();
-        //console.log("starting whoosh sound");
       }, this)
       .to( {x:0, y:10, z:-10}, 3000, createjs.Ease.quadInOut );
   }
@@ -140,7 +139,6 @@ galaxies.TitleSequence = function() {
   
   var title = new THREE.Sprite( titles[0] );
   titleHub.add( title );
-//titles[i].rotateOnAxis(titleRotationAxis, i * 0.1);//galaxies.utils.PI_2/len );
   
   var extraTextureLux = new THREE.Texture( galaxies.queue.getResult( 'titleExtraLux' ) );
   extraTextureLux.magFilter = THREE.LinearFilter;

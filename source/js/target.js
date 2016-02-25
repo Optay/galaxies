@@ -85,7 +85,7 @@ galaxies.Capsule = function( isHeart ) {
   
   this.angle = 0;
   
-  this.distance = galaxies.engine.VISIBLE_RADIUS * 0.97;// 3.1; // distance from origin of capsule position
+  this.distance = galaxies.engine.VISIBLE_RADIUS * 0.97; // distance from origin of capsule position
   this.orbitAngle = 0;
   this.orbitRadius = 0.2; // magnitude of oscillation
   this.orbitVelocity = 0.7; // speed of oscillation
@@ -213,16 +213,6 @@ galaxies.Star = function( angle ) {
   this.model.scale.set( starScale, starScale, starScale );
 
   
-  /*
-  // FPO Geometry 
-  var geometry = new THREE.TetrahedronGeometry(0.3, 0);
-  var mat = new THREE.MeshPhongMaterial( {
-      color: 0xffff00,
-      specular: 0xffffff,
-      emissive: 0xaaaa00,
-      shininess: 5} );
-  this.model = new THREE.Mesh( geometry, mat );*/
-  
   this.object.add( this.model );
   
   galaxies.engine.rootObject.add( this.object );
@@ -284,9 +274,6 @@ galaxies.Star.prototype.update = function( delta ) {
       
     return;
   }
-  
-  //this.object.rotateOnAxis( this.axis, this.speed * delta );
-  //this.object.rotation.set(0,0, this.object.rotation.z + this.speed * delta);
   
   this.model.material.rotation += this.speed * delta;
   

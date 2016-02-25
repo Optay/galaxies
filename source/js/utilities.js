@@ -178,7 +178,6 @@ galaxies.utils.rootPosition = function( object ) {
 }
 
 /// Set z-position for objects to map x-y plane to a cone.
-//var parabolicConeSlope = coneSlope/3; // This constant here is related to the radius value used by obstacles
 galaxies.utils.conify = function( object ) {
   object.position.setZ( galaxies.utils.getConifiedDepth( object.position ) );
 }
@@ -186,7 +185,6 @@ galaxies.utils.getConifiedDepth = function( position ) {
   // linear
   return ( (galaxies.utils.flatLength(position)/galaxies.engine.CONE_SLOPE) );
   // parabolic
-  //return ( galaxies.utils.flatLengthSqr(position) * parabolicConeSlope - 0 );
 }
 
 
@@ -198,6 +196,7 @@ galaxies.utils.getConifiedDepth = function( position ) {
 
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
+// May not be needed in latest version of SPE, but needs to be checked before it can be removed.
 SPE.Emitter.prototype.randomizeExistingVelocityVector3OnSphere = function( v, base, position, speed, speedSpread ) {
         v.copy( position )
             .sub( base )

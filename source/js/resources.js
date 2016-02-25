@@ -63,7 +63,6 @@ galaxies.Resources = function() {
   
   
   for ( var i=0, len=this.bgPlanetTextures.length; i<len; i++ ) {
-    //this.bgPlanetTextures[i].texture.minFilter = THREE.LinearFilter;
     this.bgPlanetTextures[i].texture.needsUpdate = true;
   }
   
@@ -92,7 +91,6 @@ galaxies.Resources = function() {
   var moonmodel = objLoader.parse( galaxies.queue.getResult('moonmodel') );
   this.geometries['moon'] = moonmodel.children[0].geometry;
   var ufomodel = objLoader.parse( galaxies.queue.getResult('ufomodel') );
-  //geometries['ufo'] = ufomodel.children[0].geometry;
   this.geometries['ufo'] = ufomodel;
   var debrismodel = objLoader.parse( galaxies.queue.getResult('satellitedebrismodel') );
   this.geometries['debris'] = debrismodel.children[0].geometry;
