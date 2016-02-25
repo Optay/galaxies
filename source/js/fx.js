@@ -75,29 +75,24 @@ galaxies.fx = (function() {
   var FIREWORKS_DECELERATION = 15;
   var fireworksGroup;
   
-  var hearticlesGroup;
   var stariclesGroup;
-  
-  var teleportEmitter, teleportGroup;
-  var teleportSprite, teleportAnimator;
-  var TELEPORT_TIME_MS = 1500;
-  var TELEPORT_TIME_HALF_MS = TELEPORT_TIME_MS/2;
-  var teleporting = false;
+  var staricles = {}; // emitters
+
   
   // projectile hit particles
   var emitterSettings = {
     type: SPE.distributions.BOX,
     position: { spread: new THREE.Vector3(0.1, 0.1, 0.1) },
     //radius: 0.1,
-    velocity: { value: new THREE.Vector3(0, 0, 4),
-                spread: new THREE.Vector3(3, 3, 6) },
+    velocity: { value: new THREE.Vector3(0, 0, 0),
+                spread: new THREE.Vector3(3, 3, 3) },
     //speed: 1,
-    size: { value: [ 0.4, 0.3 ],
+    size: { value: [ 0.8, 0.0 ],
             spread: [0.1] },
-    opacity: { value:[ 1, 0 ] },
+    //opacity: { value:[ 1, 0 ] },
     color: { value: [ new THREE.Color("hsl(0, 0%, 70%)"),
                       new THREE.Color("hsl(0, 0%, 70%)") ] },
-    particleCount: 40,
+    particleCount: 20,
     alive: false,
     maxAge: { value: 0.25, spread: 0 },
     duration: 0.05
@@ -106,7 +101,8 @@ galaxies.fx = (function() {
   var init = function() {
     
     // Projectile hit particles
-    var texture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
+    //var texture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
+    var texture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     texture.needsUpdate = true;
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
@@ -227,8 +223,9 @@ galaxies.fx = (function() {
       },
     };
     
+    var roughTexture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
     var groupDust = new SPE.Group({
-      texture: { value: texture },
+      texture: { value: roughTexture },
       blending: THREE.NormalBlending,
       transparent: true
     });
@@ -256,7 +253,7 @@ galaxies.fx = (function() {
     };
     
     var groupFire = new SPE.Group({
-      texture: { value: texture },
+      texture: { value: starTexture },
       blending: THREE.AdditiveBlending
     });
     
@@ -267,35 +264,7 @@ galaxies.fx = (function() {
     // POWERUP and STAR particles
     var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     sparkleTexture.needsUpdate = true;
-    
-    var partHearts = {
-      type: SPE.distributions.SPHERE,
-      particleCount: 10,
-      duration: 0.1,
-      activeMultiplier: 1,
-      maxAge: { value: 0.8,
-                spread: 0.3 },
-      position: { radius: 0.1 },
-      velocity: { value: new THREE.Vector3(2,0,0),
-                  spread: new THREE.Vector3(1,0,0) },
-      angle: { value: 0,
-               spread: 360 },
-      drag: { value: 0.5 },
-      color: { value: new THREE.Color( 0xffcaca ) },
-                //spread: new THREE.Vector3(0.0, 0.1, 0.1) },
-      opacity: { value: [1,0.5] },
-      size: { value: [1,0],
-              spread: 0.5 }
-    };
-    
-    hearticlesGroup = new SPE.Group({
-      texture: { value: sparkleTexture },
-      blending: THREE.AdditiveBlending,
-      transparent: true
-    });
-    hearticlesGroup.addPool( 1, partHearts, false );
-    galaxies.engine.rootObject.add( hearticlesGroup.mesh );
-    
+        
     var partStar = {
       type: SPE.distributions.SPHERE,
       particleCount: 10,
@@ -321,38 +290,27 @@ galaxies.fx = (function() {
       blending: THREE.AdditiveBlending,
       transparent: true
     });
-    stariclesGroup.addPool( 1, partStar, false );
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
-  
-  
-  
     
+    partStar.color = { value: new THREE.Color( 0xffcaca ) };
+    staricles['heart'] = new SPE.Emitter( partStar );
+    stariclesGroup.addEmitter( staricles['heart'] );
     
+    partStar.color = { value: new THREE.Color( 0xaaaaaa ) };
+    staricles['spread'] = new SPE.Emitter( partStar );
+    stariclesGroup.addEmitter( staricles['spread'] );
     
+    partStar.color = { value: new THREE.Color( 0xcc33ff ) };
+    staricles['clone'] = new SPE.Emitter( partStar );
+    stariclesGroup.addEmitter( staricles['clone'] );
+      
+    partStar.color = { value: new THREE.Color( 0xffdd33 ) };
+    staricles['golden'] = new SPE.Emitter( partStar );
+    staricles['star'] = new SPE.Emitter( partStar );
+    stariclesGroup.addEmitter( staricles['star'] );
+    stariclesGroup.addEmitter( staricles['golden'] );
     
-    
-    
-    // teleport
-    var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
-    teleportAnimator = new galaxies.SpriteSheet(
-      characterMap,
-      [ [176,680,172,224,0,4,81.35],
-        [350,680,172,224,0,4,81.35],
-        [524,680,172,224,0,4,81.35],
-        [698,680,172,224,0,4,81.35]    
-        ], 
-      30
-      );
-    characterMap.needsUpdate = true;
-    
-    var characterMaterial = new THREE.SpriteMaterial({
-      map: characterMap,
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.0
-    } );
-    teleportSprite = new THREE.Sprite( characterMaterial );
-    teleportSprite.position.z = 0.1; // must appear in front of base character sprite
+
     
     /*
     var teleportParticles = {
@@ -417,13 +375,16 @@ galaxies.fx = (function() {
     */
   }
   
-  var showHearticles = function( position ) {
-    console.log( 'showHearticles' );
-    //hearticlesGroup.mesh.position.copy( position );
-    hearticlesGroup.triggerPoolEmitter( 1, position );
-  }
-  var showStaricles = function( position ) {
-    stariclesGroup.triggerPoolEmitter( 1, position );
+  var showStaricles = function( position, type ) {
+    
+    var emitter = staricles[type];
+    if ( !emitter ) { emitter = staricles['star']; }
+    
+    console.log( emitter );
+    
+    emitter.position.value.copy( position );
+    emitter.position.value = emitter.position.value;
+    emitter.enable();
   }
   
   var showHit = function( position ) {
@@ -514,7 +475,7 @@ galaxies.fx = (function() {
     }
     
     // pose lux
-    galaxies.engine.characterAnimator.updateFrame(10);
+    galaxies.engine.player.die();
     
     // play the sound
     new galaxies.audio.PositionedSound({
@@ -526,52 +487,7 @@ galaxies.fx = (function() {
     
   }
   
-  var showTeleportOut = function() {
-    galaxies.engine.character.add( teleportSprite );
-    teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
-    teleportSprite.material.opacity = 0;
-    teleportAnimator.play(-1); // negative loop count will loop indefinitely
-    
-    // fade in and out
-    createjs.Tween.removeTweens( teleportSprite.material );
-    createjs.Tween.get( teleportSprite.material )
-      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
-      .set( { opacity: 0 }, galaxies.engine.character.material )
-      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
-      .call( teleportEffectComplete, this );
-    
-    teleporting = true;
 
-  }
-  var teleportEffectComplete = function() {
-    teleportAnimator.stop();
-    teleportSprite.parent.remove(teleportSprite);
-    teleporting = false;
-    
-  }
-  var showTeleportIn = function( callback ) {
-    // Set character to vertical position (this will work because user cannot move during transition).
-    galaxies.engine.angle = 0;
-    galaxies.engine.targetAngle = 0;
-    
-    galaxies.engine.character.add( teleportSprite );
-    teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
-    teleportSprite.material.opacity = 0;
-    teleportAnimator.play(-1); // negative loop count will loop indefinitely
-    galaxies.engine.character.material.opacity = 0;
-    
-    // fade in and out
-    createjs.Tween.removeTweens( teleportSprite.material );
-    createjs.Tween.get( teleportSprite.material )
-      .to( { opacity: 1 }, TELEPORT_TIME_HALF_MS )
-      .set( { opacity: 1 }, galaxies.engine.character.material )
-      .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
-      .call( teleportEffectComplete, this )
-      .call( callback, this );
-      
-    teleporting = true;
-      
-  }
   
   var distortionPool = [];
   var showDistortionCircle = function( position, radius ) {
@@ -618,7 +534,6 @@ galaxies.fx = (function() {
       debrisPool[i].update(delta);
     }
     fireworksGroup.tick(delta);
-    hearticlesGroup.tick(delta);
     stariclesGroup.tick(delta);
     
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
@@ -628,18 +543,11 @@ galaxies.fx = (function() {
     // lux flying away
     // planet.parent is used to test if planet exploded to prevent Lux from flying away from a won game.
     if (galaxies.engine.isGameOver && (galaxies.engine.planet.parent == null) ) {
-      galaxies.engine.character.position.y = galaxies.engine.character.position.y + CHARACTER_FLY_SPEED * delta;
-      galaxies.engine.character.rotation.z = galaxies.engine.character.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
-      galaxies.engine.character.material.rotation = galaxies.engine.character.rotation.z;
+      galaxies.engine.player.sprite.position.y = galaxies.engine.player.sprite.position.y + CHARACTER_FLY_SPEED * delta;
+      galaxies.engine.player.sprite.rotation.z = galaxies.engine.player.sprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
+      galaxies.engine.player.sprite.material.rotation = galaxies.engine.player.sprite.rotation.z;
     }
     
-    if ( teleporting ) {
-      teleportAnimator.update( delta );
-      teleportSprite.material.rotation = galaxies.engine.character.material.rotation;
-    }
-    // teleport particles
-    // TODO only update these when active
-    // teleportGroup.tick(delta );
     
     
     // step through distortion collection
@@ -773,13 +681,10 @@ galaxies.fx = (function() {
     showFireworks: showFireworks,
     showRubble: showRubble,
     showPlanetSplode: showPlanetSplode,
-    showTeleportOut: showTeleportOut,
-    showTeleportIn: showTeleportIn,
     shakeCamera: shakeCamera,
     showDebris: showDebris,
     showDistortionCircle: showDistortionCircle,
     addGlowbject: addGlowbject,
-    showHearticles: showHearticles,
     showStaricles: showStaricles,
   };
 })();

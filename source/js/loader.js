@@ -14,7 +14,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   
   // Set audio extension
   var ext;
-  if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  //if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  if ( false ) { ext = '.mp4'; }
   else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }
   else { ext = '.m4a'; }
   
@@ -81,6 +82,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
     { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
     { id: 'lux', src: 'lux.png' },
+    { id: 'luxclone', src: 'lux_clone.png' },
+    { id: 'luxgolden', src: 'lux_golden.png' },
+    { id: 'luxspread', src: 'lux_triple.png' },
     { id: 'trunkford', src: 'trunkford.png' },
     { id: 'projhitparticle', src: 'hit_sprite.png' },
     { id: 'asteroidcolor', src:'asteroid_color.jpg' },

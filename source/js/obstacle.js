@@ -14,7 +14,7 @@ galaxies.Obstacle = function ( props ) {
   // Default values
   this.type = 'asteroid';
   this.hitThreshold = 0.6;
-  this.points = 100;
+  this.points = [10, 20, 30, 100];
   this.shakeAmount = 0.2;
   this.tumbling = true;
   this.orient = false;
@@ -80,6 +80,8 @@ galaxies.Obstacle = function ( props ) {
   
 }
 
+galaxies.Obstacle.prototype.SPEED_SCALE = 2;
+
 galaxies.Obstacle.prototype.initModel = function() {
   //this.particleGroup = props.particleGroup;
   
@@ -137,8 +139,15 @@ galaxies.Obstacle.prototype.reset = function() {
 
 galaxies.Obstacle.prototype.update = function( delta ) {
   
+  // creates a nice curve that starts at 1 and increase to SPEED_SCALE
+  // steeply as the obstacle approaches the planet
+  // Graph it:
+  // https://www.desmos.com/calculator
+  var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
+  speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) ); 
+  
   this.angle += this.velocityTangential * delta/this.radius;
-  this.radius += this.velocityRadial * delta;
+  this.radius += speedScale * this.velocityRadial * delta;
   this.updatePosition();
   
   switch ( this.state ) {
@@ -265,7 +274,14 @@ galaxies.Obstacle.prototype.hit = function( hitPosition, multiply, forceDestroy 
   this.tumbleSpeed += (this.baseTumbleSpeed * angularAmount);
   
   if ( forceDestroy || (this.life <=0 ) ) {
-    galaxies.engine.showCombo( this.points, multiply, this.object );
+    
+    var pointIndex = Math.floor( (this.points.length) * (1 - ( (this.radius-galaxies.engine.PLANET_DISTANCE) / (galaxies.engine.OBSTACLE_START_DISTANCE-galaxies.engine.PLANET_DISTANCE) )) );
+    pointIndex = Math.min( this.points.length - 1, pointIndex );
+    //galaxies.engine.PLANET_DISTANCE
+    
+    console.log( pointIndex, this.radius, galaxies.engine.PLANET_DISTANCE );
+    
+    galaxies.engine.showCombo( this.points[pointIndex], multiply, this.object );
     this.splode();
     return;
   }
@@ -385,9 +401,9 @@ galaxies.Obstacle.prototype.destruct = function() {
 galaxies.ObstacleIce = function () {
   var props = {};
   props.type = 'asteroidice';
-  props.points = 250;
+  props.points = [25, 50, 100, 250];
   props.shakeAmount = 0.6;
-  props.baseSpeed = 0.18;
+  props.baseSpeed = 0.25;
   props.mass = 2;
   props.baseLife = 2;
   
@@ -432,9 +448,9 @@ galaxies.ObstacleComet = function() {
   var props = {};
   props.type = 'comet';
   props.baseLife = 2;
-  props.baseSpeed = 1.2;
+  props.baseSpeed = 0.6;//1.2;
   props.spiral = 0.8;
-  props.points = 250;
+  props.points = [100, 200, 375, 750];
   props.shakeAmount = 1.6;
   props.tumbling = false;
   props.orient = true;
@@ -515,8 +531,8 @@ galaxies.ObstacleRad = function() {
   var props = {};
   props.type = 'asteroidrad';
   props.baseLife = 3;
-  props.baseSpeed = 0.08;
-  props.points = 500;
+  props.baseSpeed = 0.3;
+  props.points = [50, 75, 150, 500];
   props.shakeAmount = 1.2;
   props.hitThreshold = 0.9;
   props.rubbleType = 'rad';
@@ -543,8 +559,8 @@ galaxies.ObstacleRadChild = function() {
   var props = {};
   props.type = 'asteroidradchild';
   props.baseLife = 1;
-  props.baseSpeed = 0.15;
-  props.points = 50;
+  props.baseSpeed = 0.4;
+  props.points = [50, 75, 150, 500];
   props.hitThreshold = 0.5;
   props.rubbleType = 'rad';
   

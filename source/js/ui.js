@@ -493,11 +493,13 @@ galaxies.ui = (function() {
   
   
   
-  var showGameOver = function() {
+  var showGameOver = function( isWin ) {
     gameOverHolder.classList.remove('hidden');
     
     window.getComputedStyle(gameOverTitle).top; // reflow
     gameOverTitle.classList.add('game-over-title-on');
+    
+    gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
     
     showTitle( "SCORE " +
                scoreDisplay.innerHTML +

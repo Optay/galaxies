@@ -133,6 +133,8 @@ galaxies.generator = (function() {
     
     
     [ // Pluto 1-1
+      { time: 0, type: 'ufo' }, // TEST
+      
       { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 12, type: 'asteroid', random: true },
       { time: 18, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' },
       { time: 20, startAngle: 0, endAngle: 360, type: 'star', random: true },
@@ -140,6 +142,8 @@ galaxies.generator = (function() {
       { time: 31, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
     ],
     [ // Pluto 1-2
+      { time: 0, type: 'ufo' }, //TEST
+      
       { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 8, type: 'asteroid', random: true },
       { time: 3, duration: 0, startAngle: 0, endAngle: 360, quantity: 1, type: 'asteroidice', random: true },
       { time: 5, duration: 3, startAngle: 0, endAngle: 360, quantity: 2, type: 'asteroidice', random: true },
@@ -153,6 +157,9 @@ galaxies.generator = (function() {
       { time: 30, type: 'ufo' },
     ],
     [ // Pluto 1-3
+      { time: 0, type: 'ufo' }, // TEST
+     
+     
       { time: 0, duration: 12, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroid', random: true },
       { time: 0, duration: 12, startAngle: 0, endAngle: 360, quantity: 8, type: 'asteroidice', random: true },
       { time: 6, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },

@@ -30,7 +30,9 @@ this.galaxies.Ufo = function() {
   this.model.scale.set(0.6, 0.6, 0.6);
   this.model.rotation.set(Math.PI,0,-Math.PI/2);
   
-  this.object.add( this.model );
+  this.waggler = new THREE.Object3D();
+  this.waggler.add( this.model );
+  this.object.add( this.waggler );
   
   var trunkMap = new THREE.Texture( galaxies.queue.getResult('trunkford') );
   trunkMap.needsUpdate = true;
@@ -66,30 +68,39 @@ this.galaxies.Ufo = function() {
   
   // laser
   var laserChargeParticles = {
-    type: 'sphere',
-    radius: 1,
-    //acceleration: new THREE.Vector3(0,0,-40),//THREE.Vector3(0,-40,0),
-    speed: -1,
-    //speedSpread: 5,
-    sizeStart: 1,
-    sizeStartSpread: 1,
-    sizeEnd: 2,
-    opacityStart: 0,
-    opacityEnd: 1,
-    colorStart: new THREE.Color(0.300, 1.000, 0.300),
-    colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
-    colorEnd: new THREE.Color(0.500, 1.000, 0.800),
-    particlesPerSecond: 50,
+    type: SPE.distributions.SPHERE,
     particleCount: 50,
-    alive: 1.0,
-    duration: 0.5//0.1
+    activeMultiplier: 1,
+    duration: 0.4,//0.1
+    maxAge: { value: 0.6 },
+    position: {
+      radius: 0.6
+    },
+    velocity: {
+      value: new THREE.Vector3(-1,0,0)
+    },
+    //acceleration: new THREE.Vector3(0,0,-40),//THREE.Vector3(0,-40,0),
+    color: {
+      value: [ new THREE.Color(0.300, 1.000, 0.300),
+               new THREE.Color(0.500, 1.000, 0.800) ],
+      spread: new THREE.Vector3(0.1, 0.1, 0.1)
+    },
+    opacity: {
+      value: [ 0, 1 ]
+    },
+    size: {
+      value: [1, 2],
+      spread: 1
+    }
+    
   };
   var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
   texture.needsUpdate = true;
   var laserChargeGroup = new SPE.Group({
-    texture: texture,
-    maxAge: 1,
-    blending: THREE.AdditiveBlending
+    texture: { value: texture },
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    
   });
   var laserChargeEmitter = new SPE.Emitter( laserChargeParticles );
   laserChargeGroup.addEmitter( laserChargeEmitter );
@@ -97,33 +108,42 @@ this.galaxies.Ufo = function() {
   
   
   var smokeParticles = {
-    type: 'cube',
-    acceleration: new THREE.Vector3(0,0,-3),
-    velocity: new THREE.Vector3(0, -2, 0),
-    velocitySpread: new THREE.Vector3(1, 1, 1),
-    //speedSpread: 5,
-    sizeStart: 3,
-    sizeStartSpread: 1,
-    sizeEnd: 3,
-    opacityStart: 1,
-    opacityEnd: 0,
-    colorStart: new THREE.Color(0.600, 0.600, 0.600),
-    colorStartSpread: new THREE.Vector3(0.1, 0.1, 0.1),
-    colorEnd: new THREE.Color(0.200, 0.200, 0.200),
-    particlesPerSecond: 10,
+    type: SPE.distributions.CUBE,
     particleCount: 50,
-    alive: 0.0,
-    duration: null//0.1
+    duration: null,
+    activeMultiplier: 0.5,
+    maxAge: { value: 2 },
+    velocity: {
+      value: new THREE.Vector3(0, -2, 0),
+      spread: new THREE.Vector3(1, 1, 1)
+    },
+    acceleration: {
+      value: new THREE.Vector3(0,0,-3)
+    },
+    color: {
+      value: [ new THREE.Color(0.600, 0.600, 0.600),
+               new THREE.Color(0.200, 0.200, 0.200) ],
+      spread: new THREE.Vector3(0.1, 0.1, 0.1)
+    },
+    opacity: {
+      value: [1,0]
+    },
+    size: {
+      value: 3,
+      spread: 1
+    },
+    
   };
   var smokeTexture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
   smokeTexture.needsUpdate = true;
   var smokeGroup = new SPE.Group({
-    texture: smokeTexture,
-    maxAge: 2,
-    blending: THREE.NormalBlending
+    texture: { value: smokeTexture },
+    blending: THREE.NormalBlending,
+    transparent: true
   });
   var smokeEmitter = new SPE.Emitter( smokeParticles );
   smokeGroup.addEmitter( smokeEmitter );
+  smokeEmitter.disable();
   this.object.add( smokeGroup.mesh );
   
   
@@ -135,7 +155,7 @@ this.galaxies.Ufo = function() {
   laserOrient.rotation.set(0,2.03,0); // This angle set so beam of given length intersects with planet.
   //this.object.add( laserOrient ); // For testing
 
-  var laserGeometry = new THREE.PlaneGeometry( 5, 0.3 );
+  var laserGeometry = new THREE.PlaneGeometry( 1, 0.3 ); // beam is scaled on reset to match orbital distance
   var laserTexture = new THREE.Texture(
     galaxies.queue.getResult('laserbeam') );
   laserTexture.needsUpdate = true;
@@ -146,7 +166,7 @@ this.galaxies.Ufo = function() {
     opacity: 1
   } );
   var laserBeam = new THREE.Mesh( laserGeometry, laserMaterial );
-  laserBeam.position.set(2.5, 0, 0);
+  laserBeam.position.set(0.5, 0, 0);
   laserOrient.add( laserBeam );
 
 //  var axisHelper = new THREE.AxisHelper(1);
@@ -280,7 +300,7 @@ this.galaxies.Ufo = function() {
         //console.log( 'orbit step' );
         
         // Fire
-        laserChargeEmitter.alive = 1.0;
+        laserChargeEmitter.enable();
         createjs.Tween.get(laserBeam).wait(1000).call( function() {
           new galaxies.audio.PositionedSound({
             source: galaxies.audio.getSound('ufoshoot'),
@@ -415,19 +435,38 @@ this.galaxies.Ufo = function() {
       hitCounter++;
     }
     
+    this.isHittable = false;
+    var self = this;
+    
+    // waggle
+    createjs.Tween.removeTweens( this.waggler.rotation );
+    this.waggler.rotation.z = Math.PI/4;
+    createjs.Tween.get( this.waggler.rotation )
+      .to( {z: 0}, 1500, createjs.Ease.elasticOut );
+    
+    createjs.Tween.removeTweens( this.waggler.position );
+    createjs.Tween.get( this.waggler.position )
+      .to( {x: 0.5}, 500, createjs.Ease.quadOut )
+      .call( function() {
+        if ( self.state === 'orbit' ) { self.isHittable = true; }
+      })
+      .to( {x: 0}, 750, createjs.Ease.quadInOut );
+    //
+    
+    
     if ( hitCounter >= HITS ) {
       this.leave();
       
       galaxies.engine.showCombo( this.points, 1, this.object );
     }
     
-    smokeEmitter.alive = 1.0;
+    smokeEmitter.enable();
         
     // play sound
     new galaxies.audio.PositionedSound({
       source: galaxies.audio.getSound('ufohit'),
       position: galaxies.utils.rootPosition(this.object),
-      baseVolume: 1,
+      baseVolume: 1.4,
       loop: false
     });
     
@@ -439,7 +478,7 @@ this.galaxies.Ufo = function() {
     stepTimer = 0;
     
     hitCounter = 0;
-    smokeEmitter.alive = 0.0;
+    smokeEmitter.disable();
     
     if ( galaxies.engine.isGameOver ) {
       this.deactivate();
@@ -451,11 +490,16 @@ this.galaxies.Ufo = function() {
     this.isHittable = false;
     
     // Update positions to work with variable camera position
-    var currentOrbitPosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
-    orbitPosition = galaxies.utils.getConifiedDepth( currentOrbitPosition );
+    orbitPosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
+    orbitPosition.z = galaxies.utils.getConifiedDepth( orbitPosition );
     var idleZ = galaxies.engine.CAMERA_Z + 10;
-    idlePosition = new THREE.Vector3(1,0,idleZ);
+    idlePosition = new THREE.Vector3( 1, 0, idleZ );//new THREE.Vector3( orbitPosition.x, 0, idleZ );
     //
+    
+    console.log( galaxies.engine.VISIBLE_RADIUS );
+    laserOrient.scale.set( galaxies.engine.VISIBLE_RADIUS * 1.7, 1, 1);
+    
+    console.log( galaxies.engine.VISIBLE_RADIUS, orbitPosition, idleZ );
     
     lastPosition = idlePosition;
     targetPosition = idlePosition;

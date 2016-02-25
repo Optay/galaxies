@@ -75,6 +75,7 @@ galaxies.Capsule = function( isHeart ) {
   this.typeInterval = this.lifetime/galaxies.engine.powerups.length;
   if ( isHeart ) {
     this.typeTime = Number.POSITIVE_INFINITY;
+    this.lifetime /= 2;
     this.powerupIndex = -1;
   } else {
     this.typeTime = this.typeInterval;
@@ -104,7 +105,6 @@ galaxies.Capsule.prototype.hit = function() {
   if ( this.powerup === 'heart' ) {
     soundId = 'heartcollect';
     
-    galaxies.fx.showHearticles( this.object.position );
   }
   new galaxies.audio.PositionedSound({
     source: galaxies.audio.getSound(soundId),
@@ -112,6 +112,8 @@ galaxies.Capsule.prototype.hit = function() {
     baseVolume: 2,
     loop: false
   });
+  
+  galaxies.fx.showStaricles( this.object.position, this.powerup );
   
   this.clear();
 }
@@ -145,9 +147,9 @@ galaxies.Capsule.prototype.updatePowerup = function() {
   }
   var color;
   switch (this.powerup) {
-    case "clone": color = 0x00ffff; break;
-    case "spread": color = 0x9900ff; break;
-    case "golden": color = 0x00aa00; break;
+    case "clone": color = 0xcc33ff; break;
+    case "spread": color = 0xaaaaaa; break;
+    case "golden": color = 0xffdd33; break;
     case "heart":
     default:
       color = 0xffffff;

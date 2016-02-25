@@ -65,12 +65,12 @@ galaxies.engine.OBSTACLE_GRAVITY = -0.5;
 galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
-galaxies.engine.POWERUP_CHARGED = 3300; // powerup spawns when this many points are earned
+galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned
 galaxies.engine.powerups = ['clone', 'spread', 'golden'];
 
 galaxies.engine.PLANET_RADIUS = 1;
-galaxies.engine.CHARACTER_HEIGHT = 3;
-galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.95 * galaxies.engine.CHARACTER_HEIGHT/2 );
+galaxies.engine.CHARACTER_HEIGHT = 4.5;
+galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.65 * galaxies.engine.CHARACTER_HEIGHT/2 );
 galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS + (galaxies.engine.CHARACTER_HEIGHT * 0.08);//2;
 
 galaxies.engine.CONE_SLOPE = Math.tan( galaxies.engine.CONE_ANGLE );
@@ -279,9 +279,6 @@ galaxies.engine.initGame = function() {
   galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
   
-  galaxies.engine.characterRotator = new THREE.Object3D();
-  galaxies.engine.rootObject.add( galaxies.engine.characterRotator );
-  
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -323,54 +320,9 @@ galaxies.engine.initGame = function() {
 
   } );
   */
-  //var characterMap = new THREE.Texture( galaxies.queue.getResult('lux'), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter );
-  var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
-  galaxies.engine.characterAnimator = new galaxies.SpriteSheet(
-    characterMap,
-    [ [2,2,172,224,0,4,81.35],
-      [176,2,172,224,0,4,81.35],
-      [350,2,172,224,0,4,81.35],
-      [524,2,172,224,0,4,81.35],
-      [698,2,172,224,0,4,81.35],
-      [2,228,172,224,0,4,81.35],
-      [176,228,172,224,0,4,81.35],
-      [350,228,172,224,0,4,81.35],
-      [524,228,172,224,0,4,81.35],
-      [698,228,172,224,0,4,81.35],
-      [2,454,172,224,0,4,81.35],
-      [176,454,172,224,0,4,81.35],
-      [350,454,172,224,0,4,81.35],
-      [524,454,172,224,0,4,81.35],
-      [698,454,172,224,0,4,81.35],
-      [2,680,172,224,0,4,81.35]
-      
-      ], 
-    30
-    );
-  characterMap.needsUpdate = true;
   
-  var characterMaterial = new THREE.SpriteMaterial({
-    map: characterMap,
-    color: 0xffffff,
-    transparent: true,
-    opacity: 1.0
-  } );
-  //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
-  galaxies.engine.character = new THREE.Sprite( characterMaterial );
-  galaxies.engine.character.position.set( galaxies.engine.CHARACTER_HEIGHT * 0.77 * 0.15, galaxies.engine.CHARACTER_POSITION, 0 ); // note that character is offset horizontally because sprites are not centered
-  galaxies.engine.character.scale.set(galaxies.engine.CHARACTER_HEIGHT*0.77, galaxies.engine.CHARACTER_HEIGHT, galaxies.engine.CHARACTER_HEIGHT * 0.77); // 0.77 is the aspect ratio width/height of the sprites
-  galaxies.engine.characterRotator.add( galaxies.engine.character );
-
-  var cloneMaterial = new THREE.SpriteMaterial({
-    map: characterMap,
-    color: 0xaaffaa,
-    transparent: true,
-    opacity: 1.0
-  } );
-  galaxies.engine.clone = new THREE.Sprite( cloneMaterial );
-  galaxies.engine.clone.position.set( -galaxies.engine.CHARACTER_HEIGHT * 0.77 * 0.15, -galaxies.engine.CHARACTER_POSITION, 0 );
-  galaxies.engine.clone.scale.set(galaxies.engine.CHARACTER_HEIGHT*0.77, galaxies.engine.CHARACTER_HEIGHT, galaxies.engine.CHARACTER_HEIGHT * 0.77);
-  
+  galaxies.engine.player = new galaxies.Player();
+  galaxies.engine.rootObject.add( galaxies.engine.player.root );
   
   
   galaxies.engine.setPowerup();
@@ -622,7 +574,7 @@ galaxies.engine.restartGame = function() {
   
   // Add character holder.
   // Character will be removed by planet transition.
-  galaxies.engine.rootObject.add( galaxies.engine.characterRotator );
+  galaxies.engine.rootObject.add( galaxies.engine.player.root );
   
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
@@ -711,13 +663,7 @@ galaxies.engine.initLevel = function() {
   
   galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 1.5 );
   
-  
-  galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[ galaxies.engine.roundNumber-1 ];
-  galaxies.engine.updateView();
-  
-  createjs.Tween.removeTweens( galaxies.engine.camera.position );
-  createjs.Tween.get( galaxies.engine.camera.position )
-    .to({z:galaxies.engine.CAMERA_Z}, 1500, createjs.Ease.quadInOut);
+  galaxies.engine.updateCameraZ( galaxies.engine.roundNumber );
   
   if ( galaxies.engine.roundNumber === 1 ) {
     // Reset star counter
@@ -757,6 +703,16 @@ galaxies.engine.initLevel = function() {
   */
 
 }
+
+galaxies.engine.updateCameraZ = function( roundNumber ) {
+  galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[ roundNumber-1 ];
+  galaxies.engine.updateView();
+  
+  createjs.Tween.removeTweens( galaxies.engine.camera.position );
+  createjs.Tween.get( galaxies.engine.camera.position )
+    .to({z:galaxies.engine.CAMERA_Z}, 1500, createjs.Ease.quadInOut);
+}
+
 galaxies.engine.nextLevel = function() {
   galaxies.engine.levelNumber++;
   
@@ -826,17 +782,17 @@ galaxies.engine.planetTransition = function() {
   // If planet is in the scene, then we must do the teleport out transition first.
   // If planet is not in the scene, then we skip this step (happens on the first level of new games).
   if ( galaxies.engine.planet.parent != null ) {
-    galaxies.fx.showTeleportOut();
+    galaxies.engine.player.teleportOut();
     new galaxies.audio.PositionedSound({
       source: galaxies.audio.getSound('teleportout'),
-      position: galaxies.utils.rootPosition(galaxies.engine.character),
+      position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
       baseVolume: 10,
       loop: false
     });
     
     // 1500 is the teleport time as defined in FX and foolishly inaccessible.
-    createjs.Tween.removeTweens(galaxies.engine.character);
-    createjs.Tween.get(galaxies.engine.character)
+    createjs.Tween.removeTweens( galaxies.engine.player.sprite );
+    createjs.Tween.get( galaxies.engine.player.sprite )
       .wait(1500)
       .call( galaxies.engine.startPlanetMove, null, this );
   } else {
@@ -877,6 +833,8 @@ galaxies.engine.startPlanetMove = function() {
     .to({x:inPosition.x, y:inPosition.y, z:inPosition.z}, 0)
     .call( function() {
       
+      galaxies.engine.updateCameraZ( 1 );
+      
       galaxies.engine.updateScene();
       
       //galaxies.ui.showTitle( galaxies.utils.generatePlanetName( galaxies.engine.planetNumber ), 4 );
@@ -915,11 +873,13 @@ galaxies.engine.planetMoveComplete = function() {
   galaxies.engine.planetAngle = galaxies.engine.planet.rotation.z;
   
   // put the character back
-  galaxies.engine.characterRotator.add( galaxies.engine.character );
-  galaxies.fx.showTeleportIn(galaxies.engine.planetTransitionComplete);
+  galaxies.engine.angle = 0;
+  galaxies.engine.targetAngle = 0;
+  galaxies.engine.player.show();
+  galaxies.engine.player.teleportIn( galaxies.engine.planetTransitionComplete );
   new galaxies.audio.PositionedSound({
     source: galaxies.audio.getSound('teleportin'),
-    position: galaxies.utils.rootPosition( galaxies.engine.character ),
+    position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
     baseVolume: 10,
     loop: false
   });
@@ -1054,10 +1014,10 @@ galaxies.engine.shoot = function( indestructible ) {
   galaxies.engine.projectiles.push( proj );
     
   // play animation
-  galaxies.engine.characterAnimator.play();
+  galaxies.engine.player.animateShoot();
   
   // delay adding the projectile and the sound to synchronize with the animation
-  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
   .call( galaxies.engine.shootSync, [proj], this )
   .call( galaxies.engine.shootSound );
 }
@@ -1077,12 +1037,12 @@ galaxies.engine.shoot2 = function() {
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
-    createjs.Tween.get( galaxies.engine.character ).wait(250)
+    createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
     .call( galaxies.engine.shootSync, [proj], this );
   }
   // play animation
-  galaxies.engine.characterAnimator.play();
-  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  galaxies.engine.player.animateShoot();
+  createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
   .call( galaxies.engine.shootSound );
 
 }
@@ -1100,7 +1060,7 @@ galaxies.engine.shootSound = function() {
   //new galaxies.audio.PositionedSound({
   galaxies.engine.testKeepReference = new galaxies.audio.SimpleSound({
     source: galaxies.audio.getSound('shoot'),
-    position: galaxies.utils.rootPosition( galaxies.engine.character ),
+    position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
     baseVolume: 0.8,//10,
     loop: false
   });
@@ -1123,11 +1083,11 @@ galaxies.engine.shoot3 = function() {
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
-    createjs.Tween.get( galaxies.engine.character ).wait(250).call( galaxies.engine.shootSync, [proj], this );
+    createjs.Tween.get( galaxies.engine.player.sprite ).wait(250).call( galaxies.engine.shootSync, [proj], this );
   }
   // play animation
-  galaxies.engine.characterAnimator.play();
-  createjs.Tween.get( galaxies.engine.character ).wait(250)
+  galaxies.engine.player.animateShoot();
+  createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
   .call( galaxies.engine.shootSound );
   
 }
@@ -1221,7 +1181,7 @@ galaxies.engine.update = function() {
       var ufoRootPosition = galaxies.engine.ufo.object.localToWorld( new THREE.Vector3() );
       ufoRootPosition = galaxies.engine.rootObject.worldToLocal( ufoRootPosition );
       if ( proj.object.position.distanceTo( ufoRootPosition ) < galaxies.engine.ufo.hitThreshold ) {
-        galaxies.engine.ufo.hit( proj.indestructible );
+        galaxies.engine.ufo.hit( false );
         proj.hit();
       }
     }
@@ -1291,8 +1251,10 @@ galaxies.engine.update = function() {
     //galaxies.engine.shoot3();
   }
   //
-  
-  if ( galaxies.engine.powerupTimer > 0 ) {
+
+  // Powerup timer
+  // Only changes while the level is running.
+  if ( galaxies.engine.levelRunning && (galaxies.engine.powerupTimer > 0) ) {
     galaxies.engine.powerupTimer -= delta;
     if ( galaxies.engine.powerupTimer <=0 ) {
       galaxies.engine.setPowerup('');
@@ -1323,11 +1285,8 @@ galaxies.engine.update = function() {
     }
     galaxies.engine.angle += (angleDelta * delta * 10.0);
     
-    galaxies.engine.characterRotator.rotation.set(0,0,galaxies.engine.angle);
-    galaxies.engine.character.material.rotation = galaxies.engine.angle;
-    galaxies.engine.characterAnimator.update( delta );
+    galaxies.engine.player.update( delta, galaxies.engine.angle );
     
-    galaxies.engine.clone.material.rotation = Math.PI + galaxies.engine.angle;
     
     /*
     // planet counter-rotation
@@ -1445,26 +1404,22 @@ galaxies.engine.hitPlayer = function() {
   galaxies.ui.updateLife( galaxies.engine.playerLife );
   
   if ((!galaxies.engine.invulnerable) && (galaxies.engine.playerLife<=0)) {
-    createjs.Tween.removeTweens( galaxies.engine.character.position );
+    galaxies.engine.player.clearTweens();
     galaxies.engine.gameOver();
     return;
   }
   
   // Hop player sprite to show its been hit
-  if ( !createjs.Tween.hasActiveTweens( galaxies.engine.character.position ) ) {
-    createjs.Tween.get( galaxies.engine.character.position )
-      .to({y:galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT}, 250, createjs.Ease.quadOut)
-      .to({y:galaxies.engine.CHARACTER_POSITION}, 250, createjs.Ease.quadOut);
-  }
+  galaxies.engine.player.animateHit();
   
   galaxies.engine.isGracePeriod = true;
-  galaxies.engine.character.material.opacity = 0.5;
-  createjs.Tween.get( galaxies.engine.character ).wait(2000).call( galaxies.engine.endGracePeriod );
+  galaxies.engine.player.sprite.material.opacity = 0.5;
+  createjs.Tween.get( galaxies.engine.player ).wait(2000).call( galaxies.engine.endGracePeriod );
 }
 
 galaxies.engine.endGracePeriod = function() {
   galaxies.engine.isGracePeriod = false;
-  galaxies.engine.character.material.opacity = 1;
+  galaxies.engine.player.sprite.material.opacity = 1;
 }
 
 
@@ -1506,7 +1461,7 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.ui.hidePauseButton();
   
   if ( isWin ) {
-    galaxies.ui.showGameOver();
+    galaxies.ui.showGameOver( isWin );
   } else {
   
     galaxies.fx.showPlanetSplode();
@@ -1518,7 +1473,7 @@ galaxies.engine.gameOver = function( isWin ) {
     
     galaxies.engine.ufo.leave();
     
-    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver );
+    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver, [isWin] );
   }
 }
 
@@ -1533,7 +1488,7 @@ galaxies.engine.endGame = function() {
   if ( galaxies.engine.planet.parent != null ) {
     galaxies.engine.planet.parent.remove(galaxies.engine.planet);
   }
-  galaxies.engine.rootObject.remove( galaxies.engine.characterRotator );
+  galaxies.engine.rootObject.remove( galaxies.engine.player.root );
   
   galaxies.ui.showMenu();
 }
@@ -1551,6 +1506,8 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.powerupCharge = 0;
   galaxies.engine.powerupCount = 0;
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
+  galaxies.engine.setPowerup();
+  
   
   // Reset star counter
   galaxies.engine.starsCollectedRound = 0;
@@ -1560,18 +1517,14 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.addInputListeners();
   
   // remove character
-  galaxies.engine.characterRotator.remove( galaxies.engine.character );
+  galaxies.engine.player.hide();
   // remove planet
   if ( galaxies.engine.planet.parent != null ) {
     galaxies.engine.planet.parent.remove(galaxies.engine.planet);
   }
   galaxies.engine.randomizePlanet();
   
-  galaxies.engine.characterAnimator.updateFrame(0);
-  
-  galaxies.engine.character.rotation.set(0,0,0);
-  galaxies.engine.character.material.rotation = galaxies.engine.angle;
-  galaxies.engine.character.position.y = galaxies.engine.CHARACTER_POSITION;
+  galaxies.engine.player.reset( galaxies.engine.angle );
 
   galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[0];
   galaxies.engine.camera.position.setZ( galaxies.engine.CAMERA_Z );
@@ -1584,9 +1537,9 @@ galaxies.engine.resetGame = function() {
   
   
   // Clear transition tweens (mostly used in the planet transition)
-  createjs.Tween.removeTweens( galaxies.engine.character );
+  galaxies.engine.player.clearTweens();
+  createjs.Tween.removeTweens( galaxies.engine.player );
   createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
-  createjs.Tween.removeTweens( galaxies.engine.planet.position );
   createjs.Tween.removeTweens( galaxies.engine.camera );
   
 }
@@ -1760,6 +1713,8 @@ galaxies.start = function() {
 
 
 galaxies.engine.setPowerup = function ( newPowerup ) {
+  if ( !newPowerup ) { newPowerup = ''; }
+  
   // This is not a "true" powerup, just an instant effect.
   if ( newPowerup === 'heart' ) {
     if ( galaxies.engine.playerLife < galaxies.engine.MAX_PLAYER_LIFE ) {
@@ -1769,7 +1724,7 @@ galaxies.engine.setPowerup = function ( newPowerup ) {
     return;
   }
   
-  galaxies.engine.characterRotator.remove( galaxies.engine.clone );
+  galaxies.engine.player.setPowerup( newPowerup );
   galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
   
   switch(newPowerup) {
@@ -1777,7 +1732,6 @@ galaxies.engine.setPowerup = function ( newPowerup ) {
       galaxies.engine.shootFunction = galaxies.engine.shoot3;
       break;
     case 'clone':
-      galaxies.engine.characterRotator.add( galaxies.engine.clone );
       galaxies.engine.shootFunction = galaxies.engine.shoot2;
       break;
     case 'golden':
