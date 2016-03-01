@@ -112,9 +112,9 @@ galaxies.Capsule.prototype.hit = function() {
     baseVolume: 2,
     loop: false
   });
-  
-  galaxies.fx.showStaricles( this.object.position, this.powerup );
-  
+
+  galaxies.fx.showStaricles(this.object.position, this.powerup);
+
   this.clear();
 }
 

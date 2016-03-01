@@ -116,7 +116,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'planetmars', src: 'planet_6.png' },
     { id: 'planetearth', src: 'planet_7.png' },
     { id: 'sparkle', src: 'sparticle.png' },
-    
+    { id: 'smoke', src: 'smokeparticle.png' }
+
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;

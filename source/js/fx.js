@@ -76,6 +76,9 @@ galaxies.fx = (function() {
   
   var stariclesGroup;
   var staricles = {}; // emitters
+  var rainbowJetGroup;
+  var purpleTrailGroup;
+  var smallFlameJetGroup;
 
   
   // projectile hit particles
@@ -250,9 +253,9 @@ galaxies.fx = (function() {
     var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     sparkleTexture.needsUpdate = true;
         
-    var partStar = {
+    var baseSettings = {
       type: SPE.distributions.SPHERE,
-      particleCount: 10,
+      particleCount: 15,
       duration: 0.1,
       activeMultiplier: 1,
       maxAge: { value: 0.8,
@@ -263,39 +266,97 @@ galaxies.fx = (function() {
       angle: { value: 0,
                spread: 360 },
       drag: { value: 0.5 },
-      color: { value: new THREE.Color( 0xffff00 ) },
       opacity: { value: [1,0.5] },
       size: { value: [1,0],
               spread: 0.5 }
     };
     
     stariclesGroup = new SPE.Group({
-      texture: { value: sparkleTexture },
-      blending: THREE.AdditiveBlending,
-      transparent: true
+      texture: { value: sparkleTexture }
     });
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
-    
-    partStar.color = { value: new THREE.Color( 0xffcaca ) };
-    staricles['heart'] = new SPE.Emitter( partStar );
-    stariclesGroup.addEmitter( staricles['heart'] );
-    
-    partStar.color = { value: new THREE.Color( 0xaaaaaa ) };
-    staricles['spread'] = new SPE.Emitter( partStar );
-    stariclesGroup.addEmitter( staricles['spread'] );
-    
-    partStar.color = { value: new THREE.Color( 0xcc33ff ) };
-    staricles['clone'] = new SPE.Emitter( partStar );
-    stariclesGroup.addEmitter( staricles['clone'] );
-      
-    partStar.color = { value: new THREE.Color( 0xffdd33 ) };
-    staricles['golden'] = new SPE.Emitter( partStar );
-    staricles['star'] = new SPE.Emitter( partStar );
-    stariclesGroup.addEmitter( staricles['star'] );
-    stariclesGroup.addEmitter( staricles['golden'] );
-    
 
-    
+    baseSettings.color = { value: new THREE.Color( 0xffcaca ) };
+    staricles['heart'] = new SPE.Emitter( baseSettings );
+    stariclesGroup.addEmitter( staricles['heart'] );
+
+    baseSettings.color = { value: [new THREE.Color('yellow'), new THREE.Color('orange'), new THREE.Color('red'), new THREE.Color('grey')], spread: new THREE.Vector3(0.15, 0.05, 0.05) };
+    staricles['spread'] = new SPE.Emitter( baseSettings );
+    stariclesGroup.addEmitter( staricles['spread'] );
+
+    baseSettings.color = { value: [new THREE.Color('purple'), new THREE.Color('fuchsia')], spread: [new THREE.Vector3(0.1, 0.1, 0.1), new THREE.Vector3(0.05, 2, 0.05)] };
+    staricles['clone'] = new SPE.Emitter( baseSettings );
+    stariclesGroup.addEmitter( staricles['clone'] );
+
+    baseSettings.color = { value: new THREE.Color('gold') };
+    staricles['golden'] = new SPE.Emitter( baseSettings );
+    stariclesGroup.addEmitter( staricles['golden'] );
+
+    baseSettings.color = { value: new THREE.Color('white') };
+    staricles['star'] = new SPE.Emitter( baseSettings );
+    stariclesGroup.addEmitter( staricles['star'] );
+
+    var rainbowJetSettings = {
+          type: SPE.distributions.SPHERE,
+          particleCount: 800,
+          maxAge: { value: 0.3, spread: 0.15 },
+          position: { radius: 0.1, spread: new THREE.Vector3(0.1, 0, 0) },
+          velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
+          color: { value: [new THREE.Color('red'), new THREE.Color('yellow'), new THREE.Color('green'), new THREE.Color('turquoise'), new THREE.Color('blue'), new THREE.Color('indigo')] },
+          opacity: { value: [1, 1, 0.5] },
+          size: { value: [1, 0.6], spread: 0.25 }
+        };
+
+    rainbowJetGroup = new SPE.Group({
+      texture: { value: sparkleTexture },
+      maxParticles: 2400
+    });
+
+    rainbowJetGroup.addPool(4, rainbowJetSettings, true);
+
+    galaxies.engine.rootObject.add( rainbowJetGroup.mesh );
+
+    var smokeTexture = new THREE.Texture(galaxies.queue.getResult('smoke'));
+    smokeTexture.needsUpdate = true;
+
+    var purpleTrailSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 1500,
+      maxAge: { value: 0.5 },
+      position: { radius: 0.1, spread: new THREE.Vector3(0.1, 0, 0) },
+      color: { value: new THREE.Color('fuchsia') },
+      opacity: { value: 0.4 },
+      size: { value: 0.3 }
+    };
+
+    purpleTrailGroup = new SPE.Group({
+      texture: { value: smokeTexture },
+      maxParticles: 9000
+    });
+
+    purpleTrailGroup.addPool(8, purpleTrailSettings, true);
+
+    galaxies.engine.rootObject.add( purpleTrailGroup.mesh );
+
+    var smallFlameJetSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 600,
+      maxAge: { value: 0.05, spread: 0.025 },
+      position: { radius: 0.03, spread: new THREE.Vector3(0.03, 0, 0) },
+      velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -8), spread: new THREE.Vector3(0, 0, 8) },
+      color: { value: [new THREE.Color('yellow'), new THREE.Color('orange'), new THREE.Color('grey')] },
+      opacity: { value: [1, 0.7, 0.2] },
+      size: { value: [0.7, 0.3], spread: 0.25 }
+    };
+
+    smallFlameJetGroup = new SPE.Group({
+      texture: { value: smokeTexture },
+      maxParticles: 8000
+    });
+
+    smallFlameJetGroup.addPool(12, smallFlameJetSettings, true);
+
+    galaxies.engine.rootObject.add( smallFlameJetGroup.mesh );
 
   } // init
   
@@ -308,9 +369,8 @@ galaxies.fx = (function() {
     
     var emitter = staricles[type];
     if ( !emitter ) { emitter = staricles['star']; }
-    
-    emitter.position.value.copy( position );
-    emitter.position.value = emitter.position.value;
+
+    emitter.position.value = emitter.position.value.copy( position );
     emitter.enable();
   }
   
@@ -418,6 +478,9 @@ galaxies.fx = (function() {
     }
     fireworksGroup.tick(delta);
     stariclesGroup.tick(delta);
+    rainbowJetGroup.tick(delta);
+    purpleTrailGroup.tick(delta);
+    smallFlameJetGroup.tick(delta);
     
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -534,6 +597,18 @@ galaxies.fx = (function() {
       }
     }
   }
+
+  var getRainbowEmitter = function () {
+    return rainbowJetGroup.getFromPool();
+  };
+
+  var getPurpleTrailEmitter = function () {
+    return purpleTrailGroup.getFromPool();
+  };
+
+  var getSmallFlameJetEmitter = function () {
+    return smallFlameJetGroup.getFromPool();
+  };
   
   
   
@@ -549,5 +624,8 @@ galaxies.fx = (function() {
     showDebris: showDebris,
     addGlowbject: addGlowbject,
     showStaricles: showStaricles,
+    getRainbowEmitter: getRainbowEmitter,
+    getPurpleTrailEmitter: getPurpleTrailEmitter,
+    getSmallFlameJetEmitter: getSmallFlameJetEmitter
   };
 })();

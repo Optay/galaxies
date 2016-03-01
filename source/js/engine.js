@@ -172,6 +172,12 @@ galaxies.engine.init = function() {
     
   // three.js clock for delta time
   galaxies.engine.clock = new THREE.Clock();
+
+  galaxies.engine.stats = new Stats();
+  galaxies.engine.stats.domElement.style.position = 'absolute';
+  galaxies.engine.stats.domElement.style.left = '0';
+  galaxies.engine.stats.domElement.style.top = '0';
+  document.body.appendChild(galaxies.engine.stats.domElement);
   
   // Detect minimized/inactive window to avoid bad delta time values.
   document.addEventListener("visibilitychange", galaxies.engine.onVisibilityChange );
@@ -317,7 +323,7 @@ galaxies.engine.restartGame = function() {
   galaxies.engine.removeInputListeners();
   galaxies.engine.planetTransition();
   //initLevel();
-  
+
   createjs.Ticker.paused = false;
   galaxies.engine.clock.start();
   
@@ -643,7 +649,7 @@ galaxies.engine.shoot = function( indestructible ) {
   var projScale = 0.1;
   projMesh.scale.set(projScale, projScale, projScale );
   
-  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, 0, indestructible );
+  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null );
   galaxies.engine.projectiles.push( proj );
     
   // play animation
@@ -666,7 +672,7 @@ galaxies.engine.shoot2 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, (Math.PI * i) );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, (Math.PI * i), 0, false, galaxies.fx.getPurpleTrailEmitter() );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
@@ -711,7 +717,7 @@ galaxies.engine.shoot3 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i, false, galaxies.fx.getSmallFlameJetEmitter() );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
@@ -738,7 +744,10 @@ galaxies.engine.animate = function() {
 // Game Loop
 galaxies.engine.update = function() {
   var delta = galaxies.engine.clock.getDelta();
-  if ( delta === 0 ) { return; } // paused!
+
+  galaxies.engine.stats.begin();
+
+  if ( delta === 0 ) { galaxies.engine.stats.end(); return; } // paused!
   if ( delta > 0.25 ) { delta = 0.25; } // Cap simulation at 4 ticks/second delta to prevent projectiles from passing through objects.
   
   // Test for hits, projectiles and ricochets
@@ -945,7 +954,8 @@ galaxies.engine.update = function() {
   
   
   galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
-  
+
+  galaxies.engine.stats.end();
 }
 
 // Calculate the results of an elastic collision between two obstacles.
