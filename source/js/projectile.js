@@ -81,10 +81,6 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   
   /// Expired projectiles will be removed by engine
   this.destroy = function() {
-    if (this.particleEmitter) {
-      this.particleEmitter.disable();
-      this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
-    }
     this.isExpired = true;
     this.lifeTimer = this.PROJECTILE_LIFE;
   }
@@ -95,6 +91,7 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
     if (this.particleEmitter) {
       this.particleEmitter.disable();
       this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
+      delete this.particleEmitter;
     }
   }
   this.addToScene = function() {

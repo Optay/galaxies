@@ -309,7 +309,7 @@ galaxies.fx = (function() {
 
     rainbowJetGroup = new SPE.Group({
       texture: { value: sparkleTexture },
-      maxParticles: 2400
+      maxParticles: 3200
     });
 
     rainbowJetGroup.addPool(4, rainbowJetSettings, true);
@@ -321,17 +321,18 @@ galaxies.fx = (function() {
 
     var purpleTrailSettings = {
       type: SPE.distributions.SPHERE,
-      particleCount: 1500,
-      maxAge: { value: 0.5 },
+      particleCount: 800,
+      maxAge: { value: 0.3, spread: 0.15 },
       position: { radius: 0.1, spread: new THREE.Vector3(0.1, 0, 0) },
-      color: { value: new THREE.Color('fuchsia') },
-      opacity: { value: 0.4 },
-      size: { value: 0.3 }
+      velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
+      color: { value: [new THREE.Color('fuchsia'), new THREE.Color('purple')] },
+      opacity: { value: [1, 1, 0.5] },
+      size: { value: [1, 0.6], spread: 0.25 }
     };
 
     purpleTrailGroup = new SPE.Group({
-      texture: { value: smokeTexture },
-      maxParticles: 9000
+      texture: { value: sparkleTexture },
+      maxParticles: 6400
     });
 
     purpleTrailGroup.addPool(8, purpleTrailSettings, true);
@@ -351,7 +352,7 @@ galaxies.fx = (function() {
 
     smallFlameJetGroup = new SPE.Group({
       texture: { value: smokeTexture },
-      maxParticles: 8000
+      maxParticles: 7200
     });
 
     smallFlameJetGroup.addPool(12, smallFlameJetSettings, true);
