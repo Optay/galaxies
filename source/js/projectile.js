@@ -7,11 +7,18 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.Projectile = function( model, angle, angleOffset, spread, indestructible, particleEmitter ) {
+galaxies.Projectile = function( model, angle, angleOffset, spread, indestructible, particleEmitterOrGroup ) {
   this.angularSpeed = 10;
   this.isExpired = false;
-  this.particleEmitter = particleEmitter;
-  
+
+  if (particleEmitterOrGroup) {
+    if (particleEmitterOrGroup instanceof SPE.Emitter) {
+      this.particleEmitter = particleEmitterOrGroup;
+    } else if (particleEmitterOrGroup instanceof SPE.Group) {
+      this.particleGroup = particleEmitterOrGroup;
+    }
+  }
+
   this.object = new THREE.Object3D();
   this.object.up.set(0,0,1);
   
@@ -35,10 +42,15 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   // set initial direction
   var direction = new THREE.Vector3( -Math.sin(angle), Math.cos(angle), 0 );
   direction.multiplyScalar( galaxies.engine.PROJ_START_Y );
-  this.object.position.copy( direction );
+
   if (this.particleEmitter) {
     this.particleEmitter.position.value = direction;
+  } else if (this.particleGroup) {
+    this.object.add(this.particleGroup.mesh);
   }
+
+  this.object.position.copy( direction );
+
   direction.add( direction );
   this.object.lookAt( direction );
   
@@ -58,15 +70,15 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
     direction.multiplyScalar( distance );
     
     this.object.position.copy( direction );
+
     if (this.particleEmitter) {
       this.particleEmitter.position.value = this.object.position;
       this.particleEmitter.rotation.value = direction;
     }
+
     direction.add( direction );
     this.object.lookAt( direction );
     this.object.rotateOnAxis( new THREE.Vector3(0,1,0), this.spreadAngle );
-    direction.normalize();
-
 
     galaxies.utils.conify( this.object );
   }
@@ -92,6 +104,9 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
       this.particleEmitter.disable();
       this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
       delete this.particleEmitter;
+    } else if (this.particleGroup) {
+      this.particleGroup.dispose();
+      delete this.particleGroup;
     }
   }
   this.addToScene = function() {
@@ -105,7 +120,9 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   this.update = function( delta ) {
     this.object.translateZ( this.PROJECTILE_SPEED * delta );
     if (this.particleEmitter) {
-      this.particleEmitter.position.value = this.object.position.clone().sub(direction.clone().multiplyScalar(0.15));
+      this.particleEmitter.position.value = this.object.position;
+    } else if (this.particleGroup) {
+      this.particleGroup.tick(delta);
     }
     this.model.rotateOnAxis( rotateAxis, this.angularSpeed * delta );
     this.lifeTimer += delta;

@@ -73,13 +73,12 @@ galaxies.fx = (function() {
   // Firework particle group for exploding comets
   var FIREWORKS_DECELERATION = 15;
   var fireworksGroup;
+  var sparkleGroup;
   
   var stariclesGroup;
   var staricles = {}; // emitters
   var rainbowJetGroup;
   var purpleTrailGroup;
-  var smallFlameJetGroup;
-
   
   // projectile hit particles
   var emitterSettings = {
@@ -153,31 +152,49 @@ galaxies.fx = (function() {
     }
     
     // Comet explode particles
-    var cometParticleSettings = {
+    var fireworkSettings = {
       type: SPE.distributions.SPHERE,
       particleCount: 200,
       duration: 0.1,
       maxAge: { value: 0.7,
-                spread: 0.5 },
+                spread: 0.1 },
       position: { radius: 0.6 },
       velocity: { value: new THREE.Vector3(20) },
       acceleration: { value: new THREE.Vector3(-14) },
-      color: { value: [new THREE.Color("rgb(255, 255, 255)"), new THREE.Color("rgb(255, 150, 100)") ],
-               spread: [new THREE.Vector3(), new THREE.Vector3(0.5, 0.7, 1)] },
+      color: { value: new THREE.Color('grey'), spread: new THREE.Vector3(0.5, 0.5, 0.5) },
+      wiggle: { spread: 5 },
       opacity: { value: [1, 1, 1, 0.1] },
-      size: { value: [10, 3, 1, 0.1 ] },
+      size: { value: [5, 3] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
     starTexture.needsUpdate = true;
     fireworksGroup = new SPE.Group({
       texture: { value: starTexture },
-      blending: THREE.AdditiveBlending,
-      transparent: true
+      maxParticleCount: 2000
     });
-    fireworksGroup.addPool( 10, cometParticleSettings, true ); // 3
+    fireworksGroup.addPool( 3, fireworkSettings, true ); // 3
     
     galaxies.engine.rootObject.add ( fireworksGroup.mesh );
+
+    var sparkleSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 300,
+      duration: 0.8,
+      maxAge: { value: 0.1, spread: 0.1 },
+      position: { radius: 5, spread: new THREE.Vector3(5, 0, 0) },
+      color: { value: new THREE.Color('white') },
+      opacity: { value: [1, 0] },
+      size: { value: 1 }
+    };
+
+    sparkleGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 3000
+    });
+    sparkleGroup.addPool(3, sparkleSettings, true);
+
+    galaxies.engine.rootObject.add ( sparkleGroup.mesh );
   
     // Planet splode
     planetRubbleHolder = new THREE.Object3D();
@@ -303,13 +320,14 @@ galaxies.fx = (function() {
           position: { radius: 0.1, spread: new THREE.Vector3(0.1, 0, 0) },
           velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
           color: { value: [new THREE.Color('red'), new THREE.Color('yellow'), new THREE.Color('green'), new THREE.Color('turquoise'), new THREE.Color('blue'), new THREE.Color('indigo')] },
+          angle: { spread: Math.PI },
           opacity: { value: [1, 1, 0.5] },
           size: { value: [1, 0.6], spread: 0.25 }
         };
 
     rainbowJetGroup = new SPE.Group({
       texture: { value: sparkleTexture },
-      maxParticles: 3200
+      maxParticleCount: 3200
     });
 
     rainbowJetGroup.addPool(4, rainbowJetSettings, true);
@@ -326,44 +344,27 @@ galaxies.fx = (function() {
       position: { radius: 0.1, spread: new THREE.Vector3(0.1, 0, 0) },
       velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
       color: { value: [new THREE.Color('fuchsia'), new THREE.Color('purple')] },
+      angle: { spread: Math.PI },
       opacity: { value: [1, 1, 0.5] },
       size: { value: [1, 0.6], spread: 0.25 }
     };
 
     purpleTrailGroup = new SPE.Group({
       texture: { value: sparkleTexture },
-      maxParticles: 6400
+      maxParticleCount: 6400
     });
 
     purpleTrailGroup.addPool(8, purpleTrailSettings, true);
 
     galaxies.engine.rootObject.add( purpleTrailGroup.mesh );
-
-    var smallFlameJetSettings = {
-      type: SPE.distributions.SPHERE,
-      particleCount: 600,
-      maxAge: { value: 0.05, spread: 0.025 },
-      position: { radius: 0.03, spread: new THREE.Vector3(0.03, 0, 0) },
-      velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -8), spread: new THREE.Vector3(0, 0, 8) },
-      color: { value: [new THREE.Color('yellow'), new THREE.Color('orange'), new THREE.Color('grey')] },
-      opacity: { value: [1, 0.7, 0.2] },
-      size: { value: [0.7, 0.3], spread: 0.25 }
-    };
-
-    smallFlameJetGroup = new SPE.Group({
-      texture: { value: smokeTexture },
-      maxParticles: 7200
-    });
-
-    smallFlameJetGroup.addPool(12, smallFlameJetSettings, true);
-
-    galaxies.engine.rootObject.add( smallFlameJetGroup.mesh );
-
   } // init
   
   var showFireworks = function( position ) {
     // New rev of SPE does not require fancy workaround as we no longer have to fake particle drag.
     fireworksGroup.triggerPoolEmitter( 1, position );
+    setTimeout(function() {
+      sparkleGroup.triggerPoolEmitter(1, position);
+    }, 700);
   }
   
   var showStaricles = function( position, type ) {
@@ -478,11 +479,11 @@ galaxies.fx = (function() {
       debrisPool[i].update(delta);
     }
     fireworksGroup.tick(delta);
+    sparkleGroup.tick(delta);
     stariclesGroup.tick(delta);
     rainbowJetGroup.tick(delta);
     purpleTrailGroup.tick(delta);
-    smallFlameJetGroup.tick(delta);
-    
+
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
     }
@@ -607,8 +608,30 @@ galaxies.fx = (function() {
     return purpleTrailGroup.getFromPool();
   };
 
-  var getSmallFlameJetEmitter = function () {
-    return smallFlameJetGroup.getFromPool();
+  var getSmallFlameJetGroup = function () {
+    var smokeTex = new THREE.Texture( galaxies.queue.getResult('smoke') ),
+        smallFlameJetGroup = new SPE.Group({
+          texture: { value: smokeTex },
+          maxParticleCount: 600
+        }),
+        smallFlameEmitter = new SPE.Emitter({
+          type: SPE.distributions.SPHERE,
+          particleCount: 200,
+          maxAge: { value: 0.1, spread: 0.05 },
+          position: { radius: 0.05, spread: new THREE.Vector3(0.05, 0, 0) },
+          velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
+          acceleration: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, 0.4), spread: new THREE.Vector3(0, 0, 0.1) },
+          color: { value: [new THREE.Color('yellow'), new THREE.Color('red'), new THREE.Color('grey'), new THREE.Color('grey')], spread: new THREE.Vector3(0.1, 0.1, 0.1) },
+          angle: { spread: Math.PI },
+          opacity: { value: [1, 0.7, 0.2] },
+          size: { value: [1, 0.7, 0.5, 0.8], spread: 0.25 }
+        });
+
+    smokeTex.needsUpdate = true;
+
+    smallFlameJetGroup.addEmitter(smallFlameEmitter);
+
+    return smallFlameJetGroup;
   };
   
   
@@ -627,6 +650,6 @@ galaxies.fx = (function() {
     showStaricles: showStaricles,
     getRainbowEmitter: getRainbowEmitter,
     getPurpleTrailEmitter: getPurpleTrailEmitter,
-    getSmallFlameJetEmitter: getSmallFlameJetEmitter
+    getSmallFlameJetGroup: getSmallFlameJetGroup
   };
 })();

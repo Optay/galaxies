@@ -643,7 +643,7 @@ galaxies.engine.shoot = function( indestructible ) {
   
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
-  
+
   // Instantiate shot object
   var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
   var projScale = 0.1;
@@ -717,7 +717,7 @@ galaxies.engine.shoot3 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i, false, galaxies.fx.getSmallFlameJetEmitter() );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i, false, galaxies.fx.getSmallFlameJetGroup() );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
