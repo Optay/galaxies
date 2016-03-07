@@ -8,6 +8,7 @@ this.galaxies.Player = function() {
   
   
   var characterRotator = new THREE.Object3D();
+  characterRotator.position.z = 0.5;
 
   var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
   var baseAnimator = new galaxies.SpriteSheet(

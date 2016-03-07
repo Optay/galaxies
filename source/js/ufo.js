@@ -211,7 +211,7 @@ this.galaxies.Ufo = function() {
         // Tip to attack posture
         this.model.rotation.y = Math.PI/3;
         createjs.Tween.removeTweens( this.model.rotation );
-        createjs.Tween.get(this.model.rotation).wait(2000).to({y: 0}, 2000, createjs.Ease.quadOut );
+        createjs.Tween.get(this.model.rotation).wait(2000).to({y: Math.PI/6}, 2000, createjs.Ease.quadOut );
         
         new galaxies.audio.PositionedSound({
           source: galaxies.audio.getSound('trunkfordlaugh'),

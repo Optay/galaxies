@@ -161,10 +161,10 @@ galaxies.fx = (function() {
       position: { radius: 0.6 },
       velocity: { value: new THREE.Vector3(20) },
       acceleration: { value: new THREE.Vector3(-14) },
-      color: { value: new THREE.Color('grey'), spread: new THREE.Vector3(0.5, 0.5, 0.5) },
+      color: { value: new THREE.Color(0.7, 0.7, 0.7), spread: new THREE.Vector3(0.3, 0.3, 0.3) },
       wiggle: { spread: 5 },
       opacity: { value: [1, 1, 1, 0.1] },
-      size: { value: [5, 3] }
+      size: { value: [4, 2.5] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
@@ -185,7 +185,7 @@ galaxies.fx = (function() {
       position: { radius: 5, spread: new THREE.Vector3(5, 0, 0) },
       color: { value: new THREE.Color('white') },
       opacity: { value: [1, 0] },
-      size: { value: 1 }
+      size: { value: 1.5 }
     };
 
     sparkleGroup = new SPE.Group({
