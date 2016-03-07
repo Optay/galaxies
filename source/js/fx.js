@@ -267,12 +267,9 @@ galaxies.fx = (function() {
     planetParticleGroups.push(groupFire);
 
     // POWERUP and STAR particles
-    var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
-    sparkleTexture.needsUpdate = true;
-        
     var baseSettings = {
       type: SPE.distributions.SPHERE,
-      particleCount: 15,
+      particleCount: 100,
       duration: 0.1,
       activeMultiplier: 1,
       maxAge: { value: 0.8,
@@ -280,38 +277,44 @@ galaxies.fx = (function() {
       position: { radius: 0.1 },
       velocity: { value: new THREE.Vector3(2,0,0),
                   spread: new THREE.Vector3(1,0,0) },
-      angle: { value: 0,
-               spread: 360 },
+      rotation: { axisSpread: new THREE.Vector3(2, 2, 2), angleSpread: 2*Math.PI },
       drag: { value: 0.5 },
       opacity: { value: [1,0.5] },
-      size: { value: [1,0],
-              spread: 0.5 }
+      size: { value: 0.3, spread: 0.1 }
     };
     
     stariclesGroup = new SPE.Group({
-      texture: { value: sparkleTexture }
+      texture: { value: starTexture }
     });
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
 
     baseSettings.color = { value: new THREE.Color( 0xffcaca ) };
     staricles['heart'] = new SPE.Emitter( baseSettings );
+    staricles['heart'].disable();
     stariclesGroup.addEmitter( staricles['heart'] );
 
-    baseSettings.color = { value: [new THREE.Color('yellow'), new THREE.Color('orange'), new THREE.Color('red'), new THREE.Color('grey')], spread: new THREE.Vector3(0.15, 0.05, 0.05) };
+    baseSettings.color = { value: [new THREE.Color('white'), new THREE.Color(1, 1, 0.8), new THREE.Color(1, 0.8, 0.5), new THREE.Color(1, 0.5, 0.5)], spread: new THREE.Vector3(0.5, 0.2, 0.1) };
     staricles['spread'] = new SPE.Emitter( baseSettings );
+    staricles['spread'].disable();
     stariclesGroup.addEmitter( staricles['spread'] );
 
-    baseSettings.color = { value: [new THREE.Color('purple'), new THREE.Color('fuchsia')], spread: [new THREE.Vector3(0.1, 0.1, 0.1), new THREE.Vector3(0.05, 2, 0.05)] };
+    baseSettings.color = { value: [new THREE.Color('white'), new THREE.Color(1, 0.8, 1), new THREE.Color('fuchsia')], spread: new THREE.Vector3(0.1, 0.1, 0.1) };
     staricles['clone'] = new SPE.Emitter( baseSettings );
+    staricles['clone'].disable();
     stariclesGroup.addEmitter( staricles['clone'] );
 
-    baseSettings.color = { value: new THREE.Color('gold') };
+    baseSettings.color = { value: [new THREE.Color('white'), new THREE.Color('gold')], spread: new THREE.Vector3(0.2, 0.2, 2) };
     staricles['golden'] = new SPE.Emitter( baseSettings );
+    staricles['golden'].disable();
     stariclesGroup.addEmitter( staricles['golden'] );
 
     baseSettings.color = { value: new THREE.Color('white') };
     staricles['star'] = new SPE.Emitter( baseSettings );
+    staricles['star'].disable();
     stariclesGroup.addEmitter( staricles['star'] );
+
+    var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
+    sparkleTexture.needsUpdate = true;
 
     var rainbowJetSettings = {
           type: SPE.distributions.SPHERE,
@@ -373,6 +376,9 @@ galaxies.fx = (function() {
     if ( !emitter ) { emitter = staricles['star']; }
 
     emitter.position.value = emitter.position.value.copy( position );
+    emitter.rotation.center = emitter.rotation.center.copy( position );
+    emitter.updateFlags.rotationCenter = true;
+
     emitter.enable();
   }
   
