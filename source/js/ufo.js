@@ -21,7 +21,7 @@ this.galaxies.Ufo = function() {
   
   var trunkMap = new THREE.Texture( galaxies.queue.getResult('trunkford') );
   trunkMap.needsUpdate = true;
-  var trunkMat = new THREE.MeshLambertMaterial({
+  var trunkMat = new THREE.MeshBasicMaterial({
     map: trunkMap,
     color: 0xffffff,
     transparent: true,
