@@ -178,8 +178,8 @@ galaxies.Resources = function() {
       depthTest: true
   } );
   this.materials['ufocanopy'] = new THREE.MeshPhongMaterial( {
-    color: 0x222222,
-    specular: 0x080808,
+    color: 0xaaaaaa,
+    specular: 0x222222,
     shininess: 100,
     opacity: 0.9,
     transparent: true,

@@ -640,7 +640,7 @@ galaxies.engine.shoot = function( indestructible ) {
   if ( typeof(indestructible) !== 'boolean' ) {
     indestructible = false;
   }
-  
+
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 

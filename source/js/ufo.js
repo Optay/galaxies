@@ -154,7 +154,7 @@ this.galaxies.Ufo = function() {
   //directionalSources.push( ufoSound );
   
   var idleZ = galaxies.engine.CAMERA_Z + 10;
-  var idlePosition = new THREE.Vector3(1,0,idleZ);
+  var idlePosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 1.5,0,idleZ);
 
   var orbitPositions = [
     new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS,0,0),
@@ -392,7 +392,7 @@ this.galaxies.Ufo = function() {
     orbitPosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
     orbitPosition.z = galaxies.utils.getConifiedDepth( orbitPosition );
     var idleZ = galaxies.engine.CAMERA_Z + 10;
-    idlePosition = new THREE.Vector3( 1, 0, idleZ );//new THREE.Vector3( orbitPosition.x, 0, idleZ );
+    idlePosition = new THREE.Vector3( galaxies.engine.VISIBLE_RADIUS * 1.5, 0, idleZ );//new THREE.Vector3( orbitPosition.x, 0, idleZ );
     //
     
     console.log( galaxies.engine.VISIBLE_RADIUS );
