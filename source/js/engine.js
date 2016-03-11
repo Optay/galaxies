@@ -203,7 +203,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.rootObject = new THREE.Object3D();
   galaxies.engine.driftObject.add( galaxies.engine.rootObject );
   
-  galaxies.engine.camera = new THREE.PerspectiveCamera( galaxies.engine.CAMERA_VIEW_ANGLE, window.innerWidth / window.innerHeight, 1, 1100 );
+  galaxies.engine.camera = new THREE.PerspectiveCamera( galaxies.engine.CAMERA_VIEW_ANGLE, window.innerWidth / window.innerHeight, 0.3, 1100 );
   galaxies.engine.camera.position.set(0,0,galaxies.engine.CAMERA_Z);
   galaxies.engine.rootObject.add(galaxies.engine.camera);
   
