@@ -117,7 +117,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'planetearth', src: 'planet_7.png' },
     { id: 'sparkle', src: 'sparticle.png' },
     { id: 'smoke', src: 'smokeparticle.png' },
-    { id: 'lensFlare', src: 'lensflare3.png' }
+    { id: 'lensFlare', src: 'lensflare3.png' },
+    { id: 'sun', src: 'sun_on_black.jpg' }
 
   ];
   for (var i=0; i<imageItems.length; i++ ) {

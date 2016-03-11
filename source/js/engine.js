@@ -207,9 +207,25 @@ galaxies.engine.initScene = function() {
   galaxies.engine.camera.position.set(0,0,galaxies.engine.CAMERA_Z);
   galaxies.engine.rootObject.add(galaxies.engine.camera);
   
-  
   galaxies.engine.light = new THREE.DirectionalLight( 0xffffff, 1 );
   galaxies.engine.rootObject.add( galaxies.engine.light );
+
+  var sunTex = new THREE.Texture(galaxies.queue.getResult('sun'));
+  sunTex.needsUpdate = true;
+
+  var sunMat = new THREE.MeshBasicMaterial({map: sunTex, transparent: true, blending: THREE.AdditiveBlending});
+
+  galaxies.engine.sun = new THREE.Mesh( new THREE.PlaneGeometry(100, 100, 1, 1), sunMat);
+  galaxies.engine.sun.visible = false;
+
+  var flareTex = new THREE.Texture(galaxies.queue.getResult('lensFlare'));
+  flareTex.needsUpdate = true;
+
+  galaxies.engine.sunFlares = new THREE.LensFlare(flareTex, 60, 0.2, THREE.AdditiveBlending, new THREE.Color(1.5, 1.5, 1.5));
+
+  galaxies.engine.rootObject.add(galaxies.engine.sun);
+  galaxies.engine.sun.add(galaxies.engine.sunFlares);
+
   galaxies.engine.setLightPosition([0,0]);
   
   /* Set up a material that uses a cubemap texture.  This material uses
@@ -230,7 +246,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.scene.add(galaxies.engine.skyCube);
   
   
-  galaxies.engine.renderer = new THREE.WebGLRenderer();
+  galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
   galaxies.engine.renderer.setSize( window.innerWidth, window.innerHeight );
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );
@@ -405,7 +421,47 @@ galaxies.engine.updateBackgroundPlanet = function() {
   var bgPlanetIndex = (galaxies.engine.planetNumber - 1) % galaxies.resources.bgPlanetTextures.length;
   console.log( "Setting background planet texture", galaxies.engine.planetNumber, galaxies.resources.bgPlanetTextures.length, bgPlanetIndex );
   galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[bgPlanetIndex].texture;
-  
+
+  galaxies.engine.rootObject.add(galaxies.engine.sun);
+  galaxies.engine.sun.add(galaxies.engine.sunFlares);
+
+  var sunTargetScale = 1;
+
+  switch (bgPlanetIndex) {
+    case 1:
+      galaxies.engine.sun.position.set( -135, 240, -101 );
+      galaxies.engine.sunFlares.position.set(0, 0, 1500);
+      sunTargetScale = 0.3;
+      galaxies.engine.sun.visible = true;
+      break;
+    case 5:
+      galaxies.engine.sun.position.set( -115, 150, -101 );
+      galaxies.engine.sunFlares.position.set(0, 0, 500);
+      sunTargetScale = 0.8;
+      galaxies.engine.sun.visible = true;
+      break;
+    case 6:
+      galaxies.engine.sun.position.set( 80, 90, -101 );
+      galaxies.engine.sunFlares.position.set(0, 0, 250);
+      sunTargetScale = 1;
+      galaxies.engine.sun.visible = true;
+      break;
+    default:
+      galaxies.engine.sun.visible = false;
+  }
+
+  if (galaxies.engine.sun.visible) {
+    galaxies.engine.sun.lookAt(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
+
+    galaxies.engine.sun.scale.set(0.1, 0.1, 0.1);
+    galaxies.engine.sun.updateMatrixWorld(true);
+
+    THREE.SceneUtils.detach(galaxies.engine.sun, galaxies.engine.rootObject, galaxies.engine.scene);
+    THREE.SceneUtils.detach(galaxies.engine.sunFlares, galaxies.engine.sun, galaxies.engine.scene);
+
+    var camScenePos = galaxies.engine.camera.localToWorld(new THREE.Vector3());
+    console.log(camScenePos.distanceTo(galaxies.engine.sunFlares.position), camScenePos.distanceTo(galaxies.engine.bgPlanet.position), camScenePos.distanceTo(galaxies.engine.sun.position));
+  }
   
   createjs.Tween.removeTweens( galaxies.engine.bgPlanet.scale );
   
@@ -414,6 +470,8 @@ galaxies.engine.updateBackgroundPlanet = function() {
   // Tween time should be dependent on transition time which should be a constant
   createjs.Tween.get( galaxies.engine.bgPlanet.scale )
     .to({x:targetScale, y:targetScale, z:targetScale}, 3000, createjs.Ease.quadOut);
+  createjs.Tween.get( galaxies.engine.sun.scale )
+      .to({x:sunTargetScale, y:sunTargetScale, z:sunTargetScale}, 3000, createjs.Ease.quadOut);
 
 }
 
@@ -554,7 +612,7 @@ galaxies.engine.randomizePlanet = function() {
 }
 
 galaxies.engine.setLightPosition = function( angles ) {
-  var azimuth = angles[0] * Math.PI/180
+  var azimuth = angles[0] * Math.PI/180;
   var cazi = Math.cos( azimuth );
   var sazi = Math.sin( azimuth);
   var altitude = angles[1] * Math.PI/180;
@@ -562,7 +620,6 @@ galaxies.engine.setLightPosition = function( angles ) {
   var salt = Math.sin( altitude );
   
   galaxies.engine.light.position.set( cazi * calt, sazi * calt, salt );
-  console.log( "Light position", galaxies.engine.light.position );
 }
 
 
@@ -907,9 +964,11 @@ galaxies.engine.update = function() {
   // update fx
   galaxies.fx.update(delta);
   
-  // update bg
-  galaxies.engine.bgPlanet.lookAt( galaxies.engine.camera.localToWorld( new THREE.Vector3() ) );
-  
+  // update bg and sun
+  var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
+  galaxies.engine.bgPlanet.lookAt( cameraScenePos );
+  galaxies.engine.sun.lookAt( cameraScenePos );
+
   // update character
   if ( !galaxies.engine.isGameOver ) {
     var angleDelta = (galaxies.engine.targetAngle-galaxies.engine.angle);
