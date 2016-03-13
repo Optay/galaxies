@@ -65,6 +65,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden'];
+galaxies.engine.powerupMessagesShown = [];
 
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 4.5;
@@ -1409,20 +1410,31 @@ galaxies.engine.setPowerup = function ( newPowerup ) {
   
   galaxies.engine.player.setPowerup( newPowerup );
   galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
+
+  var powerupMessage = '';
   
   switch(newPowerup) {
     case 'spread':
       galaxies.engine.shootFunction = galaxies.engine.shoot3;
+      powerupMessage = 'Triple Racquet';
       break;
     case 'clone':
       galaxies.engine.shootFunction = galaxies.engine.shoot2;
+      powerupMessage = 'Alien Pro';
       break;
     case 'golden':
       galaxies.engine.shootFunction = function() { galaxies.engine.shoot(true); };
+      powerupMessage = 'Rainbow of Death';
       break;
     default:
       galaxies.engine.shootFunction = galaxies.engine.shoot;
       break;
+  }
+
+  if (powerupMessage && !galaxies.engine.powerupMessagesShown[newPowerup]) {
+    galaxies.engine.powerupMessagesShown[newPowerup] = true;
+
+    galaxies.ui.showTitle(powerupMessage, 1.8);
   }
   
 }
