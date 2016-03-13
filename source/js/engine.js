@@ -222,6 +222,10 @@ galaxies.engine.initScene = function() {
   flareTex.needsUpdate = true;
 
   galaxies.engine.sunFlares = new THREE.LensFlare(flareTex, 60, 0.2, THREE.AdditiveBlending, new THREE.Color(1.5, 1.5, 1.5));
+  galaxies.engine.sunFlares.add(flareTex, 100, 0.25, THREE.AdditiveBlending, new THREE.Color(1.3, 0.8, 0.8));
+  galaxies.engine.sunFlares.add(flareTex, 150, 0.4, THREE.AdditiveBlending, new THREE.Color(1.2, 1.2, 1.8));
+  galaxies.engine.sunFlares.add(flareTex, 60, 0.41, THREE.AdditiveBlending, new THREE.Color(1.3, 2, 1.3));
+  galaxies.engine.sunFlares.add(flareTex, 230, 0.6, THREE.AdditiveBlending, new THREE.Color(0.6, 1, 1));
 
   galaxies.engine.rootObject.add(galaxies.engine.sun);
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
