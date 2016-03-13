@@ -65,7 +65,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'starcollect', src:'star', type: createjs.AbstractLoader.BINARY },
     { id: 'heartcollect', src:'heart', type: createjs.AbstractLoader.BINARY },
     { id: 'powerupcollect', src: 'powerup', type: createjs.AbstractLoader.BINARY },
-    
+    { id: 'round3music', src: 'music_round3', type: createjs.AbstractLoader.BINARY }
+
     
     
   ];

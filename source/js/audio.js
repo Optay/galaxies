@@ -45,6 +45,7 @@ galaxies.audio.sounds = {
   'fpo': ['fpo1'],
   'ufo': ['ufo'],
   'music': ['music'],
+  'round3music': ['round3music'],
   'ufohit': ['ufohit1', 'ufohit2'],
   'ufoshoot': ['ufoshoot'],
   'planetsplode': ['planetsplode'],
@@ -432,46 +433,65 @@ galaxies.audio.SoundField = function ( buffer ) {
   // Only L, R, SL, and SR channels are rotated, so we list the corresponding indices here.
   var channelMap = [0, 1, 4, 5];
   var playThrough = [2, 3];
-  
-  this.source = galaxies.audio.audioCtx.createBufferSource();
-  this.source.loop = true;
-  this.source.buffer = buffer;
 
-  this.angle = 0;
-  this.angularVelocity = 1;
-  
-  // Add input
   var volumeNode = galaxies.audio.audioCtx.createGain();
-  this.source.connect( volumeNode );
   var splitter = galaxies.audio.audioCtx.createChannelSplitter(6);
-  volumeNode.connect( splitter );
   var combiner = galaxies.audio.audioCtx.createChannelMerger(6);
-  combiner.connect(galaxies.audio.outNode);
-  
-  this.gains = [];
-  
-  // hook up channels that will not be remixed directly
-  for (var i=0; i<playThrough.length; i++ ) {
-    splitter.connect(combiner, playThrough[i], playThrough[i] );
-  }
-  
-  // Add gain nodes for mixing moving channels
-  for ( var iOutput = 0; iOutput<channelMap.length; iOutput ++ ) {   // into each output channel
-    this.gains[iOutput] = [];
-    for (var iSource=0; iSource<channelMap.length; iSource++ ) {     // mix the source channels
-      var newGainNode = galaxies.audio.audioCtx.createGain();
-      splitter.connect( newGainNode, channelMap[iSource], 0 );
-      newGainNode.connect( combiner, 0, channelMap[iOutput] );
-      this.gains[iOutput][iSource] = newGainNode;
+
+  this.changeSource = function (buffer) {
+    if (this.source) {
+      this.source.stop();
+      this.source.disconnect();
+      delete this.source;
     }
-  }
+
+    this.source = galaxies.audio.audioCtx.createBufferSource();
+    this.source.loop = true;
+    this.source.buffer = buffer;
+
+    this.angle = 0;
+    this.angularVelocity = 1;
+
+    this.gains = [];
+
+    // Add input
+
+    this.source.connect( volumeNode );
+
+    volumeNode.disconnect();
+    volumeNode.connect( splitter );
+
+    combiner.disconnect();
+    combiner.connect(galaxies.audio.outNode);
+
+    // hook up channels that will not be remixed directly
+    splitter.disconnect();
+    for (var i=0; i<playThrough.length; i++ ) {
+      splitter.connect(combiner, playThrough[i], playThrough[i] );
+    }
+
+    // Add gain nodes for mixing moving channels
+    for ( var iOutput = 0; iOutput<channelMap.length; iOutput ++ ) {   // into each output channel
+      this.gains[iOutput] = [];
+      for (var iSource=0; iSource<channelMap.length; iSource++ ) {     // mix the source channels
+        var newGainNode = galaxies.audio.audioCtx.createGain();
+        splitter.connect( newGainNode, channelMap[iSource], 0 );
+        newGainNode.connect( combiner, 0, channelMap[iOutput] );
+        this.gains[iOutput][iSource] = newGainNode;
+      }
+    }
+
+    this.source.start(0);
+  };
+
+  this.changeSource(buffer);
 
   this.setVolume = function( value ) {
     volumeNode.gain.value = value;
   }
   
   this.setVolume(0.24); // global music volume. should be a const
-  this.source.start(0);
+
   
   this.update = function(delta) {
     this.angle += this.angularVelocity * delta;

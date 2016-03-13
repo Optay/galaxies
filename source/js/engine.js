@@ -378,6 +378,12 @@ galaxies.engine.initLevel = function() {
     // Reset star counter
     galaxies.engine.starsCollectedRound = 0;
     galaxies.ui.updateStars( galaxies.engine.starsCollectedRound );
+
+    if (galaxies.engine.levelNumber !== 1) {
+      galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
+    }
+  } else if (galaxies.engine.roundNumber === 3) {
+    galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
   }
   
 
@@ -465,17 +471,19 @@ galaxies.engine.updateBackgroundPlanet = function() {
 
     var camScenePos = galaxies.engine.camera.localToWorld(new THREE.Vector3());
     console.log(camScenePos.distanceTo(galaxies.engine.sunFlares.position), camScenePos.distanceTo(galaxies.engine.bgPlanet.position), camScenePos.distanceTo(galaxies.engine.sun.position));
+
+    createjs.Tween.removeTweens( galaxies.engine.sun.scale );
+    createjs.Tween.get( galaxies.engine.sun.scale )
+        .to({x:sunTargetScale, y:sunTargetScale, z:sunTargetScale}, 3000, createjs.Ease.quadOut);
   }
   
   createjs.Tween.removeTweens( galaxies.engine.bgPlanet.scale );
-  
+
   galaxies.engine.bgPlanet.scale.set( 0.1, 0.1, 0.1 );
   var targetScale = galaxies.resources.bgPlanetTextures[bgPlanetIndex].scale;
   // Tween time should be dependent on transition time which should be a constant
   createjs.Tween.get( galaxies.engine.bgPlanet.scale )
     .to({x:targetScale, y:targetScale, z:targetScale}, 3000, createjs.Ease.quadOut);
-  createjs.Tween.get( galaxies.engine.sun.scale )
-      .to({x:sunTargetScale, y:sunTargetScale, z:sunTargetScale}, 3000, createjs.Ease.quadOut);
 
 }
 
