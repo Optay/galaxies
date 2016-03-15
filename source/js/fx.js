@@ -618,19 +618,19 @@ galaxies.fx = (function() {
     var smokeTex = new THREE.Texture( galaxies.queue.getResult('smoke') ),
         smallFlameJetGroup = new SPE.Group({
           texture: { value: smokeTex },
-          maxParticleCount: 600
+          maxParticleCount: 1200
         }),
         smallFlameEmitter = new SPE.Emitter({
           type: SPE.distributions.SPHERE,
-          particleCount: 200,
-          maxAge: { value: 0.1, spread: 0.05 },
+          particleCount: 400,
+          maxAge: { value: 0.15, spread: 0.05 },
           position: { radius: 0.05, spread: new THREE.Vector3(0.05, 0, 0) },
-          velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
+          velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(2, 2, 2) },
           acceleration: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, 0.4), spread: new THREE.Vector3(0, 0, 0.1) },
-          color: { value: [new THREE.Color('yellow'), new THREE.Color('red'), new THREE.Color('grey'), new THREE.Color('grey')], spread: new THREE.Vector3(0.1, 0.1, 0.1) },
+          color: { value: [new THREE.Color(1.6, 1.6, 0), new THREE.Color(1.4, 0.7, 0), new THREE.Color(1, 1, 1), new THREE.Color(0.5, 0.5, 0.5)], spread: new THREE.Vector3(0.1, 0.1, 0.1) },
           angle: { spread: Math.PI },
-          opacity: { value: [1, 0.7, 0.2] },
-          size: { value: [1, 0.7, 0.5, 0.8], spread: 0.25 }
+          opacity: { value: [1, 0.7, 0.4, 0.1] },
+          size: { value: [1, 0.7, 0.7, 1.5], spread: 0.25 }
         });
 
     smokeTex.needsUpdate = true;
