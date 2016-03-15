@@ -719,7 +719,7 @@ galaxies.engine.shoot = function( indestructible ) {
   var projScale = 0.1;
   projMesh.scale.set(projScale, projScale, projScale );
   
-  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null );
+  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null );
   galaxies.engine.projectiles.push( proj );
     
   // play animation
@@ -742,12 +742,12 @@ galaxies.engine.shoot2 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, (Math.PI * i), 0, false, galaxies.fx.getPurpleTrailEmitter() );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle + (Math.PI * i), 0, false, galaxies.fx.getPurpleTrailEmitter() );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation
     createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
-    .call( galaxies.engine.shootSync, [proj], this );
+    .call( galaxies.engine.shootSync, [proj, Math.PI * i], this );
   }
   // play animation
   galaxies.engine.player.animateShoot();
@@ -759,9 +759,10 @@ galaxies.engine.shoot2 = function() {
 
 // When the correct point in the character animation is reached,
 // realign the projectile with the current angle and let it fly.
-galaxies.engine.shootSync = function( proj ) {
-  
-  proj.updatePosition( galaxies.engine.angle );
+galaxies.engine.shootSync = function( proj, angleOffset ) {
+  angleOffset = angleOffset || 0;
+
+  proj.updatePosition( galaxies.engine.angle + angleOffset );
   proj.addToScene();
 }
 galaxies.engine.shootSound = function() {
@@ -787,7 +788,7 @@ galaxies.engine.shoot3 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, i, false, galaxies.fx.getSmallFlameJetGroup() );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, i * Math.PI / 4, false, galaxies.fx.getSmallFlameJetGroup() );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation

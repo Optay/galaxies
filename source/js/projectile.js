@@ -7,7 +7,9 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.Projectile = function( model, angle, angleOffset, spread, indestructible, particleEmitterOrGroup ) {
+galaxies.Projectile = function( model, startAngle, directionOffset, indestructible, particleEmitterOrGroup ) {
+  directionOffset = directionOffset || 0;
+
   this.angularSpeed = 10;
   this.isExpired = false;
 
@@ -28,30 +30,23 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   }
   
   var rotateAxis = new THREE.Vector3(0,1,0);
-  
-  this.angleOffset = 0;
-  if ( typeof( angleOffset ) === 'number' ) {
-    this.angleOffset = angleOffset;
-  }
-  angle += angleOffset;
 
-  // spread is expected to be -1 to 1
-  if ( typeof(spread) != 'number' ) { spread = 0; }
-  this.spreadAngle = spread * 45 * Math.PI/180;
-  
   // set initial direction
-  var direction = new THREE.Vector3( -Math.sin(angle), Math.cos(angle), 0 );
-  direction.multiplyScalar( galaxies.engine.PROJ_START_Y );
+  this.startAngle = startAngle;
+  this.startPos = new THREE.Vector3(-Math.sin(startAngle), Math.cos(startAngle), 0);
+  this.startPos.multiplyScalar(galaxies.engine.PROJ_START_Y);
 
   if (this.particleEmitter) {
-    this.particleEmitter.position.value = direction;
+    this.particleEmitter.position.value = this.startPos;
   } else if (this.particleGroup) {
     this.object.add(this.particleGroup.mesh);
   }
 
-  this.object.position.copy( direction );
+  this.object.position.copy( this.startPos );
+  this.lookOffset = directionOffset;
 
-  direction.add( direction );
+  var lookAngle = startAngle + directionOffset;
+  var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0).add(this.startPos);
   this.object.lookAt( direction );
   
   this.model = model;
@@ -63,22 +58,24 @@ galaxies.Projectile = function( model, angle, angleOffset, spread, indestructibl
   this.lifeTimer = 0;
   
   this.updatePosition = function( newAngle ) {
-    newAngle += this.angleOffset;
-    
-    var distance = galaxies.utils.flatLength( this.object.position );
-    direction.set( -Math.sin(newAngle), Math.cos(newAngle), 0 );
-    direction.multiplyScalar( distance );
-    
-    this.object.position.copy( direction );
+    var newStart = new THREE.Vector3(-Math.sin(newAngle), Math.cos(newAngle), 0);
+    newStart.multiplyScalar(galaxies.engine.PROJ_START_Y);
+
+    var lookAngle = newAngle + this.lookOffset;
+    var distanceFromOldStart = galaxies.utils.flatLength(this.object.position.clone().sub(this.startPos));
+    var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0);
+
+    this.startPos = newStart;
+
+    this.object.position.copy(direction.clone().multiplyScalar(distanceFromOldStart).add(newStart));
 
     if (this.particleEmitter) {
       this.particleEmitter.position.value = this.object.position;
       this.particleEmitter.rotation.value = direction;
     }
 
-    direction.add( direction );
+    direction.multiplyScalar(distanceFromOldStart + 1).add( newStart );
     this.object.lookAt( direction );
-    this.object.rotateOnAxis( new THREE.Vector3(0,1,0), this.spreadAngle );
 
     galaxies.utils.conify( this.object );
   }
