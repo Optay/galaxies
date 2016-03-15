@@ -437,25 +437,23 @@ galaxies.engine.updateBackgroundPlanet = function() {
 
   galaxies.engine.rootObject.add(galaxies.engine.sun);
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
+  galaxies.engine.sunFlares.position.set(0, 0, 0);
 
   var sunTargetScale = 1;
 
   switch (bgPlanetIndex) {
     case 1:
       galaxies.engine.sun.position.set( -135, 240, -101 );
-      galaxies.engine.sunFlares.position.set(0, 0, 1500);
       sunTargetScale = 0.3;
       galaxies.engine.sun.visible = true;
       break;
     case 5:
       galaxies.engine.sun.position.set( -115, 150, -101 );
-      galaxies.engine.sunFlares.position.set(0, 0, 500);
       sunTargetScale = 0.8;
       galaxies.engine.sun.visible = true;
       break;
     case 6:
       galaxies.engine.sun.position.set( 80, 90, -101 );
-      galaxies.engine.sunFlares.position.set(0, 0, 250);
       sunTargetScale = 1;
       galaxies.engine.sun.visible = true;
       break;
@@ -464,16 +462,11 @@ galaxies.engine.updateBackgroundPlanet = function() {
   }
 
   if (galaxies.engine.sun.visible) {
-    galaxies.engine.sun.lookAt(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
-
     galaxies.engine.sun.scale.set(0.1, 0.1, 0.1);
     galaxies.engine.sun.updateMatrixWorld(true);
 
     THREE.SceneUtils.detach(galaxies.engine.sun, galaxies.engine.rootObject, galaxies.engine.scene);
     THREE.SceneUtils.detach(galaxies.engine.sunFlares, galaxies.engine.sun, galaxies.engine.scene);
-
-    var camScenePos = galaxies.engine.camera.localToWorld(new THREE.Vector3());
-    console.log(camScenePos.distanceTo(galaxies.engine.sunFlares.position), camScenePos.distanceTo(galaxies.engine.bgPlanet.position), camScenePos.distanceTo(galaxies.engine.sun.position));
 
     createjs.Tween.removeTweens( galaxies.engine.sun.scale );
     createjs.Tween.get( galaxies.engine.sun.scale )
@@ -983,7 +976,11 @@ galaxies.engine.update = function() {
   // update bg and sun
   var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
   galaxies.engine.bgPlanet.lookAt( cameraScenePos );
-  galaxies.engine.sun.lookAt( cameraScenePos );
+
+  if (galaxies.engine.sun.visible) {
+    galaxies.engine.sun.lookAt(cameraScenePos);
+    galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).normalize().multiplyScalar(100).add(cameraScenePos));
+  }
 
   // update character
   if ( !galaxies.engine.isGameOver ) {

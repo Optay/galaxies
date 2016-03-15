@@ -395,10 +395,7 @@ this.galaxies.Ufo = function() {
     idlePosition = new THREE.Vector3( galaxies.engine.VISIBLE_RADIUS * 1.8, 0, idleZ );//new THREE.Vector3( orbitPosition.x, 0, idleZ );
     //
     
-    console.log( galaxies.engine.VISIBLE_RADIUS );
     laserOrient.scale.set( galaxies.engine.VISIBLE_RADIUS * 1.7, 1, 1);
-    
-    console.log( galaxies.engine.VISIBLE_RADIUS, orbitPosition, idleZ );
     
     lastPosition = idlePosition;
     targetPosition = idlePosition;
