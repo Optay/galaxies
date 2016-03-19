@@ -423,21 +423,15 @@ galaxies.engine.nextLevel = function() {
 }
 
 galaxies.engine.updateBackgroundPlanet = function() {
-  galaxies.engine.rootObject.add( galaxies.engine.bgPlanet );
-  
-  galaxies.engine.bgPlanet.position.set( -50, 120, -100 );
-  galaxies.engine.bgPlanet.updateMatrixWorld(true);
-  THREE.SceneUtils.detach( galaxies.engine.bgPlanet, galaxies.engine.rootObject, galaxies.engine.scene );
-  
-  galaxies.engine.bgPlanet.up = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,1,0) );
-  
   var bgPlanetIndex = (galaxies.engine.planetNumber - 1) % galaxies.resources.bgPlanetTextures.length;
-  console.log( "Setting background planet texture", galaxies.engine.planetNumber, galaxies.resources.bgPlanetTextures.length, bgPlanetIndex );
-  galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[bgPlanetIndex].texture;
+
+  galaxies.engine.rootObject.add( galaxies.engine.bgPlanet );
 
   galaxies.engine.rootObject.add(galaxies.engine.sun);
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
   galaxies.engine.sunFlares.position.set(0, 0, 0);
+  
+  galaxies.engine.bgPlanet.position.set( -50, 120, -100 );
 
   var sunTargetScale = 1;
 
@@ -448,7 +442,8 @@ galaxies.engine.updateBackgroundPlanet = function() {
       galaxies.engine.sun.visible = true;
       break;
     case 5:
-      galaxies.engine.sun.position.set( -115, 150, -101 );
+      galaxies.engine.bgPlanet.position.set( 50, 120, -100 );
+      galaxies.engine.sun.position.set( -80, 120, -101 );
       sunTargetScale = 0.8;
       galaxies.engine.sun.visible = true;
       break;
@@ -460,6 +455,14 @@ galaxies.engine.updateBackgroundPlanet = function() {
     default:
       galaxies.engine.sun.visible = false;
   }
+
+  galaxies.engine.bgPlanet.updateMatrixWorld(true);
+  THREE.SceneUtils.detach( galaxies.engine.bgPlanet, galaxies.engine.rootObject, galaxies.engine.scene );
+  
+  galaxies.engine.bgPlanet.up = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,1,0) );
+
+  console.log( "Setting background planet texture", galaxies.engine.planetNumber, galaxies.resources.bgPlanetTextures.length, bgPlanetIndex );
+  galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[bgPlanetIndex].texture;
 
   if (galaxies.engine.sun.visible) {
     galaxies.engine.sun.scale.set(0.1, 0.1, 0.1);
@@ -979,7 +982,11 @@ galaxies.engine.update = function() {
 
   if (galaxies.engine.sun.visible) {
     galaxies.engine.sun.lookAt(cameraScenePos);
-    galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).normalize().multiplyScalar(100).add(cameraScenePos));
+    galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).multiplyScalar(0.5).add(cameraScenePos));
+
+    var sunScreenPos = galaxies.engine.sun.position.clone().project(galaxies.engine.camera);
+
+    galaxies.engine.light.position.set(sunScreenPos.x, sunScreenPos.y, -1 + sunScreenPos.length() * 0.8);
   }
 
   // update character
@@ -1074,7 +1081,6 @@ galaxies.engine.collide = function( obsA, obsB ) {
 
   return true;
 }
-
 
 
 // Randomize the drift rotation
