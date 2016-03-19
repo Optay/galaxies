@@ -3,7 +3,7 @@
 
 #container {
   padding:0;
-  margin:0;  
+  margin:0;
 }
 
 body {
@@ -12,7 +12,8 @@ body {
   padding: 0;
   overflow: hidden;
   
-  -ms-touch-action: none !important; /* DISABLE DOUBLE-TAP-ZOOM */
+  -ms-touch-action: none; /* DISABLE DOUBLE-TAP-ZOOM */
+  touch-action: none;
 }
 
 .hidden {
