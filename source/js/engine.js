@@ -305,7 +305,6 @@ galaxies.engine.initGame = function() {
   galaxies.engine.player = new galaxies.Player();
   galaxies.engine.rootObject.add( galaxies.engine.player.root );
   
-  
   galaxies.engine.setPowerup();
   
   galaxies.engine.addInputListeners();
@@ -380,6 +379,12 @@ galaxies.engine.initLevel = function() {
     galaxies.engine.starsCollectedRound = 0;
     galaxies.ui.updateStars( galaxies.engine.starsCollectedRound );
 
+    // Update score tracking
+    galaxies.engine.previousTotal = galaxies.engine.score;
+    galaxies.engine.roundScore = 0;
+    galaxies.engine.projectilesLaunchedRound = 0;
+    galaxies.engine.projectilesHitRound = 0;
+
     if (galaxies.engine.levelNumber !== 1) {
       galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
     }
@@ -403,22 +408,36 @@ galaxies.engine.nextLevel = function() {
   galaxies.engine.levelNumber++;
   
   galaxies.engine.clearLevel();
-  
-  // game ends after earth
-  if ( galaxies.engine.planetNumber > 7 ) {
-    galaxies.engine.gameOver( true );
-    return;
-  }
-  
-  
+
   if ( galaxies.engine.roundNumber == 1 ) {
-    galaxies.engine.initRootRotation();
-    galaxies.engine.planetTransition();
-  } else {
-    galaxies.engine.initLevel();
+    var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound;
+
+    galaxies.engine.roundScore = Math.round(galaxies.engine.roundScore * (1 + accuracy) * Math.pow(2, galaxies.engine.starsCollectedRound));
+
+    galaxies.ui.showLevelResults(galaxies.engine.roundScore, accuracy);
   }
-  
-}
+
+  setTimeout(function () {
+    // game ends after earth
+    if ( galaxies.engine.planetNumber > 7 ) {
+      galaxies.engine.gameOver( true );
+      return;
+    }
+
+
+    if ( galaxies.engine.roundNumber == 1 ) {
+      galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
+
+      galaxies.ui.updateScore(galaxies.engine.score);
+
+      galaxies.engine.initRootRotation();
+      galaxies.engine.planetTransition();
+      galaxies.ui.clearLevelResults();
+    } else {
+      galaxies.engine.initLevel();
+    }
+  }, galaxies.engine.roundNumber == 1 ? 6000 : 0);
+};
 
 galaxies.engine.updateBackgroundPlanet = function() {
   var bgPlanetIndex = (galaxies.engine.planetNumber - 1) % galaxies.resources.bgPlanetTextures.length;
@@ -731,7 +750,7 @@ galaxies.engine.shoot = function( indestructible ) {
 galaxies.engine.shoot2 = function() {
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
-  
+
   // Instantiate shot object
   for ( var i=0; i<2; i++ ) {
     var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
@@ -777,7 +796,6 @@ galaxies.engine.shoot3 = function() {
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 
-  
   for ( var i=-1; i<=1; i++ ) {
     // Instantiate shot object
     var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
@@ -1195,6 +1213,10 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.starsCollectedRound = 0;
   galaxies.engine.stars = 0;
   galaxies.engine.score = 0;
+  galaxies.engine.previousTotal = 0;
+  galaxies.engine.roundScore = 0;
+  galaxies.engine.projectilesLaunchedRound = 0;
+  galaxies.engine.projectilesHitRound = 0;
   galaxies.engine.powerupCharge = 0;
   galaxies.engine.powerupCount = 0;
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
@@ -1329,6 +1351,7 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
   
   galaxies.engine.score += value * multiplier;
+  galaxies.engine.roundScore += value * multiplier;
   galaxies.ui.updateScore( galaxies.engine.score );
   
   // The 100 is to reduce scores from 100, 250, 500 to 1, 2.5, 5

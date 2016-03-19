@@ -452,7 +452,83 @@ body {
 }
 .title-on {
   top: 50%;
+}
 
+.level-results {
+  position: absolute;
+  width: 100%;
+  top: 80px;
+  text-align: center;
+
+  transition: opacity $transition-time+1s ease;
+}
+
+.level-results.fade {
+  opacity: 0;
+}
+
+.score-title {
+  .round-score {
+    display: inline-block;
+    width: 6ch;
+    text-align: right;
+  }
+}
+
+.acc-title {
+  position: relative;
+  top: 400px;
+
+  transition: top $transition-time ease;
+
+  .round-acc {
+    display: inline-block;
+    width: 3ch;
+    text-align: right;
+  }
+}
+
+.acc-title-on {
+  top: 0;
+}
+
+.level-done-star {
+  position: relative;
+  margin: 0 8px;
+  display: inline-block;
+
+  background: url('../images/collect_star.png');
+  background-size: cover;
+  background-position: bottom;
+}
+.level-done-star.empty {
+  background-position: top;
+}
+
+.level-done-stars .small-star {
+  width: 32px;
+  height: 32px;
+  margin-top: 32px;
+}
+
+.level-done-stars .large-star {
+  width: 56px;
+  height: 56px;
+}
+
+.level-done-title {
+  transform: scale(50);
+
+  font-family: 'HorizonBT-Regular';
+  font-size: 90px;
+  line-height: 1.2em;
+  color: white;
+
+  transition: transform $transition-time ease;
+}
+
+.level-done-title-on {
+  transform: scale(1);
 }
 
 .browser-recommend {

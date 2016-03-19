@@ -50,6 +50,15 @@ galaxies.ui = (function() {
   var resumeButton = pauseHolder.querySelector(".resume-button");
   var restartButton = pauseHolder.querySelector(".restart-button");
   var quitButton = pauseHolder.querySelector(".quit-button");
+
+  // Level completion items
+  var levelResults = uiHolder.querySelector(".level-results");
+  var scoreStars = [
+      levelResults.querySelector('.large-star'),
+      levelResults.querySelectorAll('.small-star')[0],
+      levelResults.querySelectorAll('.small-star')[1]
+  ];
+  var resultTitle = levelResults.querySelector(".level-done-title");
   
   // game over menu
   var gameOverHolder = uiHolder.querySelector(".game-over-menu");
@@ -374,7 +383,109 @@ galaxies.ui = (function() {
     createjs.Tween.removeTweens( title );
     titleActive = false;
   }
-  
+
+  var showLevelResults = function (roundScore, roundAccuracy) {
+    levelResults.classList.remove("hidden");
+
+    setTimeout(function() {
+      resultTitle.classList.add("level-done-title-on");
+
+      for (var i = 0; i < 3; ++i) {
+        scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
+      }
+    }, 17);
+
+    title.classList.remove("hidden");
+
+    setTimeout(function () {showRoundScore(roundScore, roundAccuracy);}, 1600)
+  };
+
+  var scaleStar = function (star, collected, delay) {
+    var easing = createjs.Ease.getElasticOut(2, 0.3);
+
+    star.style.transform = "scale(0)";
+
+    if (collected) {
+      star.classList.remove("empty");
+    }
+
+    setTimeout(function () {
+      var tween = createjs.Tween.get(star, {override: true})
+          .to({x: 10}, 1000);
+
+      tween.addEventListener("change", function () {
+        if (!tween.duration) {
+          return;
+        }
+
+        var normalizedPosition = tween.position / tween.duration;
+        var scaleValue = easing(normalizedPosition);
+
+        star.style.transform = "scale(" + scaleValue + ")";
+      });
+    }, delay);
+  };
+
+  var showRoundScore = function (roundScore, roundAccuracy) {
+    roundAccuracy = Math.round(roundAccuracy * 100);
+
+    title.innerHTML = '<div class="score-title">SCORE <span class="round-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
+    title.classList.add("title-on");
+
+    var roundScoreElem = title.querySelector(".round-score"),
+        accTitle = title.querySelector(".acc-title"),
+        roundAccElem = accTitle.querySelector(".round-acc");
+
+    var scoreTween = createjs.Tween.get(roundScoreElem)
+        .to({innerHTML: roundScore}, 2500);
+
+    scoreTween.addEventListener("change", function () {
+      if (!scoreTween.duration) {
+        return;
+      }
+
+      var interimScore = "" + Math.round(roundScore * scoreTween.position / scoreTween.duration);
+
+      if (interimScore.length > 3) {
+        interimScore = interimScore.slice(0, -3) + ',' + interimScore.slice(-3);
+      }
+
+      roundScoreElem.innerHTML = interimScore;
+    });
+
+    setTimeout(function () {
+      accTitle.classList.add("acc-title-on");
+
+      var accTween = createjs.Tween.get(roundAccElem)
+          .to({innerHTML: roundAccuracy}, 1250)
+          .wait(1500);
+
+      accTween.addEventListener("change", function () {
+        if (!accTween.duration) {
+          return;
+        }
+
+        roundAccElem.innerHTML = Math.round(roundAccuracy * accTween.position / accTween.duration);
+      });
+    }, 1250);
+  };
+
+  var clearLevelResults = function () {
+    levelResults.classList.add("fade");
+    title.classList.remove("title-on");
+
+    setTimeout(function () {
+      clearTitle();
+      levelResults.classList.add("hidden");
+      levelResults.classList.remove("fade");
+      resultTitle.classList.remove("level-done-title-on");
+
+      for (var i = 0; i < 3; ++i) {
+        scoreStars[i].style.transform = "scale(0)";
+      }
+    }, 1500);
+  };
+
   // Stop event from reaching other listeners.
   // Used to keep ui buttons from causing fire events on underlying game element.
   var blockEvent = function(e) {
@@ -541,6 +652,8 @@ galaxies.ui = (function() {
     hidePauseButton: hidePauseButton,
     showTitle: showTitle,
     clearTitle: clearTitle,
+    showLevelResults: showLevelResults,
+    clearLevelResults: clearLevelResults,
     updateLevel: updateLevel,
     updateTimer: updateTimer,
     updateScore: updateScore,
