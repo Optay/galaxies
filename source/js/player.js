@@ -354,6 +354,13 @@ this.galaxies.Player = function() {
       cloneTeleportSprite.material.rotation = clone.material.rotation;
       cloneTeleportSprite.material.opacity = 0;
       cloneTeleportAnimator.play(-1); // negative loop count will loop indefinitely
+
+      new galaxies.audio.PositionedSound({
+          source: galaxies.audio.getSound('teleportout'),
+          position: galaxies.utils.rootPosition( clone ),
+          baseVolume: 10,
+          loop: false
+      });
       
       createjs.Tween.removeTweens( cloneTeleportSprite.material );
       createjs.Tween.get( cloneTeleportSprite.material )
@@ -409,6 +416,13 @@ this.galaxies.Player = function() {
     cloneTeleportSprite.material.rotation = clone.material.rotation;
     cloneTeleportSprite.material.opacity = 0;
     cloneTeleportAnimator.play(-1); // negative loop count will loop indefinitely
+
+    new galaxies.audio.PositionedSound({
+        source: galaxies.audio.getSound('teleportin'),
+        position: galaxies.utils.rootPosition( clone ),
+        baseVolume: 10,
+        loop: false
+    });
     
     createjs.Tween.removeTweens( cloneTeleportSprite.material );
     createjs.Tween.get( cloneTeleportSprite.material )
