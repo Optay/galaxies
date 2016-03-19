@@ -490,7 +490,7 @@ galaxies.audio.SoundField = function ( buffer ) {
     volumeNode.gain.value = value;
   }
   
-  this.setVolume(0.24); // global music volume. should be a const
+  this.setVolume(0.6); // global music volume. should be a const
 
   
   this.update = function(delta) {
@@ -576,7 +576,7 @@ galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
     galaxies.audio.soundField.setVolume(0);
   } else {
-    galaxies.audio.soundField.setVolume(0.24); // global music volume, should be a const
+    galaxies.audio.soundField.setVolume(0.6); // global music volume, should be a const
   }
 }
 
