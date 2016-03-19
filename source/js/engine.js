@@ -784,7 +784,7 @@ galaxies.engine.shoot3 = function() {
     var projScale = 0.1;
     projMesh.scale.set(projScale, projScale, projScale );
     
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJetGroup() );
+    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJetGroup(i === 0) );
     galaxies.engine.projectiles.push( proj );
       
     // delay adding the projectile and the sound to synchronize with the animation

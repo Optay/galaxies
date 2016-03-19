@@ -614,7 +614,7 @@ galaxies.fx = (function() {
     return purpleTrailGroup.getFromPool();
   };
 
-  var getSmallFlameJetGroup = function () {
+  var getSmallFlameJetGroup = function (longerTail) {
     var smokeTex = new THREE.Texture( galaxies.queue.getResult('smoke') ),
         smallFlameJetGroup = new SPE.Group({
           texture: { value: smokeTex },
@@ -623,7 +623,7 @@ galaxies.fx = (function() {
         smallFlameEmitter = new SPE.Emitter({
           type: SPE.distributions.SPHERE,
           particleCount: 400,
-          maxAge: { value: 0.15, spread: 0.05 },
+          maxAge: { value: (longerTail ? 0.2 : 0.15), spread: 0.05 },
           position: { radius: 0.05, spread: new THREE.Vector3(0.05, 0, 0) },
           velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(2, 2, 2) },
           acceleration: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, 0.4), spread: new THREE.Vector3(0, 0, 0.1) },
