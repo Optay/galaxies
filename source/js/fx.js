@@ -154,24 +154,24 @@ galaxies.fx = (function() {
     // Comet explode particles
     var fireworkSettings = {
       type: SPE.distributions.SPHERE,
-      particleCount: 200,
+      particleCount: 150,
       duration: 0.1,
       maxAge: { value: 0.7,
-                spread: 0.1 },
+                spread: 0.4 },
       position: { radius: 0.6 },
       velocity: { value: new THREE.Vector3(20) },
       acceleration: { value: new THREE.Vector3(-14) },
-      color: { value: new THREE.Color(0.7, 0.7, 0.7), spread: new THREE.Vector3(0.3, 0.3, 0.3) },
-      wiggle: { spread: 5 },
+      color: { value: [new THREE.Color(1.4, 0.6, 0.6), new THREE.Color(1.4, 1.4, 0.6), new THREE.Color(0.6, 1.4, 0.6), new THREE.Color(0.6, 1.4, 1.4), new THREE.Color(0.6, 0.6, 1.4), new THREE.Color(1.4, 0.6, 1.4)] },
+      wiggle: { spread: 10 },
       opacity: { value: [1, 1, 1, 0.1] },
-      size: { value: [4, 2.5] }
+      size: { value: [3.5, 1.5] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
     starTexture.needsUpdate = true;
     fireworksGroup = new SPE.Group({
       texture: { value: starTexture },
-      maxParticleCount: 2000
+      maxParticleCount: 1500
     });
     fireworksGroup.addPool( 3, fireworkSettings, true ); // 3
     
