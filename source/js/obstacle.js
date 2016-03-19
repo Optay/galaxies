@@ -46,9 +46,12 @@ galaxies.Obstacle = function ( props ) {
   if ( this.passSoundId !== '' ) {
     this.passSound = new galaxies.audio.SimpleSound({
       source: galaxies.audio.getSound( this.passSoundId ),
-      baseVolume: 1,
-      loop: true,
+      baseVolume: 0,
+      loop: true
     });
+
+    createjs.Tween.get(this.passSound)
+        .to({volume: 1}, 2000);
   }
   
   

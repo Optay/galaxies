@@ -378,6 +378,9 @@ galaxies.audio.SimpleSound = function( props ) {
     function (value) {
       this._volume = value;
       this.preAmp.gain.value = this._volume;
+    },
+    get: function() {
+      return this._volume;
     }
   });
   if ( typeof( props.baseVolume ) !=='number' ) { props.baseVolume = 1; }
