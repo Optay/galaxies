@@ -439,6 +439,7 @@ body {
   left:0;
   right:0;
   margin: 70px auto;
+  padding-top: 50px;
   
   top: 100%;
   transition: top $transition-time ease;
@@ -451,6 +452,7 @@ body {
 }
 .title-on {
   top: 50%;
+
 }
 
 .browser-recommend {
