@@ -65,6 +65,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden'];
+galaxies.engine.currentPowerup = '';
 galaxies.engine.powerupMessagesShown = [];
 
 galaxies.engine.PLANET_RADIUS = 1;
@@ -1434,9 +1435,14 @@ galaxies.engine.setPowerup = function ( newPowerup ) {
     }
     return;
   }
-  
-  galaxies.engine.player.setPowerup( newPowerup );
+
   galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
+
+  if (newPowerup === galaxies.engine.currentPowerup) {
+    return;
+  }
+
+  galaxies.engine.player.setPowerup( newPowerup );
 
   var powerupMessage = '';
   
