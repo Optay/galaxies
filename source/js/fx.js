@@ -156,15 +156,15 @@ galaxies.fx = (function() {
       type: SPE.distributions.SPHERE,
       particleCount: 150,
       duration: 0.1,
-      maxAge: { value: 0.7,
-                spread: 0.4 },
+      maxAge: { value: 0.6,
+                spread: 0.2 },
       position: { radius: 0.6 },
-      velocity: { value: new THREE.Vector3(20) },
-      acceleration: { value: new THREE.Vector3(-14) },
+      velocity: { value: new THREE.Vector3(12) },
+      acceleration: { value: new THREE.Vector3(-7) },
       color: { value: [new THREE.Color(1.4, 0.6, 0.6), new THREE.Color(1.4, 1.4, 0.6), new THREE.Color(0.6, 1.4, 0.6), new THREE.Color(0.6, 1.4, 1.4), new THREE.Color(0.6, 0.6, 1.4), new THREE.Color(1.4, 0.6, 1.4)] },
-      wiggle: { spread: 10 },
+      wiggle: { spread: 5 },
       opacity: { value: [1, 1, 1, 0.1] },
-      size: { value: [3.5, 1.5] }
+      size: { value: [1.3, 0.4] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
@@ -182,10 +182,10 @@ galaxies.fx = (function() {
       particleCount: 300,
       duration: 0.8,
       maxAge: { value: 0.1, spread: 0.1 },
-      position: { radius: 5, spread: new THREE.Vector3(5, 0, 0) },
+      position: { radius: 2, spread: new THREE.Vector3(2, 0, 0) },
       color: { value: new THREE.Color('white') },
       opacity: { value: [1, 0] },
-      size: { value: 1.5 }
+      size: { value: 0.8 }
     };
 
     sparkleGroup = new SPE.Group({
