@@ -731,6 +731,8 @@ galaxies.engine.shoot = function( indestructible ) {
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 
+  ++galaxies.engine.projectilesLaunchedRound;
+
   // Instantiate shot object
   var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
   var projScale = 0.1;
@@ -738,6 +740,8 @@ galaxies.engine.shoot = function( indestructible ) {
   
   var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null );
   galaxies.engine.projectiles.push( proj );
+
+  galaxies.utils.addShotGroup(proj);
     
   // play animation
   galaxies.engine.player.animateShoot();
@@ -753,6 +757,10 @@ galaxies.engine.shoot2 = function() {
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 
+  ++galaxies.engine.projectilesLaunchedRound;
+
+  var projs = [];
+
   // Instantiate shot object
   for ( var i=0; i<2; i++ ) {
     var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
@@ -761,11 +769,16 @@ galaxies.engine.shoot2 = function() {
     
     var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle + (Math.PI * i), 0, false, galaxies.fx.getPurpleTrailEmitter() );
     galaxies.engine.projectiles.push( proj );
+
+    projs.push(proj);
       
     // delay adding the projectile and the sound to synchronize with the animation
     createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
     .call( galaxies.engine.shootSync, [proj, Math.PI * i], this );
   }
+
+  galaxies.utils.addShotGroup(projs);
+
   // play animation
   galaxies.engine.player.animateShoot();
   createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
@@ -798,6 +811,10 @@ galaxies.engine.shoot3 = function() {
   if ( galaxies.engine.shotTimer>0 ) { return; }
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 
+  ++galaxies.engine.projectilesLaunchedRound;
+
+  var projs = [];
+
   for ( var i=-1; i<=1; i++ ) {
     // Instantiate shot object
     var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
@@ -806,10 +823,15 @@ galaxies.engine.shoot3 = function() {
     
     var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJetGroup(i === 0) );
     galaxies.engine.projectiles.push( proj );
+
+    projs.push(proj);
       
     // delay adding the projectile and the sound to synchronize with the animation
     createjs.Tween.get( galaxies.engine.player.sprite ).wait(250).call( galaxies.engine.shootSync, [proj], this );
   }
+
+  galaxies.utils.addShotGroup(projs);
+
   // play animation
   galaxies.engine.player.animateShoot();
   createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)

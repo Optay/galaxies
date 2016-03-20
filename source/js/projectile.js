@@ -13,8 +13,6 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
   this.angularSpeed = 10;
   this.isExpired = false;
 
-  ++galaxies.engine.projectilesLaunchedRound;
-
   if (particleEmitterOrGroup) {
     if (particleEmitterOrGroup instanceof SPE.Emitter) {
       this.particleEmitter = particleEmitterOrGroup;
@@ -85,8 +83,12 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
   this.hit = function() {
     galaxies.fx.showHit( this.object.position );
 
-    ++galaxies.engine.projectilesHitRound;
-   
+    if (galaxies.utils.inShotGroup(this)) {
+      ++galaxies.engine.projectilesHitRound;
+
+      galaxies.utils.removeConnectedShotGroup(this);
+    }
+
     if ( !this.indestructible ) {
       this.destroy();
     }
@@ -98,6 +100,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
     this.lifeTimer = this.PROJECTILE_LIFE;
   }
   this.remove = function() {
+    galaxies.utils.removeConnectedShotGroup(this);
     if ( this.object.parent!=null) {
       this.object.parent.remove(this.object);
     }

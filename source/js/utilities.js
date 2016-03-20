@@ -11,6 +11,41 @@ galaxies.utils = this.galaxies.utils || {};
 
 galaxies.utils.PI_2 = Math.PI * 2;
 
+galaxies.utils.shotGroups = [];
+
+galaxies.utils.addShotGroup = function(shots) {
+    if (!(shots instanceof Array)) {
+        shots = [shots];
+    }
+
+    galaxies.utils.shotGroups.push(shots);
+};
+
+galaxies.utils.getConnectedShotGroup = function(shot) {
+    var shotGroups = galaxies.utils.shotGroups,
+        numShotGroups = shotGroups.length;
+
+    for (var i = 0; i < numShotGroups; ++i) {
+        if (shotGroups[i].some(function (item) {return item === shot;})) {
+            return i;
+        }
+    }
+
+    return -1;
+};
+
+galaxies.utils.inShotGroup = function(shot) {
+    return galaxies.utils.getConnectedShotGroup(shot) > -1;
+};
+
+galaxies.utils.removeConnectedShotGroup = function(shot) {
+    var shotGroup = galaxies.utils.getConnectedShotGroup(shot);
+
+    if (shotGroup > -1) {
+        galaxies.utils.shotGroups.splice(shotGroup, 1);
+    }
+};
+
 // A linear tapered sinusoidal easing function.
 // Used for shaking camera.
 galaxies.utils.getShakeEase = function ( frequency ) {
