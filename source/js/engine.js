@@ -421,7 +421,8 @@ galaxies.engine.nextLevel = function() {
   setTimeout(function () {
     // game ends after earth
     if ( galaxies.engine.planetNumber > 7 ) {
-      galaxies.engine.gameOver( true );
+      galaxies.ui.clearLevelResults();
+      setTimeout(function () {galaxies.engine.gameOver( true );}, 1500);
       return;
     }
 
