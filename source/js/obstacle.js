@@ -39,6 +39,8 @@ galaxies.Obstacle = function ( props ) {
     } else { console.log("Obstacle attempting to set unknown property.", propName); }
   }
   
+  this.age = 0;
+  
   // derived values
   this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
   
@@ -49,14 +51,6 @@ galaxies.Obstacle = function ( props ) {
       baseVolume: 0,
       loop: true
     });
-
-    this.tweeningSound = true;
-
-    createjs.Tween.get(this.passSound)
-        .to({volume: 1.7}, 2000)
-        .call((function () {
-          this.tweeningSound = false;
-        }).bind(this));
   }
   
   
@@ -113,6 +107,7 @@ galaxies.Obstacle.prototype.reset = function() {
 }
 
 galaxies.Obstacle.prototype.update = function( delta ) {
+  this.age += delta;
   
   // creates a nice curve that starts at 1 and increase to SPEED_SCALE
   // steeply as the obstacle approaches the planet
@@ -147,9 +142,14 @@ galaxies.Obstacle.prototype.update = function( delta ) {
     
     
     // idle sound level
-    if ( this.passSound !== null && !this.tweeningSound ) {
+    if ( this.passSound !== null ) {
       var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
       soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
+      
+      if (this.age < 2) {
+        soundLevel *= this.age / 2;
+      }
+      
       this.passSound.volume = soundLevel;
     }
     //
