@@ -50,8 +50,13 @@ galaxies.Obstacle = function ( props ) {
       loop: true
     });
 
+    this.tweeningSound = true;
+
     createjs.Tween.get(this.passSound)
-        .to({volume: 1}, 2000);
+        .to({volume: 1.7}, 2000)
+        .call((function () {
+          this.tweeningSound = false;
+        }).bind(this));
   }
   
   
@@ -142,7 +147,7 @@ galaxies.Obstacle.prototype.update = function( delta ) {
     
     
     // idle sound level
-    if ( this.passSound !== null ) {
+    if ( this.passSound !== null && !this.tweeningSound ) {
       var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
       soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
       this.passSound.volume = soundLevel;
