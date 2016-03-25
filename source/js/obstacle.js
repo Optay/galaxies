@@ -39,8 +39,6 @@ galaxies.Obstacle = function ( props ) {
     } else { console.log("Obstacle attempting to set unknown property.", propName); }
   }
   
-  this.age = 0;
-  
   // derived values
   this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
   
@@ -83,7 +81,8 @@ galaxies.Obstacle.prototype.updatePosition = function() {
 }
 
 galaxies.Obstacle.prototype.reset = function() {
-  
+  this.age = 0;
+
   this.angle = Math.random()*Math.PI*2;
   this.radius = galaxies.engine.OBSTACLE_START_DISTANCE;
   this.updatePosition();
@@ -102,6 +101,10 @@ galaxies.Obstacle.prototype.reset = function() {
   this.tumbleAxis.set( Math.random()*2-1, Math.random()*2 -1, Math.random()*2 -1 );
   this.tumbleAxis.normalize();
   this.tumbleSpeed = this.baseTumbleSpeed;
+
+  if ( this.passSound !== null ) {
+    this.passSound.volume = 0;
+  }
   
   galaxies.engine.rootObject.add( this.object );
 }
