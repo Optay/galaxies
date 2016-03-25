@@ -392,7 +392,7 @@ galaxies.engine.initLevel = function() {
     }
   } else if (galaxies.engine.roundNumber === 3) {
     galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
-    galaxies.audio.soundField.volume = 0.8;
+    galaxies.audio.soundField.volume = 1;
   }
   
 
