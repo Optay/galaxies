@@ -388,9 +388,11 @@ galaxies.engine.initLevel = function() {
 
     if (galaxies.engine.levelNumber !== 1) {
       galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
+      galaxies.audio.soundField.volume = 0.6;
     }
   } else if (galaxies.engine.roundNumber === 3) {
     galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
+    galaxies.audio.soundField.volume = 0.8;
   }
   
 
