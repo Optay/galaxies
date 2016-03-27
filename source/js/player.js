@@ -249,8 +249,8 @@ this.galaxies.Player = function() {
   var cloneTeleportSprite = new THREE.Sprite( cloneTeleportMaterial );
   cloneTeleportSprite.position.z = 0.1; // must appear in front of base character sprite      
   
-  
-  
+  // Clone AI data
+  var cloneShotCooldown = 0;
   
   
   
@@ -265,9 +265,6 @@ this.galaxies.Player = function() {
   }
   var animateShoot = function() {
     activeAnimator.play();
-    if ( (clone.parent !== null) && ( !teleportingClone ) ) {
-      cloneAnimator.play();
-    }
   }
   var animateHit = function() {
     if ( !createjs.Tween.hasActiveTweens( character.position ) ) {
@@ -301,6 +298,51 @@ this.galaxies.Player = function() {
     if ( clone.parent !== null ) {
       cloneAnimator.update(delta);
       clone.material.rotation = Math.PI + angle;
+      cloneShotCooldown -= delta;
+
+      if (cloneShotCooldown <= 0 && !teleportingClone) {
+        var checkAngle = angle + Math.PI,
+            checkVector = new THREE.Vector2(-Math.sin(checkAngle), Math.cos(checkAngle)),
+            maxDistSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 0.95, 2),
+            objectInPath = galaxies.engine.obstacles.some(function (obs) {
+              var obsPos = obs.object.position,
+                  flatDistSq = galaxies.utils.flatLengthSqr(obsPos);
+
+              if (flatDistSq > maxDistSq) {
+                  return false;
+              }
+
+              var checkPos = checkVector.clone().multiplyScalar(Math.sqrt(flatDistSq)),
+                  diff = new THREE.Vector2(obsPos.x - checkPos.x, obsPos.y - checkPos.y).lengthSq();
+
+              if (diff <= Math.pow(obs.hitThreshold * 0.8, 2)) {
+                obs.alreadyTargeted = true;
+
+                return true;
+              }
+
+              return false;
+            });
+
+        if (objectInPath) {
+            var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
+            projMesh.scale.set(0.1, 0.1, 0.1);
+
+            var proj = new galaxies.Projectile( projMesh, angle + Math.PI, 0, false, galaxies.fx.getPurpleTrailEmitter() );
+            galaxies.engine.projectiles.push( proj );
+
+            // delay adding the projectile and the sound to synchronize with the animation
+            createjs.Tween.get( character ).wait(250)
+                .call( galaxies.engine.shootSync, [proj, Math.PI], this );
+
+            createjs.Tween.get( character ).wait(250)
+                .call( galaxies.engine.shootSound );
+
+            cloneAnimator.play();
+
+            cloneShotCooldown = galaxies.engine.SHOOT_TIME;
+        }
+      }
     }
     if ( teleporting ) {
       teleportAnimator.update( delta );
