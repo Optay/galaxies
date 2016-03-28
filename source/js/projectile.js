@@ -23,6 +23,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
 
   this.object = new THREE.Object3D();
   this.object.up.set(0,0,1);
+  this.lastPos = this.object.position.clone();
   
   this.indestructible = false;
   if ( typeof(indestructible) === 'boolean' ) {
@@ -124,6 +125,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
     }
   }
   this.update = function( delta ) {
+    this.lastPos = this.object.position.clone();
     this.object.translateZ( this.PROJECTILE_SPEED * delta );
     if (this.particleEmitter) {
       this.particleEmitter.position.value = this.object.position;

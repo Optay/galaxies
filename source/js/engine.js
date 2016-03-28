@@ -974,24 +974,40 @@ galaxies.engine.update = function() {
       }
     } else if (numProjectiles === 1) {
       var proj = projectiles[0],
-          other = notProjectiles[0];
+          other = notProjectiles[0],
+          projLine = proj.object.position.clone().sub(proj.lastPos),
+          isUFO = other === galaxies.engine.ufo,
+          ufoPosition, otherLine, scalar, checkPoint;
 
-      if (galaxies.engine.obstacles.indexOf(other) !== -1) {
-        if (proj.object.position.distanceToSquared(other.object.position) <= Math.pow(other.hitThreshold, 2)) {
+      if (isUFO) {
+        ufoPosition = other.object.localToWorld( new THREE.Vector3() );
+        ufoPosition = galaxies.engine.rootObject.worldToLocal( ufoPosition );
+
+        otherLine = ufoPosition.sub(proj.lastPos);
+      } else {
+        otherLine = other.object.position.clone().sub(proj.lastPos)
+      }
+
+      otherLine.projectOnVector(projLine);
+
+      scalar = otherLine.clone().divide(projLine);
+      scalar = Math.min(Math.max(scalar.x || scalar.y || scalar.z, 0), 1);
+
+      checkPoint = proj.lastPos.clone().add(projLine.multiplyScalar(scalar));
+
+      if (isUFO) {
+        if (ufoPosition.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
+          other.hit( false );
+          proj.hit();
+        }
+      } else if (galaxies.engine.obstacles.indexOf(other) !== -1) {
+        if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
           other.hit(proj.object.position, 1, proj.indestructible);
           proj.hit();
         }
       } else if (galaxies.engine.neutrals.indexOf(other) !== -1) {
-        if (proj.object.position.distanceToSquared( other.object.position ) <= Math.pow(other.hitThreshold, 2)) {
+        if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
           other.hit();
-          proj.hit();
-        }
-      } else if (other === galaxies.engine.ufo) {
-        var ufoPosition = other.object.localToWorld( new THREE.Vector3() );
-        ufoPosition = galaxies.engine.rootObject.worldToLocal( ufoPosition );
-
-        if (proj.object.position.distanceToSquared( ufoPosition ) <= Math.pow(other.hitThreshold, 2)) {
-          other.hit( false );
           proj.hit();
         }
       }

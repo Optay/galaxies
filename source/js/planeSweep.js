@@ -52,11 +52,16 @@ galaxies.PlaneSweep.prototype = {
                 } while (swapped);
             },
             getBubbleCompare = function(axis) {
-                return function (a, b) {
-                    var aVal = a.object.position[axis] - (a.hitThreshold || 0),
-                        bVal = b.object.position[axis] - (b.hitThreshold || 0);
+                var getItemVal = function (item) {
+                    if (item instanceof galaxies.Projectile) {
+                        return Math.min(item.object.position[axis], item.lastPos[axis]);
+                    } else {
+                        return item.object.position[axis] - (item.hitThreshold || 0);
+                    }
+                };
 
-                    return bVal < aVal;
+                return function (a, b) {
+                    return getItemVal(b) < getItemVal(a);
                 };
             };
 
@@ -67,19 +72,33 @@ galaxies.PlaneSweep.prototype = {
     potentialCollisions: function () {
         var xOverlaps, yOverlaps,
             getOverlaps = function(list, axis) {
-                var listSize = list.length,
+                var getItemMinVal = function(item) {
+                        if (item instanceof galaxies.Projectile) {
+                            return Math.min(item.object.position[axis], item.lastPos[axis]);
+                        } else {
+                            return item.object.position[axis] - (item.hitThreshold || 0);
+                        }
+                    },
+                    getItemMaxVal = function(item) {
+                        if (item instanceof galaxies.Projectile) {
+                            return Math.max(item.object.position[axis], item.lastPos[axis]);
+                        } else {
+                            return item.object.position[axis] + (item.hitThreshold || 0);
+                        }
+                    },
+                    listSize = list.length,
                     listSizeM1 = listSize - 1,
                     pairs = [],
                     i, j, checkVal, baseItem, checkItem;
 
                 for (i = 0; i < listSizeM1; ++i) {
                     baseItem = list[i];
-                    checkVal = baseItem.object.position[axis] + (baseItem.hitThreshold || 0);
+                    checkVal = getItemMaxVal(baseItem);
 
                     for (j = i + 1; j < listSize; ++j) {
                         checkItem = list[j];
 
-                        if (checkItem.object.position[axis] - (checkItem.hitThreshold || 0) > checkVal) {
+                        if (getItemMinVal(checkItem) > checkVal) {
                             break;
                         } else {
                             pairs.push([baseItem, checkItem]);
