@@ -924,13 +924,18 @@ galaxies.engine.update = function() {
   galaxies.engine.planeSweep.update();
 
   galaxies.engine.planeSweep.potentialCollisions().forEach(function (collisionPair) {
-    var projectiles = collisionPair.filter(function (item) {
-          return item instanceof galaxies.Projectile;
-        }),
-        notProjectiles = collisionPair.filter(function (item) {
-          return projectiles.indexOf(item) === -1;
-        }),
-        numProjectiles = projectiles.length;
+    var projectiles = [],
+        notProjectiles = [],
+        numProjectiles = 0;
+
+    collisionPair.forEach(function (item) {
+      if (item instanceof galaxies.Projectile) {
+        projectiles.push(item);
+        ++numProjectiles;
+      } else {
+        notProjectiles.push(item);
+      }
+    });
 
     if (numProjectiles === 0) {
       var obsA = notProjectiles[0],

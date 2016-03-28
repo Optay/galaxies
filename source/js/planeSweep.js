@@ -79,7 +79,7 @@ galaxies.PlaneSweep.prototype = {
                     for (j = i + 1; j < listSize; ++j) {
                         checkItem = list[j];
 
-                        if (checkItem.object.position[axis] - (baseItem.hitThreshold || 0) > checkVal) {
+                        if (checkItem.object.position[axis] - (checkItem.hitThreshold || 0) > checkVal) {
                             break;
                         } else {
                             pairs.push([baseItem, checkItem]);
