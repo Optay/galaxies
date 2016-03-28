@@ -293,6 +293,8 @@ galaxies.engine.initGame = function() {
   
   galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
+
+  galaxies.engine.planeSweep = new galaxies.PlaneSweep();
   
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
@@ -854,139 +856,142 @@ galaxies.engine.update = function() {
 
   if ( delta === 0 ) { galaxies.engine.stats.end(); return; } // paused!
   if ( delta > 0.25 ) { delta = 0.25; } // Cap simulation at 4 ticks/second delta to prevent projectiles from passing through objects.
-  
-  // Test for hits, projectiles and ricochets
+
   var activeObstacleCount = 0;
-  for (var iObs=0, iLen = galaxies.engine.obstacles.length; iObs<iLen; iObs++ ){
-    var obstacleI = galaxies.engine.obstacles[iObs];
-    if (obstacleI.state === 'inactive') {
-      galaxies.engine.inactiveObstacles.push( obstacleI );
+
+  galaxies.engine.obstacles.forEach(function (obstacle) {
+    if (obstacle.state === "inactive") {
+      galaxies.engine.inactiveObstacles.push(obstacle);
     } else {
-      activeObstacleCount++;
+      ++activeObstacleCount;
+      obstacle.update(delta);
     }
-    
-    if ( (obstacleI.state === 'inactive') || ( obstacleI.state === 'waiting' )) { continue; }
-    for ( var jObs = (iObs+1), jLen = galaxies.engine.obstacles.length; jObs<jLen; jObs++ ) {
-      var obstacleJ = galaxies.engine.obstacles[jObs];
-      if ( (obstacleJ.state === 'inactive') || ( obstacleJ.state === 'waiting' )) { continue; }
-      
-      var dist = obstacleI.object.position.distanceTo( obstacleJ.object.position );
-      if ( dist < (obstacleI.hitThreshold + obstacleJ.hitThreshold) ) {
-        if ( (obstacleI.state!=='ricocheting') && (obstacleJ.state!=='ricocheting') ) {
-         
+  });
+
+  galaxies.engine.neutrals.forEach(function (neutral) {
+    neutral.update(delta);
+  });
+
+  var expiredProjectiles = [];
+
+  galaxies.engine.projectiles.forEach(function (proj) {
+    proj.update( delta );
+
+    galaxies.utils.conify( proj.object );
+
+    if ( proj.isExpired ) {
+      expiredProjectiles.push( proj );
+    }
+  });
+
+  galaxies.engine.inactiveObstacles.forEach(function (obstacle) {
+    galaxies.engine.planeSweep.remove(obstacle);
+
+    var obsIdx = galaxies.engine.obstacles.indexOf(obstacle);
+
+    if (obsIdx !== -1) {
+      galaxies.engine.obstacles.splice(obsIdx, 1);
+    }
+
+    galaxies.engine.obstaclePool[obstacle.type].push(obstacle);
+  });
+
+  galaxies.engine.inactiveNeutrals.forEach(function (neutral) {
+    galaxies.engine.planeSweep.remove(neutral);
+
+    var neutIdx = galaxies.engine.neutrals.indexOf(neutral);
+
+    if (neutIdx !== -1) {
+      galaxies.engine.neutrals.splice(neutIdx, 1);
+    }
+  });
+
+  expiredProjectiles.forEach(function (proj) {
+    galaxies.engine.planeSweep.remove(proj);
+
+    var projIdx = galaxies.engine.projectiles.indexOf(proj);
+
+    if (projIdx !== -1) {
+      galaxies.engine.projectiles.splice(projIdx, 1);
+    }
+
+    proj.remove();
+  });
+
+  galaxies.engine.inactiveObstacles = [];
+  galaxies.engine.inactiveNeutrals = [];
+
+  galaxies.engine.planeSweep.update();
+
+  galaxies.engine.planeSweep.potentialCollisions().forEach(function (collisionPair) {
+    var projectiles = collisionPair.filter(function (item) {
+          return item instanceof galaxies.Projectile;
+        }),
+        notProjectiles = collisionPair.filter(function (item) {
+          return projectiles.indexOf(item) === -1;
+        }),
+        numProjectiles = projectiles.length;
+
+    if (numProjectiles === 0) {
+      var obsA = notProjectiles[0],
+          obsB = notProjectiles[1];
+
+      if (galaxies.engine.obstacles.indexOf(obsA) !== -1 && galaxies.engine.obstacles.indexOf(obsB) !== -1) {
+        var distSq = obsA.object.position.distanceToSquared(obsB.object.position);
+
+        if (distSq <= Math.pow(obsA.hitThreshold + obsB.hitThreshold, 2)) {
           // Collide obstacles to update velocities
-          galaxies.engine.collide( obstacleI, obstacleJ );
-          
+          galaxies.engine.collide( obsA, obsB );
+
           // Push overlapping obstacles apart
           // This is done in cartesian coordinates using object positions.
           // Angle and radial position is then set from the udpated object position.
-          
-          var overlap = (obstacleI.hitThreshold + obstacleJ.hitThreshold) - dist;
-          
-          var shift = obstacleJ.object.position.clone();
-          shift.sub( obstacleI.object.position );
+
+          var overlap = (obsA.hitThreshold + obsB.hitThreshold) - Math.sqrt(distSq);
+
+          var shift = obsB.object.position.clone();
+          shift.sub( obsA.object.position );
           if ( shift.length() === 0 ) {
             shift.set( THREE.Math.randFloatSpread(1), THREE.Math.randFloatSpread(1), 0 );
             shift.setZ( galaxies.utils.getConifiedDepth( shift ) );
           }
           shift.setLength( overlap/2 );
-          
-          obstacleI.object.position.sub( shift );
-          obstacleJ.object.position.add( shift );
-          
-          obstacleI.angle = Math.atan2( obstacleI.object.position.y, obstacleI.object.position.x );
-          obstacleI.radius = Math.sqrt( Math.pow( obstacleI.object.position.y, 2 ) + Math.pow( obstacleI.object.position.x, 2 ) );
-          
-          obstacleJ.angle = Math.atan2( obstacleJ.object.position.y, obstacleJ.object.position.x );
-          obstacleJ.radius = Math.sqrt( Math.pow( obstacleJ.object.position.y, 2 ) + Math.pow( obstacleJ.object.position.x, 2 ) );
-        
-        } else if ( (obstacleI.isActive) && (obstacleJ.isActive) ) {
-          // Cache values for correct simultaneous behavior.
-          var jRic = obstacleJ.ricochetCount;
-          var iRic = obstacleI.ricochetCount;
-          var jPos = obstacleJ.object.position.clone();
-          var iPos = obstacleI.object.position.clone();
-          obstacleJ.hit( iPos, iRic );
-          obstacleI.hit( jPos, jRic );
+
+          obsA.object.position.sub( shift );
+          obsB.object.position.add( shift );
+
+          obsA.angle = Math.atan2( obsA.object.position.y, obsA.object.position.x );
+          obsA.radius = Math.sqrt( Math.pow( obsA.object.position.y, 2 ) + Math.pow( obsA.object.position.x, 2 ) );
+
+          obsB.angle = Math.atan2( obsB.object.position.y, obsB.object.position.x );
+          obsB.radius = Math.sqrt( Math.pow( obsB.object.position.y, 2 ) + Math.pow( obsB.object.position.x, 2 ) );
         }
       }
-      
-    }
-    for (var iProj=0, projLen = galaxies.engine.projectiles.length; iProj<projLen; iProj++ ) {
-      var proj = galaxies.engine.projectiles[iProj];
-      if ( obstacleI.isActive && (proj.object.position.distanceTo( obstacleI.object.position ) < obstacleI.hitThreshold ) ) {
-        obstacleI.hit( proj.object.position, 1, proj.indestructible );
-        proj.hit();
+    } else if (numProjectiles === 1) {
+      var proj = projectiles[0],
+          other = notProjectiles[0];
+
+      if (galaxies.engine.obstacles.indexOf(other) !== -1) {
+        if (proj.object.position.distanceToSquared(other.object.position) <= Math.pow(other.hitThreshold, 2)) {
+          other.hit(proj.object.position, 1, proj.indestructible);
+          proj.hit();
+        }
+      } else if (galaxies.engine.neutrals.indexOf(other) !== -1) {
+        if (proj.object.position.distanceToSquared( other.object.position ) <= Math.pow(other.hitThreshold, 2)) {
+          other.hit();
+          proj.hit();
+        }
+      } else if (other === galaxies.engine.ufo) {
+        var ufoPosition = other.object.localToWorld( new THREE.Vector3() );
+        ufoPosition = galaxies.engine.rootObject.worldToLocal( ufoPosition );
+
+        if (proj.object.position.distanceToSquared( ufoPosition ) <= Math.pow(other.hitThreshold, 2)) {
+          other.hit( false );
+          proj.hit();
+        }
       }
     }
-  }
-  if ( galaxies.engine.ufo.isHittable ) {
-    for (var iProj=0, projLen = galaxies.engine.projectiles.length; iProj<projLen; iProj++ ) {
-      var proj = galaxies.engine.projectiles[iProj];
-      var ufoRootPosition = galaxies.engine.ufo.object.localToWorld( new THREE.Vector3() );
-      ufoRootPosition = galaxies.engine.rootObject.worldToLocal( ufoRootPosition );
-      if ( proj.object.position.distanceTo( ufoRootPosition ) < galaxies.engine.ufo.hitThreshold ) {
-        galaxies.engine.ufo.hit( false );
-        proj.hit();
-      }
-    }
-  }
-  // Neutral objects
-  for (var i=0, iLen = galaxies.engine.neutrals.length; i<iLen; i++ ){
-    var neutral = galaxies.engine.neutrals[i];
-    for (var iProj=0, projLen = galaxies.engine.projectiles.length; iProj<projLen; iProj++ ) {
-      var proj = galaxies.engine.projectiles[iProj];
-      if ( neutral.isActive && (proj.object.position.distanceTo( neutral.object.position ) < neutral.hitThreshold) ) {
-        neutral.hit();
-        proj.hit();
-      }
-    }
-    
-  }
-  
-  
-  // Remove inactive obstacles
-  for (var i=0; i<galaxies.engine.inactiveObstacles.length; i++ ) {
-    var inactive = galaxies.engine.inactiveObstacles[i];
-    galaxies.engine.obstacles.splice( galaxies.engine.obstacles.indexOf( inactive ), 1 );
-    galaxies.engine.obstaclePool[inactive.type].push( inactive );
-  }
-  galaxies.engine.inactiveObstacles = [];
-  
-  // Update obstacles
-  for (var i=0, len = galaxies.engine.obstacles.length; i<len; i++ ) {
-    var obstacle = galaxies.engine.obstacles[i]
-    obstacle.update( delta );
-  }
-  
-  // Update neutrals
-  for (var i=0, iLen = galaxies.engine.inactiveNeutrals.length; i<iLen; i++ ){
-    var index = galaxies.engine.neutrals.indexOf( galaxies.engine.inactiveNeutrals[i] );
-    if ( index >=0 ) {
-      galaxies.engine.neutrals.splice( index, 1 );
-    }
-  }
-  galaxies.engine.inactiveNeutrals = [];
-  for (var i=0, iLen = galaxies.engine.neutrals.length; i<iLen; i++ ){
-    var neutral = galaxies.engine.neutrals[i];
-    neutral.update(delta);
-  }
-  
-  // Update projectiles
-  var expiredProjectiles = [];
-  for( var i=0, len = galaxies.engine.projectiles.length; i<len; i++ ){
-    var proj = galaxies.engine.projectiles[i];
-    proj.update( delta );
-    galaxies.utils.conify( proj.object );
-    if ( proj.isExpired ) {
-      expiredProjectiles.push( proj );
-    }
-  }
-  for ( var i=0, len = expiredProjectiles.length; i<len; i++ ) {
-    var proj = expiredProjectiles[i];
-    galaxies.engine.projectiles.splice( galaxies.engine.projectiles.indexOf(proj), 1);
-    proj.remove();
-  }
+  });
   
   if ( galaxies.engine.shotTimer>0) { galaxies.engine.shotTimer -= delta; }
   if ( galaxies.engine.isFiring ) {

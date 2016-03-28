@@ -104,6 +104,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
     if ( this.object.parent!=null) {
       this.object.parent.remove(this.object);
     }
+    galaxies.engine.planeSweep.remove(this);
     if (this.particleEmitter) {
       this.particleEmitter.disable();
       this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
@@ -116,6 +117,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
   this.addToScene = function() {
     if (!this.isExpired) {
       galaxies.engine.rootObject.add( this.object );
+      galaxies.engine.planeSweep.add(this);
       if (this.particleEmitter) {
         this.particleEmitter.enable();
       }

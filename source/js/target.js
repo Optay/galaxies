@@ -67,6 +67,7 @@ galaxies.Capsule = function( isHeart ) {
   this.object.add( this.model );
   galaxies.engine.rootObject.add( this.object );
   galaxies.engine.neutrals.push(this);
+  galaxies.engine.planeSweep.add(this);
 
   this.hitThreshold = 0.3;
   
@@ -217,6 +218,7 @@ galaxies.Star = function( angle ) {
   
   galaxies.engine.rootObject.add( this.object );
   galaxies.engine.neutrals.push(this);
+  galaxies.engine.planeSweep.add(this);
   
   var distance = galaxies.engine.VISIBLE_RADIUS * 0.98;
   this.object.position.set( Math.cos(angle) * distance,

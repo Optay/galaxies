@@ -107,6 +107,8 @@ galaxies.Obstacle.prototype.reset = function() {
   }
   
   galaxies.engine.rootObject.add( this.object );
+
+  galaxies.engine.planeSweep.add(this);
 }
 
 galaxies.Obstacle.prototype.update = function( delta ) {
@@ -289,6 +291,8 @@ galaxies.Obstacle.prototype.deactivate = function() {
 }
 
 galaxies.Obstacle.prototype.remove = function() {
+  galaxies.engine.planeSweep.remove(this);
+
   if ( this.object.parent!=null) {
     this.object.parent.remove(this.object);
   }

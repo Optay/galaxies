@@ -411,10 +411,13 @@ this.galaxies.Ufo = function() {
     this.reset();
     
     galaxies.engine.rootObject.add( anchor );
+    galaxies.engine.planeSweep.add(this);
     
   }
   this.deactivate = function() {
     this.state = 'inactive';
+
+    galaxies.engine.planeSweep.remove(this);
     
     this.isHittable = false;
     lastPosition = idlePosition;
