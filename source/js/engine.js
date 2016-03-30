@@ -980,10 +980,9 @@ galaxies.engine.update = function() {
           ufoPosition, otherLine, scalar, checkPoint;
 
       if (isUFO) {
-        ufoPosition = other.object.localToWorld( new THREE.Vector3() );
-        ufoPosition = galaxies.engine.rootObject.worldToLocal( ufoPosition );
+        ufoPosition = galaxies.utils.rootPosition(other.object);
 
-        otherLine = ufoPosition.sub(proj.lastPos);
+        otherLine = ufoPosition.clone().sub(proj.lastPos);
       } else {
         otherLine = other.object.position.clone().sub(proj.lastPos)
       }

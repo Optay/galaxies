@@ -15,8 +15,53 @@ galaxies.PlaneSweep.prototype = {
             return;
         }
 
-        this.xList.push(item);
-        this.yList.push(item);
+        var itemPos = (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position),
+            itemX = itemPos.x,
+            itemY = itemPos.y,
+            listLen = this.xList.length,
+            placedX = false,
+            placedY = false,
+            i;
+
+        for (i = 0; i < listLen; ++i) {
+            if (!placedX && itemX < this.getItemMinVal(this.xList[i], 'x')) {
+                placedX = true;
+                this.xList.splice(i, 0, item);
+            }
+
+            if (!placedY && itemY < this.getItemMinVal(this.yList[i], 'y')) {
+                placedY = true;
+                this.yList.splice(i, 0, item);
+            }
+
+            if (placedX && placedY) {
+                break;
+            }
+        }
+
+        if (!placedX) {
+            this.xList.push(item);
+        }
+
+        if (!placedY) {
+            this.yList.push(item);
+        }
+    },
+
+    getItemMinVal: function (item, axis) {
+        if (item instanceof galaxies.Projectile) {
+            return Math.min(item.object.position[axis], item.lastPos[axis]);
+        } else {
+            return (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position)[axis] - (item.hitThreshold || 0);
+        }
+    },
+
+    getItemMaxVal: function (item, axis) {
+        if (item instanceof galaxies.Projectile) {
+            return Math.max(item.object.position[axis], item.lastPos[axis]);
+        } else {
+            return (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position)[axis] + (item.hitThreshold || 0);
+        }
     },
 
     remove: function (item) {
@@ -31,7 +76,8 @@ galaxies.PlaneSweep.prototype = {
     },
 
     update: function () {
-        var bubbleSort = function(a, compareFn)
+        var getMinVal = this.getItemMinVal,
+            bubbleSort = function(a, compareFn)
             {
                 var swapped,
                     aLenM1 = a.length - 1,
@@ -52,16 +98,8 @@ galaxies.PlaneSweep.prototype = {
                 } while (swapped);
             },
             getBubbleCompare = function(axis) {
-                var getItemVal = function (item) {
-                    if (item instanceof galaxies.Projectile) {
-                        return Math.min(item.object.position[axis], item.lastPos[axis]);
-                    } else {
-                        return item.object.position[axis] - (item.hitThreshold || 0);
-                    }
-                };
-
                 return function (a, b) {
-                    return getItemVal(b) < getItemVal(a);
+                    return getMinVal(b, axis) < getMinVal(a, axis);
                 };
             };
 
@@ -71,34 +109,22 @@ galaxies.PlaneSweep.prototype = {
 
     potentialCollisions: function () {
         var xOverlaps, yOverlaps,
+            getItemMinVal = this.getItemMinVal,
+            getItemMaxVal = this.getItemMaxVal,
             getOverlaps = function(list, axis) {
-                var getItemMinVal = function(item) {
-                        if (item instanceof galaxies.Projectile) {
-                            return Math.min(item.object.position[axis], item.lastPos[axis]);
-                        } else {
-                            return item.object.position[axis] - (item.hitThreshold || 0);
-                        }
-                    },
-                    getItemMaxVal = function(item) {
-                        if (item instanceof galaxies.Projectile) {
-                            return Math.max(item.object.position[axis], item.lastPos[axis]);
-                        } else {
-                            return item.object.position[axis] + (item.hitThreshold || 0);
-                        }
-                    },
-                    listSize = list.length,
+                var listSize = list.length,
                     listSizeM1 = listSize - 1,
                     pairs = [],
                     i, j, checkVal, baseItem, checkItem;
 
                 for (i = 0; i < listSizeM1; ++i) {
                     baseItem = list[i];
-                    checkVal = getItemMaxVal(baseItem);
+                    checkVal = getItemMaxVal(baseItem, axis);
 
                     for (j = i + 1; j < listSize; ++j) {
                         checkItem = list[j];
 
-                        if (getItemMinVal(checkItem) > checkVal) {
+                        if (getItemMinVal(checkItem, axis) > checkVal) {
                             break;
                         } else {
                             pairs.push([baseItem, checkItem]);
