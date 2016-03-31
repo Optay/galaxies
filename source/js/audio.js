@@ -489,11 +489,17 @@ galaxies.audio.SoundField = function ( buffer ) {
 
   this.changeSource(buffer);
 
-  this.setVolume = function( value ) {
-    volumeNode.gain.value = value;
-  }
+  Object.defineProperty(this, "volume", {
+    set: function (value) {
+      this._volume = value;
+      volumeNode.gain.value = value;
+    },
+    get: function () {
+      return this._volume
+    }
+  });
   
-  this.setVolume(0.6); // global music volume. should be a const
+  this.volume = 0.6; // global music volume. should be a const
 
   
   this.update = function(delta) {
@@ -577,9 +583,9 @@ galaxies.audio.setAllMute = function( mute ) {
 // could be private
 galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
-    galaxies.audio.soundField.setVolume(0);
+    galaxies.audio.soundField.volume = 0;
   } else {
-    galaxies.audio.soundField.setVolume(0.6); // global music volume, should be a const
+    galaxies.audio.soundField.volume = 0.6; // global music volume, should be a const
   }
 }
 

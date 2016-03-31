@@ -239,7 +239,7 @@ galaxies.ui = (function() {
     // Start the music
     // This could be a singleton, but we're just going to instantiate one like this.
     galaxies.audio.soundField = new galaxies.audio.SoundField( galaxies.audio.getSound('music') );
-    galaxies.audio.soundField.setVolume(0.24); // 0.24
+    galaxies.audio.soundField.volume = 0.24; // 0.24
     
     // Hide loading logo
     loadingLogo.classList.add('fade-out');

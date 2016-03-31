@@ -387,14 +387,9 @@ galaxies.engine.initLevel = function() {
     galaxies.engine.roundScore = 0;
     galaxies.engine.projectilesLaunchedRound = 0;
     galaxies.engine.projectilesHitRound = 0;
-
-    if (galaxies.engine.levelNumber !== 1) {
-      galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
-      galaxies.audio.soundField.setVolume(0.6);
-    }
   } else if (galaxies.engine.roundNumber === 3) {
     galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
-    galaxies.audio.soundField.setVolume(1);
+    galaxies.audio.soundField.volume = 1;
   }
   
 
@@ -420,6 +415,13 @@ galaxies.engine.nextLevel = function() {
     galaxies.engine.roundScore = Math.round(galaxies.engine.roundScore * (1 + accuracy) * Math.pow(2, galaxies.engine.starsCollectedRound));
 
     galaxies.ui.showLevelResults(galaxies.engine.roundScore, accuracy);
+
+    createjs.Tween.get(galaxies.audio.soundField)
+        .to({volume: 0}, 1500)
+        .call(function() {
+          galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
+          galaxies.audio.soundField.volume = 0.6;
+        });
   }
 
   setTimeout(function () {
