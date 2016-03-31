@@ -183,6 +183,10 @@ this.galaxies.Ufo = function() {
   this.alive = true;
   
   this.update = function( delta ) {
+    if (this.state === "inactive") {
+      return;
+    }
+
     stepTimer += delta;
     
     switch ( this.state ) {

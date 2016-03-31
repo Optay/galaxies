@@ -390,11 +390,11 @@ galaxies.engine.initLevel = function() {
 
     if (galaxies.engine.levelNumber !== 1) {
       galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
-      galaxies.audio.soundField.volume = 0.6;
+      galaxies.audio.soundField.setVolume(0.6);
     }
   } else if (galaxies.engine.roundNumber === 3) {
     galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
-    galaxies.audio.soundField.volume = 1;
+    galaxies.audio.soundField.setVolume(1);
   }
   
 
@@ -1439,7 +1439,10 @@ galaxies.start = function() {
     window.location.assign(url);
     return;
   }
-  
+
+  document.body.addEventListener("selectstart", function () {return false;});
+  document.body.addEventListener("selectionchange", function () {return false;});
+
   if ( galaxies.utils.isMobile() ) {
     // touch to start
     var ttsElement = document.body.querySelector('.touch-to-start');
