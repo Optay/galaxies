@@ -43,10 +43,10 @@ galaxies.Resources = function() {
   this.bgPlanetTextures = [];
   this.bgPlanetTextures[0] = {texture: new THREE.Texture( galaxies.queue.getResult('planetpluto') ), scale: 0.55};
   this.bgPlanetTextures[1] = {texture: new THREE.Texture( galaxies.queue.getResult('planetneptune') ), scale: 1};
-  this.bgPlanetTextures[2] = {texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ), scale: 1};
+  this.bgPlanetTextures[2] = {texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ), scale: 1, position: new THREE.Vector3(50, 90, -100)};
   this.bgPlanetTextures[3] = {texture: new THREE.Texture( galaxies.queue.getResult('planetsaturn') ), scale: 2};
   this.bgPlanetTextures[4] = {texture: new THREE.Texture( galaxies.queue.getResult('planetjupiter') ), scale: 1};
-  this.bgPlanetTextures[5] = {texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ), scale: 1};
+  this.bgPlanetTextures[5] = {texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ), scale: 1, position: new THREE.Vector3(50, 120, -100)};
   this.bgPlanetTextures[6] = {texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ), scale: 1};
   
   this.levelTitles = [];

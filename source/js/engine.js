@@ -454,7 +454,7 @@ galaxies.engine.updateBackgroundPlanet = function() {
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
   galaxies.engine.sunFlares.position.set(0, 0, 0);
   
-  galaxies.engine.bgPlanet.position.set( -50, 120, -100 );
+  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-50, 120, -100) );
 
   var sunTargetScale = 1;
 
@@ -465,7 +465,6 @@ galaxies.engine.updateBackgroundPlanet = function() {
       galaxies.engine.sun.visible = true;
       break;
     case 5:
-      galaxies.engine.bgPlanet.position.set( 50, 120, -100 );
       galaxies.engine.sun.position.set( -80, 120, -101 );
       sunTargetScale = 0.8;
       galaxies.engine.sun.visible = true;
