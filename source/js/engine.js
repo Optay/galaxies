@@ -980,7 +980,7 @@ galaxies.engine.update = function() {
           ufoPosition, otherLine, scalar, checkPoint;
 
       if (isUFO) {
-        ufoPosition = galaxies.utils.rootPosition(other.object);
+        ufoPosition = other.rootPosition;
 
         otherLine = ufoPosition.clone().sub(proj.lastPos);
       } else {

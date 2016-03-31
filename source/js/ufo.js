@@ -7,6 +7,7 @@ this.galaxies.Ufo = function() {
   this.hitThreshold = 0.7;
   
   this.object = new THREE.Object3D();
+  this.rootPosition = galaxies.utils.rootPosition(this.object);
   this.model = galaxies.resources.geometries['ufo'];
   this.model.children[0].material = galaxies.resources.materials['ufo'];
   this.model.children[1].material = galaxies.resources.materials['ufocanopy'];
@@ -302,9 +303,8 @@ this.galaxies.Ufo = function() {
     
     laserChargeGroup.tick(delta);
     smokeGroup.tick(delta);
-    
 
-    
+    this.rootPosition = galaxies.utils.rootPosition(this.object);
   }
   
   this.leave = function() {

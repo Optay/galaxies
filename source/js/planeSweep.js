@@ -52,7 +52,7 @@ galaxies.PlaneSweep.prototype = {
         if (item instanceof galaxies.Projectile) {
             return Math.min(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position)[axis] - (item.hitThreshold || 0);
+            return (item === galaxies.engine.ufo ? item.rootPosition : item.object.position)[axis] - (item.hitThreshold || 0);
         }
     },
 
@@ -60,7 +60,7 @@ galaxies.PlaneSweep.prototype = {
         if (item instanceof galaxies.Projectile) {
             return Math.max(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position)[axis] + (item.hitThreshold || 0);
+            return (item === galaxies.engine.ufo ? item.rootPosition : item.object.position)[axis] + (item.hitThreshold || 0);
         }
     },
 
