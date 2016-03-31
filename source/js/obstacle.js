@@ -420,7 +420,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
   galaxies.fx.showFireworks( this.object.position );
   
   // hit all obstacles within range of explosion
-  var range = 3;
+  var range = 5;
   for ( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
     var obs = galaxies.engine.obstacles[i];
     if ( obs === this ) { continue; }
