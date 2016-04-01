@@ -384,7 +384,7 @@ galaxies.ui = (function() {
     titleActive = false;
   }
 
-  var showLevelResults = function (roundScore, roundAccuracy) {
+  var showLevelResults = function (bonusScore, roundAccuracy) {
     levelResults.classList.remove("hidden");
 
     setTimeout(function() {
@@ -397,7 +397,7 @@ galaxies.ui = (function() {
 
     title.classList.remove("hidden");
 
-    setTimeout(function () {showRoundScore(roundScore, roundAccuracy);}, 1600)
+    setTimeout(function () {showRoundScore(bonusScore, roundAccuracy);}, 1600)
   };
 
   var scaleStar = function (star, collected, delay) {
@@ -426,31 +426,31 @@ galaxies.ui = (function() {
     }, delay);
   };
 
-  var showRoundScore = function (roundScore, roundAccuracy) {
+  var showRoundScore = function (bonus, roundAccuracy) {
     roundAccuracy = Math.round(roundAccuracy * 100);
 
-    title.innerHTML = '<div class="score-title">SCORE <span class="round-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
+    title.innerHTML = '<div class="score-title">BONUS <span class="bonus-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
     title.classList.add("title-on");
 
-    var roundScoreElem = title.querySelector(".round-score"),
+    var bonusElem = title.querySelector(".bonus-score"),
         accTitle = title.querySelector(".acc-title"),
         roundAccElem = accTitle.querySelector(".round-acc");
 
-    var scoreTween = createjs.Tween.get(roundScoreElem)
-        .to({innerHTML: roundScore}, 2500);
+    var scoreTween = createjs.Tween.get(bonusElem)
+        .to({innerHTML: bonus}, 2500);
 
     scoreTween.addEventListener("change", function () {
       if (!scoreTween.duration) {
         return;
       }
 
-      var interimScore = "" + Math.round(roundScore * scoreTween.position / scoreTween.duration);
+      var interimScore = "" + Math.round(bonus * scoreTween.position / scoreTween.duration);
 
       if (interimScore.length > 3) {
         interimScore = interimScore.slice(0, -3) + ',' + interimScore.slice(-3);
       }
 
-      roundScoreElem.innerHTML = interimScore;
+      bonusElem.innerHTML = interimScore;
     });
 
     setTimeout(function () {

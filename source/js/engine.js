@@ -410,11 +410,12 @@ galaxies.engine.nextLevel = function() {
   galaxies.engine.clearLevel();
 
   if ( galaxies.engine.roundNumber == 1 ) {
-    var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound;
+    var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
+        rawScore = galaxies.engine.roundScore;
 
     galaxies.engine.roundScore = Math.round(galaxies.engine.roundScore * (1 + accuracy) * Math.pow(2, galaxies.engine.starsCollectedRound));
 
-    galaxies.ui.showLevelResults(galaxies.engine.roundScore, accuracy);
+    galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
 
     createjs.Tween.get(galaxies.audio.soundField)
         .to({volume: 0}, 1500)
