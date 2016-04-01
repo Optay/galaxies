@@ -179,7 +179,7 @@ galaxies.engine.init = function() {
   galaxies.engine.stats.domElement.style.position = 'absolute';
   galaxies.engine.stats.domElement.style.left = '0';
   galaxies.engine.stats.domElement.style.top = '0';
-  document.body.appendChild(galaxies.engine.stats.domElement);
+  //document.body.appendChild(galaxies.engine.stats.domElement);
   
   // Detect minimized/inactive window to avoid bad delta time values.
   document.addEventListener("visibilitychange", galaxies.engine.onVisibilityChange );
@@ -409,14 +409,7 @@ galaxies.engine.nextLevel = function() {
   
   galaxies.engine.clearLevel();
 
-  if ( galaxies.engine.roundNumber == 1 ) {
-    var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
-        rawScore = galaxies.engine.roundScore;
-
-    galaxies.engine.roundScore = Math.round(galaxies.engine.roundScore * (1 + accuracy) * Math.pow(2, galaxies.engine.starsCollectedRound));
-
-    galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
-
+  if (galaxies.engine.roundNumber === 1) {
     createjs.Tween.get(galaxies.audio.soundField)
         .to({volume: 0}, 1500)
         .call(function() {
@@ -425,15 +418,22 @@ galaxies.engine.nextLevel = function() {
         });
   }
 
+  // game ends after earth
+  if ( galaxies.engine.planetNumber > 7 ) {
+    galaxies.engine.gameOver( true );
+    return;
+  }
+
+  if ( galaxies.engine.roundNumber === 1 ) {
+    var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
+        rawScore = galaxies.engine.roundScore;
+
+    galaxies.engine.roundScore = galaxies.utils.calculateRoundScore(galaxies.engine.roundScore, accuracy, galaxies.engine.starsCollected);
+
+    galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
+  }
+
   setTimeout(function () {
-    // game ends after earth
-    if ( galaxies.engine.planetNumber > 7 ) {
-      galaxies.ui.clearLevelResults();
-      setTimeout(function () {galaxies.engine.gameOver( true );}, 1500);
-      return;
-    }
-
-
     if ( galaxies.engine.roundNumber == 1 ) {
       galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
 
@@ -1217,9 +1217,18 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.engine.removeInputListeners();
   galaxies.engine.isFiring = false;
   galaxies.ui.hidePauseButton();
+
+  var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
+      rawScore = galaxies.engine.roundScore,
+      bonusScore;
+
+  galaxies.engine.roundScore = galaxies.utils.calculateRoundScore(galaxies.engine.roundScore, accuracy, galaxies.engine.starsCollected);
+
+  galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
+  bonusScore = galaxies.engine.roundScore - rawScore;
   
   if ( isWin ) {
-    galaxies.ui.showGameOver( isWin );
+    galaxies.ui.showGameOver( isWin, bonusScore, accuracy );
   } else {
   
     galaxies.fx.showPlanetSplode();
@@ -1231,7 +1240,7 @@ galaxies.engine.gameOver = function( isWin ) {
     
     galaxies.engine.ufo.leave();
     
-    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver, [isWin] );
+    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver, [isWin, bonusScore, accuracy] );
   }
 }
 

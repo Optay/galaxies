@@ -222,7 +222,9 @@ galaxies.utils.getConifiedDepth = function( position ) {
   // parabolic
 }
 
-
+galaxies.utils.calculateRoundScore = function (roundScore, accuracy, numStars) {
+    return Math.round(roundScore * (1 + accuracy) * Math.pow(2, numStars));
+};
 
 
 

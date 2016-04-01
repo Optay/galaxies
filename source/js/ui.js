@@ -588,7 +588,7 @@ galaxies.ui = (function() {
   
   
   
-  var showGameOver = function( isWin ) {
+  var showGameOver = function( isWin, bonus, accuracy ) {
     gameOverHolder.classList.remove('hidden');
     
     window.getComputedStyle(gameOverTitle).top; // reflow
@@ -598,6 +598,8 @@ galaxies.ui = (function() {
     
     showTitle( "SCORE " +
                scoreDisplay.innerHTML +
+               "<br>BONUS " + bonus +
+               "<br>ACCURACY " + Math.round(accuracy * 100) +
                "<br>" +
                levelDisplay.innerHTML, 0);
   }
