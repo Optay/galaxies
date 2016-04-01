@@ -23,7 +23,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
 
   this.object = new THREE.Object3D();
   this.object.up.set(0,0,1);
-  this.lastPos = this.object.position.clone();
+  this.lastPos = new THREE.Vector3();
   
   this.indestructible = false;
   if ( typeof(indestructible) === 'boolean' ) {
@@ -125,13 +125,20 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
     }
   }
   this.update = function( delta ) {
-    this.lastPos = this.object.position.clone();
+    this.lastPos.copy(this.object.position);
+
+    if (galaxies.utils.flatLengthSqr(this.lastPos) < Math.pow(galaxies.engine.PROJ_START_Y + 1, 2)) {
+      this.lastPos.multiplyScalar(0.75);
+    }
+
     this.object.translateZ( this.PROJECTILE_SPEED * delta );
+
     if (this.particleEmitter) {
       this.particleEmitter.position.value = this.object.position;
     } else if (this.particleGroup) {
       this.particleGroup.tick(delta);
     }
+
     this.model.rotateOnAxis( rotateAxis, this.angularSpeed * delta );
     this.lifeTimer += delta;
     if ( this.lifeTimer >= this.PROJECTILE_LIFE ) {
