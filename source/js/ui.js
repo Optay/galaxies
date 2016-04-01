@@ -444,13 +444,9 @@ galaxies.ui = (function() {
         return;
       }
 
-      var interimScore = "" + Math.round(bonus * scoreTween.position / scoreTween.duration);
+      var interimScore = Math.round(bonus * scoreTween.position / scoreTween.duration);
 
-      if (interimScore.length > 3) {
-        interimScore = interimScore.slice(0, -3) + ',' + interimScore.slice(-3);
-      }
-
-      bonusElem.innerHTML = interimScore;
+      bonusElem.innerHTML = galaxies.utils.addCommas(interimScore);
     });
 
     setTimeout(function () {
@@ -588,7 +584,7 @@ galaxies.ui = (function() {
   
   
   
-  var showGameOver = function( isWin, bonus, accuracy ) {
+  var showGameOver = function( isWin, score, bonus, accuracy ) {
     gameOverHolder.classList.remove('hidden');
     
     window.getComputedStyle(gameOverTitle).top; // reflow
@@ -597,11 +593,9 @@ galaxies.ui = (function() {
     gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
     
     showTitle( "SCORE " +
-               scoreDisplay.innerHTML +
+               galaxies.utils.addCommas(score) +
                "<br>BONUS " + bonus +
-               "<br>ACCURACY " + Math.round(accuracy * 100) +
-               "<br>" +
-               levelDisplay.innerHTML, 0);
+               "<br>ACCURACY " + Math.round(accuracy * 100) + '%');
   }
   var hideGameOver = function() {
     gameOverTitle.classList.remove('game-over-title-on');

@@ -1226,9 +1226,11 @@ galaxies.engine.gameOver = function( isWin ) {
 
   galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
   bonusScore = galaxies.engine.roundScore - rawScore;
+
+  galaxies.ui.updateScore(galaxies.engine.score);
   
   if ( isWin ) {
-    galaxies.ui.showGameOver( isWin, bonusScore, accuracy );
+    galaxies.ui.showGameOver( isWin, galaxies.engine.score, bonusScore, accuracy );
   } else {
   
     galaxies.fx.showPlanetSplode();
@@ -1240,7 +1242,7 @@ galaxies.engine.gameOver = function( isWin ) {
     
     galaxies.engine.ufo.leave();
     
-    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver, [isWin, bonusScore, accuracy] );
+    createjs.Tween.get(null).wait(2000).call( galaxies.ui.showGameOver, [isWin, galaxies.engine.score, bonusScore, accuracy] );
   }
 }
 

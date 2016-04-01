@@ -226,7 +226,16 @@ galaxies.utils.calculateRoundScore = function (roundScore, accuracy, numStars) {
     return Math.round(roundScore * (1 + accuracy) * Math.pow(2, numStars));
 };
 
+galaxies.utils.addCommas = function (number) {
+    var numStr = number.toString(),
+        i;
 
+    for (i = numStr.length - 3; i > 0; i -= 3) {
+        numStr = numStr.slice(0, i) + ',' + numStr.slice(i);
+    }
+
+    return numStr;
+};
 
 
 
