@@ -179,7 +179,7 @@ galaxies.engine.init = function() {
   galaxies.engine.stats.domElement.style.position = 'absolute';
   galaxies.engine.stats.domElement.style.left = '0';
   galaxies.engine.stats.domElement.style.top = '0';
-  //document.body.appendChild(galaxies.engine.stats.domElement);
+  document.body.appendChild(galaxies.engine.stats.domElement);
   
   // Detect minimized/inactive window to avoid bad delta time values.
   document.addEventListener("visibilitychange", galaxies.engine.onVisibilityChange );
@@ -307,6 +307,17 @@ galaxies.engine.initGame = function() {
   
   galaxies.engine.player = new galaxies.Player();
   galaxies.engine.rootObject.add( galaxies.engine.player.root );
+
+  galaxies.engine.rootObject.add( galaxies.engine.bgPlanet );
+
+  // Cycle all the planet textures in reverse order to cache them
+  for (var i = galaxies.resources.bgPlanetTextures.length - 1; i > -1; --i) {
+    galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[i].texture;
+
+    galaxies.engine.renderer.render(galaxies.engine.scene, galaxies.engine.camera);
+  }
+
+  galaxies.engine.rootObject.remove(galaxies.engine.bgPlanet);
   
   galaxies.engine.setPowerup();
   
