@@ -5,6 +5,7 @@ this.galaxies = this.galaxies || {};
 galaxies.PlaneSweep = function () {
     this.xList = [];
     this.yList = [];
+    this.zList = [];
 };
 
 galaxies.PlaneSweep.prototype = {
@@ -18,9 +19,11 @@ galaxies.PlaneSweep.prototype = {
         var itemPos = (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position),
             itemX = itemPos.x,
             itemY = itemPos.y,
+            itemZ = itemPos.z,
             listLen = this.xList.length,
             placedX = false,
             placedY = false,
+            placedZ = false,
             i;
 
         for (i = 0; i < listLen; ++i) {
@@ -34,7 +37,12 @@ galaxies.PlaneSweep.prototype = {
                 this.yList.splice(i, 0, item);
             }
 
-            if (placedX && placedY) {
+            if (!placedZ && itemZ < this.getItemMinVal(this.zList[i], 'z')) {
+                placedZ = true;
+                this.zList.splice(i, 0, item);
+            }
+
+            if (placedX && placedY && placedZ) {
                 break;
             }
         }
@@ -45,6 +53,10 @@ galaxies.PlaneSweep.prototype = {
 
         if (!placedY) {
             this.yList.push(item);
+        }
+
+        if (!placedZ) {
+            this.zList.push(item);
         }
     },
 
@@ -73,6 +85,7 @@ galaxies.PlaneSweep.prototype = {
 
         this.xList.splice(xListIdx, 1);
         this.yList.splice(this.yList.indexOf(item), 1);
+        this.zList.splice(this.zList.indexOf(item), 1);
     },
 
     update: function () {
@@ -105,10 +118,11 @@ galaxies.PlaneSweep.prototype = {
 
         bubbleSort(this.xList, getBubbleCompare('x'));
         bubbleSort(this.yList, getBubbleCompare('y'));
+        bubbleSort(this.zList, getBubbleCompare('z'));
     },
 
     potentialCollisions: function () {
-        var xOverlaps, yOverlaps,
+        var xOverlaps, yOverlaps, zOverlaps,
             getItemMinVal = this.getItemMinVal,
             getItemMaxVal = this.getItemMaxVal,
             getOverlaps = function(list, axis) {
@@ -137,6 +151,7 @@ galaxies.PlaneSweep.prototype = {
 
         xOverlaps = getOverlaps(this.xList, 'x');
         yOverlaps = getOverlaps(this.yList, 'y');
+        zOverlaps = getOverlaps(this.zList, 'z');
 
         return xOverlaps.filter(function (overlapPair) {
             var doesMatchPair = function (checkPair) {
@@ -145,7 +160,7 @@ galaxies.PlaneSweep.prototype = {
                     });
                 };
 
-            return yOverlaps.some(doesMatchPair);
+            return yOverlaps.some(doesMatchPair) && zOverlaps.some(doesMatchPair);
         });
     }
 };
