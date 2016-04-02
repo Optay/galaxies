@@ -106,7 +106,8 @@ galaxies.fx = (function() {
       var particleGroup = new SPE.Group({
         texture: { value: texture },
         blending: THREE.AdditiveBlending,
-        transparent: true
+        transparent: true,
+        maxParticleCount: 20
       });
       projHitPool[i] = particleGroup;
       galaxies.engine.rootObject.add( particleGroup.mesh );
@@ -233,7 +234,8 @@ galaxies.fx = (function() {
     var groupDust = new SPE.Group({
       texture: { value: roughTexture },
       blending: THREE.NormalBlending,
-      transparent: true
+      transparent: true,
+      maxParticleCount: 1000
     });
     
     groupDust.addEmitter( new SPE.Emitter( partsDust ) );
@@ -260,7 +262,8 @@ galaxies.fx = (function() {
     
     var groupFire = new SPE.Group({
       texture: { value: starTexture },
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
+      maxParticleCount: 200
     });
     
     groupFire.addEmitter( new SPE.Emitter( partsFire ) );
@@ -285,7 +288,8 @@ galaxies.fx = (function() {
     };
     
     stariclesGroup = new SPE.Group({
-      texture: { value: starTexture }
+      texture: { value: starTexture },
+      maxParticleCount: 500
     });
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
 
