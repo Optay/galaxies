@@ -1065,14 +1065,8 @@ galaxies.engine.update = function() {
 
   // update character
   if ( !galaxies.engine.isGameOver ) {
-    var angleDelta = (galaxies.engine.targetAngle-galaxies.engine.angle);
-    angleDelta = (angleDelta % (2*Math.PI) );
-    if ( angleDelta > Math.PI ) {
-      angleDelta = angleDelta - 2*Math.PI;
-    }
-    if ( angleDelta < -Math.PI ) {
-      angleDelta = angleDelta + 2*Math.PI;
-    }
+    var angleDelta = galaxies.utils.normalizeAngle(galaxies.engine.targetAngle-galaxies.engine.angle);
+
     galaxies.engine.angle += (angleDelta * delta * 10.0);
     
     galaxies.engine.player.update( delta, galaxies.engine.angle );

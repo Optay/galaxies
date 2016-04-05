@@ -238,6 +238,29 @@ galaxies.utils.addCommas = function (number) {
 };
 
 
+galaxies.utils.normalizeAngle = function (angle) {
+    var tau = 2 * Math.PI;
+
+    angle = angle % tau;
+
+    if (angle > Math.PI) {
+        angle -= tau;
+    } else if (angle < -Math.PI) {
+        angle += tau;
+    }
+
+    return angle;
+};
+
+galaxies.utils.flatAngle = function(v3) {
+    return Math.atan2(-v3.x, v3.y);
+};
+
+galaxies.utils.flatAngleTo = function (a, b) {
+    return galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(a) - galaxies.utils.flatAngle(b));
+};
+
+
 
 
 // Patch SPE to allow negative speeds to make sphere particles move inwards.

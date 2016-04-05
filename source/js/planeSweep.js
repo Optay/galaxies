@@ -16,7 +16,7 @@ galaxies.PlaneSweep.prototype = {
             return;
         }
 
-        var itemPos = (item === galaxies.engine.ufo ? galaxies.utils.rootPosition(item.object) : item.object.position),
+        var itemPos = (item === galaxies.engine.ufo ? item.rootPosition : item.object.position),
             itemX = itemPos.x,
             itemY = itemPos.y,
             itemZ = itemPos.z,

@@ -6,9 +6,11 @@ this.galaxies.Player = function() {
   
   var characters = {};
   
-  
+  var rootObject = new THREE.Object3D();
+  rootObject.position.z = 0.5;
   var characterRotator = new THREE.Object3D();
-  characterRotator.position.z = 0.5;
+
+  rootObject.add(characterRotator);
 
   var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
   var baseAnimator = new galaxies.SpriteSheet(
@@ -233,12 +235,15 @@ this.galaxies.Player = function() {
     map: cloneMap,
     color: 0xffffff,
     transparent: true,
-    opacity: 1.0
+    opacity: 0
   } );
   var clone = new THREE.Sprite( cloneMaterial );
+  var cloneRotator = new THREE.Object3D();
   var cloneScale = cloneAspectRatio * galaxies.engine.CHARACTER_HEIGHT;
-  clone.position.set( -cloneScale * 0.15, -galaxies.engine.CHARACTER_POSITION, 0 );
+  clone.position.set( cloneScale * 0.15, galaxies.engine.CHARACTER_POSITION, 0 );
   clone.scale.set(cloneScale, galaxies.engine.CHARACTER_HEIGHT, cloneScale);
+
+  cloneRotator.add(clone);
   
   var cloneTeleportMaterial = new THREE.SpriteMaterial({
     map: cloneTeleportMap,
@@ -250,11 +255,19 @@ this.galaxies.Player = function() {
   cloneTeleportSprite.position.z = 0.1; // must appear in front of base character sprite      
   
   // Clone AI data
-  var cloneShotCooldown = 0;
-  
-  
-  
-  
+  var cloneAIData = {
+      shotCooldown: 0,
+      angle: 0,
+      targetAngle: 0,
+      targetObject: null,
+      maxWanderAngle: Math.PI / 6,
+      shotTracking: [],
+      ufo: {
+          previousPosition: null,
+          angularVelocity: 0
+      }
+  };
+
   var show = function() {
     characterRotator.add( character );
   }
@@ -279,70 +292,210 @@ this.galaxies.Player = function() {
   
   
   var addClone = function() {
-    characterRotator.add( clone );
+    rootObject.add( cloneRotator );
     teleportInClone();
   }
   var removeClone = function() {
-    if ( clone.parent === characterRotator ) {
-      teleportOutClone( function() { characterRotator.remove(clone); } );
+    if ( cloneRotator.parent === rootObject ) {
+      teleportOutClone( function() { rootObject.remove(cloneRotator); } );
     }
   }
-  
-  
+
+  var fireCloneProjectile = function () {
+    var projMesh = new THREE.Mesh(galaxies.resources.geometries['proj'], galaxies.resources.materials['proj']);
+    projMesh.scale.set(0.1, 0.1, 0.1);
+
+    var proj = new galaxies.Projectile(projMesh, cloneAIData.angle, 0, false, galaxies.fx.getPurpleTrailEmitter());
+    galaxies.engine.projectiles.push(proj);
+
+    // delay adding the projectile and the sound to synchronize with the animation
+    createjs.Tween.get(clone).wait(250)
+        .call(function () {
+            proj.updatePosition(cloneAIData.angle);
+            proj.addToScene();
+        });
+
+    createjs.Tween.get(clone).wait(250)
+        .call(galaxies.engine.shootSound);
+
+    cloneAnimator.play();
+
+    cloneAIData.shotCooldown = galaxies.engine.SHOOT_TIME;
+
+    return proj;
+  };
+
+  var alreadyTargetedByClone = function(object) {
+      return cloneAIData.shotTracking.some(function (shotPair) {
+        return shotPair[1] === object;
+      });
+  };
+
+  var getUFOFuturePosition = function (ufo, delta) {
+      var currentPosition = ufo.rootPosition,
+          predictedPosition = currentPosition.clone();
+      
+      if (cloneAIData.ufo.previousPosition) {
+          var angularVelocity = galaxies.utils.flatAngleTo(currentPosition, cloneAIData.ufo.previousPosition) / delta,
+              distance = galaxies.utils.flatLength(currentPosition),
+              travelTime = (distance - galaxies.engine.PROJ_START_Y) / galaxies.Projectile.prototype.PROJECTILE_SPEED,
+              ufoFutureAngle;
+
+          if (cloneAIData.ufo.angularVelocity) {
+              angularVelocity = cloneAIData.ufo.angularVelocity * 0.8 + angularVelocity * 0.2;
+          }
+
+          cloneAIData.ufo.angularVelocity = angularVelocity;
+
+          ufoFutureAngle = angularVelocity * travelTime + galaxies.utils.flatAngle(currentPosition);
+
+          predictedPosition = new THREE.Vector3(-Math.sin(ufoFutureAngle), Math.cos(ufoFutureAngle), 0).multiplyScalar(distance);
+      }
+      
+      cloneAIData.ufo.previousPosition = currentPosition;
+      
+      return predictedPosition;
+  };
+
+  var targetUFO = function (defaultAngle, defaultLookVector, delta) {
+      var ufo = galaxies.engine.ufo,
+          predictedPosition, angleDiff;
+
+      if (ufo.state === "inactive") {
+          cloneAIData.ufo.previousPosition = null;
+          cloneAIData.ufo.angularVelocity = 0;
+      } else if (!alreadyTargetedByClone(ufo)) {
+          predictedPosition = getUFOFuturePosition(ufo, delta);
+
+          angleDiff = galaxies.utils.flatAngleTo(predictedPosition, defaultLookVector);
+
+          if (Math.abs(angleDiff) < cloneAIData.maxWanderAngle) {
+              cloneAIData.targetAngle = defaultAngle + angleDiff;
+              return ufo;
+          }
+      }
+
+      return null;
+  };
+
+  var targetBonus = function (defaultAngle, defaultLookVector) {
+      var validNeutrals = galaxies.engine.neutrals.filter(function (neutral) {
+          if (neutral instanceof galaxies.Capsule && neutral.powerup !== "heart") {
+              return false;
+          }
+
+          return neutral.isActive && !alreadyTargetedByClone(neutral);
+      }),
+          i, angleDiff, neutral;
+
+      for (i = 0; i < validNeutrals.length; ++i) {
+          neutral = validNeutrals[i];
+          angleDiff = galaxies.utils.flatAngleTo(neutral.object.position, defaultLookVector);
+
+          if (Math.abs(angleDiff) < cloneAIData.maxWanderAngle) {
+              cloneAIData.targetAngle = defaultAngle + angleDiff;
+              return neutral;
+          }
+      }
+
+      return null;
+  };
+
+  var targetAsteroid = function (defaultAngle, defaultLookVector) {
+      var asteroidsInRange = galaxies.engine.obstacles.filter(function (asteroid) {
+          return asteroid.state !== "inactive" &&
+              !alreadyTargetedByClone(asteroid) &&
+              (galaxies.utils.flatLengthSqr(asteroid.object.position) < Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2)) ;
+      }).filter(function (asteroid) {
+          return Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle;
+      });
+
+      if (asteroidsInRange.length > 0) {
+          var closestAsteroid = null,
+              closestDist = Number.MAX_VALUE;
+
+          asteroidsInRange.forEach(function (asteroid) {
+              var dist = asteroid.object.position.lengthManhattan();
+
+              if (dist < closestDist) {
+                  closestAsteroid = asteroid;
+                  closestDist = dist;
+              }
+          });
+
+          cloneAIData.targetAngle = galaxies.utils.flatAngle(closestAsteroid.object.position);
+          return closestAsteroid;
+      }
+
+      return null;
+  };
+
+  var cloneAIUpdate = function(delta, defaultAngle) {
+    var defaultLookVector = new THREE.Vector3(-Math.sin(defaultAngle), Math.cos(defaultAngle), 0),
+        ufo = galaxies.engine.ufo,
+        predictedPosition, angleDiff;
+
+    cloneAIData.shotTracking = cloneAIData.shotTracking.filter(function (shotPair) {
+        return !shotPair[0].isExpired;
+    });
+
+    if (cloneAIData.targetObject) {
+        if (cloneAIData.targetObject === ufo) {
+            predictedPosition = getUFOFuturePosition(ufo, delta);
+        } else {
+            predictedPosition = cloneAIData.targetObject.object.position;
+        }
+
+        angleDiff = galaxies.utils.flatAngleTo(predictedPosition, defaultLookVector);
+
+        if (Math.abs(angleDiff) > cloneAIData.maxWanderAngle) {
+            cloneAIData.targetObject = null;
+            cloneAIData.targetAngle = defaultAngle;
+        } else {
+            cloneAIData.targetAngle = defaultAngle + angleDiff;
+
+            angleDiff = Math.abs(cloneAIData.targetAngle - cloneAIData.angle);
+
+            if (angleDiff < Math.PI / 8) {
+                if (Math.random() * angleDiff < 0.01) {
+                    var projectile = fireCloneProjectile();
+
+                    cloneAIData.shotTracking.push([projectile, cloneAIData.targetObject]);
+
+                    cloneAIData.targetObject = null;
+                }
+            }
+        }
+    } else {
+        cloneAIData.targetObject = targetUFO(defaultAngle, defaultLookVector, delta) ||
+            targetBonus(defaultAngle, defaultLookVector) ||
+            targetAsteroid(defaultAngle, defaultLookVector);
+    }
+  };
   
   var update = function( delta, angle ) {
     characterRotator.rotation.set( 0, 0, angle );
     character.material.rotation = angle;
     activeAnimator.update( delta );
     
-    if ( clone.parent !== null ) {
+    if ( cloneRotator.parent !== null ) {
+      var cloneDefaultAngle = angle + Math.PI;
+
       cloneAnimator.update(delta);
-      clone.material.rotation = Math.PI + angle;
-      cloneShotCooldown -= delta;
+      cloneAIData.shotCooldown -= delta;
 
-      if (cloneShotCooldown <= 0 && !teleportingClone) {
-        var checkAngle = angle + Math.PI,
-            checkVector = new THREE.Vector2(-Math.sin(checkAngle), Math.cos(checkAngle)),
-            maxDistSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 0.95, 2),
-            objectInPath = galaxies.engine.obstacles.some(function (obs) {
-              var obsPos = obs.object.position,
-                  flatDistSq = galaxies.utils.flatLengthSqr(obsPos);
-
-              if (flatDistSq > maxDistSq) {
-                  return false;
-              }
-
-              var checkPos = checkVector.clone().multiplyScalar(Math.sqrt(flatDistSq)),
-                  diff = new THREE.Vector2(obsPos.x - checkPos.x, obsPos.y - checkPos.y).lengthSq();
-
-              if (diff <= Math.pow(obs.hitThreshold * 0.8, 2)) {
-                obs.alreadyTargeted = true;
-
-                return true;
-              }
-
-              return false;
-            });
-
-        if (objectInPath) {
-            var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
-            projMesh.scale.set(0.1, 0.1, 0.1);
-
-            var proj = new galaxies.Projectile( projMesh, angle + Math.PI, 0, false, galaxies.fx.getPurpleTrailEmitter() );
-            galaxies.engine.projectiles.push( proj );
-
-            // delay adding the projectile and the sound to synchronize with the animation
-            createjs.Tween.get( character ).wait(250)
-                .call( galaxies.engine.shootSync, [proj, Math.PI], this );
-
-            createjs.Tween.get( character ).wait(250)
-                .call( galaxies.engine.shootSound );
-
-            cloneAnimator.play();
-
-            cloneShotCooldown = galaxies.engine.SHOOT_TIME;
-        }
+      if (cloneAIData.shotCooldown <= 0 && !teleportingClone) {
+        cloneAIUpdate(delta, cloneDefaultAngle);
       }
+
+      if (cloneAIData.targetObject) {
+        var cloneAngleDelta = galaxies.utils.normalizeAngle(cloneAIData.targetAngle - cloneAIData.angle);
+        cloneAIData.angle += cloneAngleDelta * delta * 10;
+      }
+
+      cloneAIData.angle = Math.min(Math.max(cloneAIData.angle, cloneDefaultAngle - cloneAIData.maxWanderAngle), cloneDefaultAngle + cloneAIData.maxWanderAngle);
+      cloneRotator.rotation.set(0, 0, cloneAIData.angle);
+      clone.material.rotation = cloneAIData.angle;
     }
     if ( teleporting ) {
       teleportAnimator.update( delta );
@@ -352,8 +505,7 @@ this.galaxies.Player = function() {
       cloneTeleportAnimator.update( delta );
       cloneTeleportSprite.material.rotation = clone.material.rotation;
     }
-    
-  }
+  };
   
   
   var reset = function( angle ) {
@@ -506,7 +658,7 @@ this.galaxies.Player = function() {
   
   
   return {
-    root: characterRotator,
+    root: rootObject,
     sprite: character,
     show: show,
     hide: hide,
