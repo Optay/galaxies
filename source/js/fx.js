@@ -293,7 +293,7 @@ galaxies.fx = (function() {
     });
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
 
-    baseSettings.color = { value: new THREE.Color( 0xffcaca ) };
+    baseSettings.color = { value: new THREE.Color( 1, 0.3, 0.3 ) };
     staricles['heart'] = new SPE.Emitter( baseSettings );
     staricles['heart'].disable();
     stariclesGroup.addEmitter( staricles['heart'] );
@@ -313,7 +313,7 @@ galaxies.fx = (function() {
     staricles['golden'].disable();
     stariclesGroup.addEmitter( staricles['golden'] );
 
-    baseSettings.color = { value: new THREE.Color('white') };
+    baseSettings.color = { value: new THREE.Color('yellow') };
     staricles['star'] = new SPE.Emitter( baseSettings );
     staricles['star'].disable();
     stariclesGroup.addEmitter( staricles['star'] );
