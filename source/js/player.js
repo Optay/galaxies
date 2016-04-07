@@ -265,7 +265,8 @@ this.galaxies.Player = function() {
       ufo: {
           previousPosition: null,
           angularVelocity: 0
-      }
+      },
+      playedSound: false
   };
 
   var show = function() {
@@ -317,6 +318,16 @@ this.galaxies.Player = function() {
 
     createjs.Tween.get(clone).wait(250)
         .call(galaxies.engine.shootSound);
+
+    if (!cloneAIData.playedSound) {
+        cloneAIData.playedSound = true;
+        new galaxies.audio.SimpleSound({
+            source: galaxies.audio.getSound("aliengrowl"),
+            position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
+            baseVolume: 0.8,//10,
+            loop: false
+        });
+    }
 
     cloneAnimator.play();
 
@@ -631,6 +642,7 @@ this.galaxies.Player = function() {
     removeClone();
     
     if ( powerup === 'clone' ) {
+        cloneAIData.playedSound = false;
       addClone();
     }
     
