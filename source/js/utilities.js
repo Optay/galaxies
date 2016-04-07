@@ -260,6 +260,25 @@ galaxies.utils.flatAngleTo = function (a, b) {
     return galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(a) - galaxies.utils.flatAngle(b));
 };
 
+galaxies.utils.getScreenPosition = function (obj, margin) {
+    var v3 = new THREE.Vector3(),
+        screenX, screenY;
+
+    v3.setFromMatrixPosition(obj.matrixWorld);
+    v3.project(galaxies.engine.camera);
+
+    screenX = ( v3.x * galaxies.engine.windowHalfX ) + galaxies.engine.windowHalfX;
+    screenY = - ( v3.y * galaxies.engine.windowHalfY ) + galaxies.engine.windowHalfY;
+
+    if (typeof margin === "number") {
+        screenX = Math.max( screenX, margin );
+        screenX = Math.min( screenX, window.innerWidth - margin );
+        screenY = Math.max( screenY, margin );
+        screenY = Math.min( screenY, window.innerHeight - margin );
+    }
+
+    return new THREE.Vector2(screenX, screenY);
+};
 
 
 

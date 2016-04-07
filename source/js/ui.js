@@ -4,7 +4,6 @@ this.galaxies = this.galaxies || {};
 
 
 galaxies.ui = (function() {
-  
   // UI elements
   var uiHolder = document.getElementById("menuHolder");
   
@@ -623,6 +622,34 @@ galaxies.ui = (function() {
       }
     }
   }
+
+  var getFirstEmptyHeartPosition = function () {
+    var numHearts = lifeHearts.length,
+        i;
+
+    for (i = 0; i < numHearts; ++i) {
+      if (lifeHearts[i].classList.contains("empty")) {
+        return lifeHearts[i].getBoundingClientRect();
+      }
+    }
+
+    return null
+  };
+
+  var createFloatingDiv = function (className) {
+    var floatingDiv = document.createElement("div");
+
+    floatingDiv.className = className;
+    floatingDiv.style.position = "absolute";
+
+    document.body.appendChild(floatingDiv);
+
+    return floatingDiv;
+  };
+
+  var createFloatingHeart = function () {
+    return createFloatingDiv("animated life-heart");
+  };
   
   var updateStars = function( starsCollected ) {
     for ( var i=0; i<collectStars.length; i++ ) {
@@ -633,7 +660,48 @@ galaxies.ui = (function() {
       }
     }
   }
-  
+
+  var getFirstEmptyStarPosition = function () {
+    var numStars = collectStars.length,
+        i;
+
+    for (i = 0; i < numStars; ++i) {
+      if (collectStars[i].classList.contains("empty")) {
+        return collectStars[i].getBoundingClientRect();
+      }
+    }
+
+    return null
+
+  };
+
+  var createFloatingStar = function () {
+    return createFloatingDiv("animated collect-star");
+  };
+
+  var animateCollection = function (divElem, sourceObject, finalPosition, callback) {
+    var screenPos = galaxies.utils.getScreenPosition(sourceObject, 50);
+
+    divElem.style.left = (screenPos.x - finalPosition.width / 2) + "px";
+    divElem.style.top = (screenPos.y - finalPosition.height / 2) + "px";
+    divElem.style.transform = "scale(0.5)";
+
+    createjs.Tween.get(divElem.style)
+        .set({transform: "scale(2)"})
+        .wait(500)
+        .set({transform: "scale(1)"});
+
+    createjs.Tween.get(divElem.style)
+        .set({left: finalPosition.left + "px", top: finalPosition.top + "px"})
+        .wait(1000)
+        .call(function () {
+          divElem.remove();
+
+          if (typeof callback === "function") {
+            callback();
+          }
+        });
+  };
   
   var updatePowerupCharge = function( newValue ) {
     powerupCharge.innerHTML = newValue.toFixed(2);
@@ -654,7 +722,12 @@ galaxies.ui = (function() {
     updateTimer: updateTimer,
     updateScore: updateScore,
     updateLife: updateLife,
+    getFirstEmptyHeartPosition: getFirstEmptyHeartPosition,
+    createFloatingHeart: createFloatingHeart,
     updateStars: updateStars,
+    getFirstEmptyStarPosition: getFirstEmptyStarPosition,
+    createFloatingStar: createFloatingStar,
+    animateCollection: animateCollection,
     updatePowerupCharge: updatePowerupCharge,
     setMixButtons: setMixButtons
   };

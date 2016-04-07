@@ -1380,43 +1380,31 @@ galaxies.engine.handleContextRestored = function() {
 
 
 
-galaxies.engine.collectStar = function() {
-  galaxies.engine.starsCollected++;
-  galaxies.engine.starsCollectedRound++;
-  galaxies.ui.updateStars( galaxies.engine.starsCollectedRound );
-  
+galaxies.engine.collectStar = function(fromObject) {
+  galaxies.ui.animateCollection(galaxies.ui.createFloatingStar(), fromObject,
+      galaxies.ui.getFirstEmptyStarPosition(), function () {
+        galaxies.engine.starsCollected++;
+        galaxies.engine.starsCollectedRound++;
+        galaxies.ui.updateStars( galaxies.engine.starsCollectedRound );
+      });
 }
 
 
 
 galaxies.engine.showCombo = function( value, multiplier, obj ) {
-  var vector = new THREE.Vector3();
-  
-  vector.setFromMatrixPosition(obj.matrixWorld);
-  vector.project(galaxies.engine.camera);
-  
-  var screenX = ( vector.x * galaxies.engine.windowHalfX ) + galaxies.engine.windowHalfX;
-  var screenY = - ( vector.y * galaxies.engine.windowHalfY ) + galaxies.engine.windowHalfY;
-  
-  // Bound the center point to keep the element from running off screen.
-  var margin = 50;
-  screenX = Math.max( screenX, margin );
-  screenX = Math.min( screenX, window.innerWidth - margin );
-  screenY = Math.max( screenY, margin );
-  screenY = Math.min( screenY, window.innerHeight - margin );
-  //
-  
+  var screenPos = galaxies.utils.getScreenPosition(obj, 50);
+
   var divElem = document.createElement('div');
   divElem.classList.add("points");
   var newContent = document.createTextNode( (value*multiplier).toString() ); 
-  divElem.style.left = screenX + 'px';
-  divElem.style.top = screenY + 'px';
+  divElem.style.left = screenPos.x + 'px';
+  divElem.style.top = screenPos.y + 'px';
   divElem.appendChild(newContent); //add the text node to the newly created div.
   galaxies.engine.container.appendChild(divElem);
   
   window.getComputedStyle(divElem).top; // reflow
   
-  divElem.style.top = (screenY - 40) + 'px'; // animate
+  divElem.style.top = (screenPos.y - 40) + 'px'; // animate
   divElem.style.opacity = 0;
   
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
@@ -1497,14 +1485,17 @@ galaxies.start = function() {
 }
 
 
-galaxies.engine.setPowerup = function ( newPowerup ) {
+galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   if ( !newPowerup ) { newPowerup = ''; }
   
   // This is not a "true" powerup, just an instant effect.
   if ( newPowerup === 'heart' ) {
     if ( galaxies.engine.playerLife < galaxies.engine.MAX_PLAYER_LIFE ) {
-      galaxies.engine.playerLife++;
-      galaxies.ui.updateLife( galaxies.engine.playerLife );
+      galaxies.ui.animateCollection(galaxies.ui.createFloatingHeart(), fromObject,
+          galaxies.ui.getFirstEmptyHeartPosition(), function () {
+            galaxies.engine.playerLife++;
+            galaxies.ui.updateLife( galaxies.engine.playerLife );
+          });
     }
     return;
   }

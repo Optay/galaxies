@@ -395,6 +395,8 @@ body {
   background: url('../images/life_heart.png');
   background-size: cover;
   background-position: bottom;
+
+  transition: background-position 0.5s ease;
 }
 .life-heart.empty {
   background-position: top;
@@ -416,9 +418,14 @@ body {
   background: url('../images/collect_star.png');
   background-size: cover;
   background-position: bottom;
+  transition: background-position 0.5s ease;
 }
 .collect-star.empty {
   background-position: top;
+}
+
+.life-heart.animated, .collect-star.animated {
+  transition: transform 0.5s ease, left 1s ease, top 1s ease;
 }
 
 

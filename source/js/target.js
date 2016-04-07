@@ -100,12 +100,11 @@ galaxies.Capsule.prototype.constructor = galaxies.Capsule;
 galaxies.Capsule.prototype.hit = function() {
   // release the powerup
   console.log("Capsule.hit");
-  galaxies.engine.setPowerup( this.powerup );
+  galaxies.engine.setPowerup( this.powerup, this.object );
   
   var soundId = 'powerupcollect';
   if ( this.powerup === 'heart' ) {
     soundId = 'heartcollect';
-    
   }
   new galaxies.audio.PositionedSound({
     source: galaxies.audio.getSound(soundId),
@@ -243,7 +242,7 @@ galaxies.Star = function( angle ) {
 galaxies.Star.prototype = Object.create( galaxies.BaseTarget.prototype );
 galaxies.Star.prototype.constructor = galaxies.Star;
 galaxies.Star.prototype.hit = function() {
-  galaxies.engine.collectStar();
+  galaxies.engine.collectStar(this.object);
   new galaxies.audio.PositionedSound({
     source: galaxies.audio.getSound('starcollect'),
     position: galaxies.utils.rootPosition( this.object ),
