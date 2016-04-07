@@ -255,6 +255,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);  
   
   window.addEventListener( 'resize', galaxies.engine.onWindowResize, false );
+  window.addEventListener( 'orientationchange', galaxies.engine.onWindowResize, false );
   galaxies.engine.onWindowResize();
 
   // Perhaps should be part of audio init...
