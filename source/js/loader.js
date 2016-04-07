@@ -121,7 +121,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'sparkle', src: 'sparticle.png' },
     { id: 'smoke', src: 'smokeparticle.png' },
     { id: 'lensFlare', src: 'lensflare3.png' },
-    { id: 'sun', src: 'sun_on_black.jpg' }
+    { id: 'sun', src: 'sun_on_black.jpg' },
+    { id: 'charactershadow', src: 'character_shadow.png' }
 
   ];
   for (var i=0; i<imageItems.length; i++ ) {

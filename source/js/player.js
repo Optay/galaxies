@@ -7,7 +7,7 @@ this.galaxies.Player = function() {
   var characters = {};
   
   var rootObject = new THREE.Object3D();
-  rootObject.position.z = 0.5;
+  rootObject.position.z = 1;
   var characterRotator = new THREE.Object3D();
 
   rootObject.add(characterRotator);
@@ -229,6 +229,21 @@ this.galaxies.Player = function() {
   var character = new THREE.Sprite( characterMaterial );
   characterRotator.add( character );
 
+  var characterShadowMap = new THREE.Texture(galaxies.queue.getResult("charactershadow"));
+  characterShadowMap.needsUpdate = true;
+
+  var characterShadowMaterial = new THREE.SpriteMaterial({
+      map: characterShadowMap,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 1.0
+  });
+  var characterShadow = new THREE.Sprite(characterShadowMaterial);
+  characterShadow.scale.set(2.2, 2.2);
+  characterShadow.position.setZ(-0.01);
+
+  characterRotator.add(characterShadow);
+
   
   // CLONE SPRITE
   var cloneMaterial = new THREE.SpriteMaterial({
@@ -244,6 +259,18 @@ this.galaxies.Player = function() {
   clone.scale.set(cloneScale, galaxies.engine.CHARACTER_HEIGHT, cloneScale);
 
   cloneRotator.add(clone);
+
+  var cloneShadowMaterial = new THREE.SpriteMaterial({
+      map: characterShadowMap,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 1.0
+  });
+  var cloneShadow = new THREE.Sprite(cloneShadowMaterial);
+  cloneShadow.scale.set(2.2, 2.2);
+  cloneShadow.position.setZ(-0.01);
+
+  cloneRotator.add(cloneShadow);
   
   var cloneTeleportMaterial = new THREE.SpriteMaterial({
     map: cloneTeleportMap,
@@ -271,10 +298,12 @@ this.galaxies.Player = function() {
 
   var show = function() {
     characterRotator.add( character );
+    characterRotator.add( characterShadow );
   }
   var hide = function() {
     if ( character.parent === characterRotator ) {
       characterRotator.remove( character );
+      characterRotator.remove( characterShadow );
     }
   }
   var animateShoot = function() {
@@ -487,6 +516,7 @@ this.galaxies.Player = function() {
   var update = function( delta, angle ) {
     characterRotator.rotation.set( 0, 0, angle );
     character.material.rotation = angle;
+    characterShadow.material.rotation = angle - Math.PI/60;
     activeAnimator.update( delta );
     
     if ( cloneRotator.parent !== null ) {
@@ -507,6 +537,7 @@ this.galaxies.Player = function() {
       cloneAIData.angle = Math.min(Math.max(cloneAIData.angle, cloneDefaultAngle - cloneAIData.maxWanderAngle), cloneDefaultAngle + cloneAIData.maxWanderAngle);
       cloneRotator.rotation.set(0, 0, cloneAIData.angle);
       clone.material.rotation = cloneAIData.angle;
+      cloneShadow.material.rotation = cloneAIData.angle - Math.PI/60;
     }
     if ( teleporting ) {
       teleportAnimator.update( delta );
