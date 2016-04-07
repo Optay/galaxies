@@ -60,7 +60,8 @@ galaxies.audio.sounds = {
   'heartcollect': ['heartcollect'],
   'starcollect': ['starcollect'],
   'powerupcollect': ['powerupcollect'],
-  
+  'aliengrowl': ['aliengrowl'],
+  'tripleraquet': ['tripleraquet']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.

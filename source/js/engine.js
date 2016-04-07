@@ -798,10 +798,13 @@ galaxies.engine.shootSync = function( proj, angleOffset ) {
   proj.updatePosition( galaxies.engine.angle + angleOffset );
   proj.addToScene();
 }
-galaxies.engine.shootSound = function() {
+galaxies.engine.shootSound = function(soundName) {
+  if (typeof soundName !== "string" || !soundName) {
+    soundName = "shoot";
+  }
   // play sound
   galaxies.engine.testKeepReference = new galaxies.audio.SimpleSound({
-    source: galaxies.audio.getSound('shoot'),
+    source: galaxies.audio.getSound(soundName),
     position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
     baseVolume: 0.8,//10,
     loop: false
@@ -838,7 +841,7 @@ galaxies.engine.shoot3 = function() {
   // play animation
   galaxies.engine.player.animateShoot();
   createjs.Tween.get( galaxies.engine.player.sprite ).wait(250)
-  .call( galaxies.engine.shootSound );
+  .call( galaxies.engine.shootSound, ["tripleraquet"] );
   
 }
 
