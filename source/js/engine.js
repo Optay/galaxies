@@ -174,12 +174,6 @@ galaxies.engine.init = function() {
     
   // three.js clock for delta time
   galaxies.engine.clock = new THREE.Clock();
-
-  galaxies.engine.stats = new Stats();
-  galaxies.engine.stats.domElement.style.position = 'absolute';
-  galaxies.engine.stats.domElement.style.left = '0';
-  galaxies.engine.stats.domElement.style.top = '0';
-  document.body.appendChild(galaxies.engine.stats.domElement);
   
   // Detect minimized/inactive window to avoid bad delta time values.
   document.addEventListener("visibilitychange", galaxies.engine.onVisibilityChange );
@@ -710,8 +704,6 @@ galaxies.engine.onDocumentTouchMove = function( event ) {
         
 }
 
-
-
 galaxies.engine.addObstacle = function( type ) {
   // Get from pool and initialize
   if ( galaxies.engine.obstaclePool[type].length > 0 ) {
@@ -863,11 +855,21 @@ galaxies.engine.animate = function() {
 
 // Game Loop
 galaxies.engine.update = function() {
-  var delta = galaxies.engine.clock.getDelta();
+  var delta = galaxies.engine.clock.getDelta(),
+      stats = galaxies.debug.stats;
 
-  galaxies.engine.stats.begin();
+  if (stats) {
+    stats.begin();
+  }
 
-  if ( delta === 0 ) { galaxies.engine.stats.end(); return; } // paused!
+  if ( delta === 0 ) { // paused!
+    if (stats) {
+      stats.end();
+    }
+
+    return;
+  }
+
   if ( delta > 0.25 ) { delta = 0.25; } // Cap simulation at 4 ticks/second delta to prevent projectiles from passing through objects.
 
   var activeObstacleCount = 0;
@@ -1102,7 +1104,9 @@ galaxies.engine.update = function() {
   
   galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
 
-  galaxies.engine.stats.end();
+  if (stats) {
+    stats.end();
+  }
 }
 
 // Calculate the results of an elastic collision between two obstacles.
@@ -1539,5 +1543,3 @@ galaxies.engine.setPowerup = function ( newPowerup ) {
   }
   
 }
-
-

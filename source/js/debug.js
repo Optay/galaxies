@@ -1,6 +1,22 @@
 "use strict";
 this.galaxies = this.galaxies || {};
+galaxies.debug = {};
 
+galaxies.debug.onDocumentKeyUp = function(event) {
+  if (event.keyCode === 0x20) {
+    var stats = galaxies.debug.stats;
+
+    if (stats) {
+      if (stats.domElement.classList.contains("hidden")) {
+        stats.domElement.classList.remove("hidden");
+        galaxies.debug.datgui.domElement.classList.remove("hidden");
+      } else {
+        stats.domElement.classList.add("hidden");
+        galaxies.debug.datgui.domElement.classList.add("hidden");
+      }
+    }
+  }
+};
 
 // init debug controls
 window.addEventListener("load", function(event) {
@@ -55,7 +71,16 @@ window.addEventListener("load", function(event) {
     galaxies.engine.initRootRotation();
     galaxies.engine.planetTransition();
   }
-  
+
+  galaxies.debug.datgui = datgui;
+
+  galaxies.debug.stats = new Stats();
+  galaxies.debug.stats.domElement.style.position = 'absolute';
+  galaxies.debug.stats.domElement.style.left = '0';
+  galaxies.debug.stats.domElement.style.top = '0';
+  document.body.appendChild(galaxies.debug.stats.domElement);
+
+  document.addEventListener("keyup", galaxies.debug.onDocumentKeyUp);
 });
 
 
