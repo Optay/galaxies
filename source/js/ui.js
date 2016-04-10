@@ -591,9 +591,8 @@ galaxies.ui = (function() {
     
     gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
     
-    showTitle( "SCORE " +
-               galaxies.utils.addCommas(score) +
-               "<br>BONUS " + bonus +
+    showTitle( "SCORE " + galaxies.utils.addCommas(score) +
+               "<br>BONUS " + galaxies.utils.addCommas(bonus) +
                "<br>ACCURACY " + Math.round(accuracy * 100) + '%');
   }
   var hideGameOver = function() {
