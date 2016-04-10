@@ -236,7 +236,7 @@ this.galaxies.Player = function() {
       map: characterShadowMap,
       color: 0xffffff,
       transparent: true,
-      opacity: 1.0
+      opacity: 0
   });
   var characterShadow = new THREE.Sprite(characterShadowMaterial);
   characterShadow.scale.set(2.2, 2.2);
@@ -264,7 +264,7 @@ this.galaxies.Player = function() {
       map: characterShadowMap,
       color: 0xffffff,
       transparent: true,
-      opacity: 1.0
+      opacity: 0
   });
   var cloneShadow = new THREE.Sprite(cloneShadowMaterial);
   cloneShadow.scale.set(2.2, 2.2);
