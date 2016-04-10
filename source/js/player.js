@@ -442,13 +442,14 @@ this.galaxies.Player = function() {
   };
 
   var targetAsteroid = function (defaultAngle, defaultLookVector) {
-      var asteroidsInRange = galaxies.engine.obstacles.filter(function (asteroid) {
-          return asteroid.state !== "inactive" &&
-              !alreadyTargetedByClone(asteroid) &&
-              (galaxies.utils.flatLengthSqr(asteroid.object.position) < Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2)) ;
-      }).filter(function (asteroid) {
-          return Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle;
-      });
+      var checkRadiusSq = Math.pow(Math.min(0.2 + galaxies.engine.obstacles.length / 8, 1) * galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2),
+          asteroidsInRange = galaxies.engine.obstacles.filter(function (asteroid) {
+              return asteroid.state !== "inactive" &&
+                  !alreadyTargetedByClone(asteroid) &&
+                  (galaxies.utils.flatLengthSqr(asteroid.object.position) < checkRadiusSq);
+          }).filter(function (asteroid) {
+              return Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle;
+          });
 
       if (asteroidsInRange.length > 0) {
           var closestAsteroid = null,
