@@ -266,6 +266,14 @@ this.galaxies.Ufo = function() {
           
           if ( step > 2 ) {
             galaxies.engine.hitPlayer();
+
+            new galaxies.audio.PositionedSound({
+              source: galaxies.audio.getSound('trunkfordlaugh'),
+              position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z*1.5),
+              baseVolume: 4,
+              loop: false
+            });
+
             this.leave();
             laserOrient.rotation.z = 0;
           }
