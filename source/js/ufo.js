@@ -220,8 +220,8 @@ this.galaxies.Ufo = function() {
         
         new galaxies.audio.PositionedSound({
           source: galaxies.audio.getSound('trunkfordlaugh'),
-          position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z*1.5),
-          baseVolume: 4,
+          position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z + 1),
+          baseVolume: 3,
           loop: false
         });
         
@@ -269,8 +269,8 @@ this.galaxies.Ufo = function() {
 
             new galaxies.audio.PositionedSound({
               source: galaxies.audio.getSound('trunkfordlaugh'),
-              position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z*1.5),
-              baseVolume: 4,
+              position: new THREE.Vector3(0,0,galaxies.engine.CAMERA_Z + 1),
+              baseVolume: 3,
               loop: false
             });
 
