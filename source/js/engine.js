@@ -347,6 +347,15 @@ galaxies.engine.restartGame = function() {
   // Add character holder.
   // Character will be removed by planet transition.
   galaxies.engine.rootObject.add( galaxies.engine.player.root );
+
+  if (galaxies.engine.roundNumber === 3) {
+    createjs.Tween.get(galaxies.audio.soundField)
+        .to({volume: 0}, 1500)
+        .call(function() {
+          galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
+          galaxies.audio.soundField.volume = 0.6;
+        });
+  }
   
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
