@@ -174,7 +174,7 @@ galaxies.Obstacle.prototype.update = function( delta ) {
 
 galaxies.Obstacle.prototype.removePassSound = function() {
   if ( this.passSound !== null ) {
-    this.source.stop(0); // API does not require an argument, but Safari 8 does.
+    this.passSound.stop(0); // API does not require an argument, but Safari 8 does.
     this.passSound = null;
   }
 }
