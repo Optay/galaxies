@@ -578,7 +578,11 @@ this.galaxies.Player = function() {
       .set( { opacity: 0 }, character.material )
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportEffectComplete, this );
-    
+
+    createjs.Tween.removeTweens(characterShadow.material);
+    createjs.Tween.get(characterShadow.material)
+        .to({opacity: 0}, TELEPORT_TIME_HALF_MS);
+
     teleportOutClone();
   }
   
@@ -605,6 +609,10 @@ this.galaxies.Player = function() {
         .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
         .call( teleportCloneComplete )
         .call( callback );
+
+        createjs.Tween.removeTweens(cloneShadow.material);
+        createjs.Tween.get(cloneShadow.material)
+            .to({opacity: 0}, TELEPORT_TIME_HALF_MS);
     }
   }
   
@@ -636,6 +644,10 @@ this.galaxies.Player = function() {
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportEffectComplete, this )
       .call( callback, this );
+
+      createjs.Tween.removeTweens(characterShadow.material);
+      createjs.Tween.get(characterShadow.material)
+          .to({opacity: 1}, TELEPORT_TIME_HALF_MS);
       
     teleporting = true;
     
@@ -666,6 +678,10 @@ this.galaxies.Player = function() {
       .set( { opacity: 1 }, clone.material )
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportCloneComplete );
+
+      createjs.Tween.removeTweens(cloneShadow.material);
+      createjs.Tween.get(cloneShadow.material)
+          .to({opacity: 1}, TELEPORT_TIME_HALF_MS);
   }
   
   var setPowerup = function( powerup ) {
