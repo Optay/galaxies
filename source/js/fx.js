@@ -371,7 +371,7 @@ galaxies.fx = (function() {
       particleCount: 400,
       maxAge: { value: 0.3, spread: 0.2 },
       position: { radius: 0.01, spread: new THREE.Vector3(0.02, 0, 0) },
-      velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -4), spread: new THREE.Vector3(3, 3, 4) },
+      velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -4), spread: new THREE.Vector3(1, 1, 4) },
       drag: { value: 0.5, spread: 0.2 },
       color: { value: new THREE.Color('white') },
       angle: { spread: Math.PI },
@@ -656,7 +656,7 @@ galaxies.fx = (function() {
           position: { radius: 0.05, spread: new THREE.Vector3(0.1, 0, 0) },
           velocity: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, -5), spread: new THREE.Vector3(0, 0, 2) },
           acceleration: { distribution: SPE.distributions.BOX, value: new THREE.Vector3(0, 0, 0.4), spread: new THREE.Vector3(0, 0, 0.1) },
-          color: { value: [new THREE.Color(1, 0.8, 0.5), new THREE.Color(1, 0.5, 0.5)] },
+          color: { value: [new THREE.Color(1, 0.8, 0.2), new THREE.Color(0.7, 0.35, 0.1), new THREE.Color(0.5, 0, 0)] },
           angle: { spread: Math.PI },
           opacity: { value: [1, 0] },
           size: { value: [1, 0.4], spread: 0.25 }
