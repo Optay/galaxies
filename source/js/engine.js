@@ -633,12 +633,12 @@ galaxies.engine.planetMoveComplete = function() {
     baseVolume: 10,
     loop: false
   });
+
+  setTimeout(galaxies.engine.initLevel, 750);
 }
 
 galaxies.engine.planetTransitionComplete = function() {
   galaxies.engine.addInputListeners();
-  
-  galaxies.engine.initLevel();
 }
 
 // randomize moon, set and position bgplanet, set scene lighting
