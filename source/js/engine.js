@@ -1008,6 +1008,10 @@ galaxies.engine.update = function() {
           ufoPosition, otherLine, scalar, checkPoint;
 
       if (isUFO) {
+        if (!other.isHittable) {
+          return;
+        }
+
         ufoPosition = other.rootPosition;
 
         otherLine = ufoPosition.clone().sub(proj.lastPos);

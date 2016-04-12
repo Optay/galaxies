@@ -182,6 +182,7 @@ this.galaxies.Ufo = function() {
   
   this.isHittable = false;
   this.alive = true;
+  this.spinOut = false;
   
   this.update = function( delta ) {
     if (this.state === "inactive") {
@@ -287,6 +288,10 @@ this.galaxies.Ufo = function() {
       break;
     case 'out':
       angle = THREE.Math.mapLinear( stepTimer, 0, transitionTime/2, lastAngle, targetAngle );
+        
+      if (this.spinOut) {
+        this.waggler.rotation.z -= delta * 3 * Math.PI; // 90 RPM
+      }
       
       if ( stepTimer >= stepTime ) {
         this.deactivate();
@@ -346,29 +351,30 @@ this.galaxies.Ufo = function() {
     } else {
       hitCounter++;
     }
-    
-    this.isHittable = false;
+
     var self = this;
-    
-    // waggle
+
     createjs.Tween.removeTweens( this.waggler.rotation );
-    this.waggler.rotation.z = Math.PI/4;
-    createjs.Tween.get( this.waggler.rotation )
-      .to( {z: 0}, 1500, createjs.Ease.elasticOut );
-    
-    createjs.Tween.removeTweens( this.waggler.position );
-    createjs.Tween.get( this.waggler.position )
-      .to( {x: 0.5}, 500, createjs.Ease.quadOut )
-      .call( function() {
-        if ( self.state === 'orbit' ) { self.isHittable = true; }
-      })
-      .to( {x: 0}, 750, createjs.Ease.quadInOut );
-    
     
     if ( hitCounter >= HITS ) {
+      this.spinOut = true;
+      this.isHittable = false;
       this.leave();
-      
+
       galaxies.engine.showCombo( this.points, 1, this.object );
+    } else {
+      // waggle
+      this.waggler.rotation.z = Math.PI/4;
+      createjs.Tween.get( this.waggler.rotation )
+          .to( {z: 0}, 1500, createjs.Ease.elasticOut );
+
+      createjs.Tween.removeTweens( this.waggler.position );
+      createjs.Tween.get( this.waggler.position )
+          .to( {x: 0.5}, 500, createjs.Ease.quadOut )
+          .call( function() {
+            if ( self.state === 'orbit' ) { self.isHittable = true; }
+          })
+          .to( {x: 0}, 750, createjs.Ease.quadInOut );
     }
     
     smokeEmitter.enable();
@@ -390,6 +396,8 @@ this.galaxies.Ufo = function() {
     
     hitCounter = 0;
     smokeEmitter.disable();
+
+    this.waggler.rotation.z = 0;
     
     if ( galaxies.engine.isGameOver ) {
       this.deactivate();
