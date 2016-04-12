@@ -1244,7 +1244,7 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.engine.isFiring = false;
   galaxies.ui.hidePauseButton();
 
-  var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
+  var accuracy = (galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound) || 0,
       rawScore = galaxies.engine.roundScore,
       bonusScore;
 

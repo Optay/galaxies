@@ -297,13 +297,11 @@ this.galaxies.Player = function() {
   };
 
   var show = function() {
-    characterRotator.add( character );
-    characterRotator.add( characterShadow );
+    rootObject.add(characterRotator);
   }
   var hide = function() {
-    if ( character.parent === characterRotator ) {
-      characterRotator.remove( character );
-      characterRotator.remove( characterShadow );
+    if ( characterRotator.parent === rootObject ) {
+      rootObject.remove(characterRotator);
     }
   }
   var animateShoot = function() {
@@ -705,6 +703,9 @@ this.galaxies.Player = function() {
   }
   
   var die = function() {
+      characterShadow.material.opacity = 0;
+      cloneShadow.material.opacity = 0;
+
     activeAnimator.updateFrame(10);
   }
 
