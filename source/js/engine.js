@@ -70,7 +70,7 @@ galaxies.engine.powerupMessagesShown = [];
 
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 4.5;
-galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.65 * galaxies.engine.CHARACTER_HEIGHT/2 );
+galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.62 * galaxies.engine.CHARACTER_HEIGHT/2 );
 galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS + (galaxies.engine.CHARACTER_HEIGHT * 0.08);//2;
 
 galaxies.engine.CONE_SLOPE = Math.tan( galaxies.engine.CONE_ANGLE );

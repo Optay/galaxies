@@ -239,7 +239,7 @@ this.galaxies.Player = function() {
       opacity: 0
   });
   var characterShadow = new THREE.Sprite(characterShadowMaterial);
-  characterShadow.scale.set(2.2, 2.2);
+  characterShadow.scale.set(2.22, 2.22);
   characterShadow.position.setZ(-0.01);
 
   characterRotator.add(characterShadow);
@@ -267,7 +267,7 @@ this.galaxies.Player = function() {
       opacity: 0
   });
   var cloneShadow = new THREE.Sprite(cloneShadowMaterial);
-  cloneShadow.scale.set(2.2, 2.2);
+  cloneShadow.scale.set(2.22, 2.22);
   cloneShadow.position.setZ(-0.01);
 
   cloneRotator.add(cloneShadow);
