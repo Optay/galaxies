@@ -4,7 +4,6 @@ this.galaxies = this.galaxies || {};
 
 
 galaxies.ui = (function() {
-  
   // UI elements
   var uiHolder = document.getElementById("menuHolder");
   
@@ -34,9 +33,13 @@ galaxies.ui = (function() {
   var inGameHolder = uiHolder.querySelector(".game-ui");
   var pauseButton = uiHolder.querySelector(".pause-button");
   var levelDisplay = inGameHolder.querySelector(".level-display-text");
+  var timerDisplay = inGameHolder.querySelector(".timer-display");
   var lifeDisplay = inGameHolder.querySelector(".life-display");
   var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
+  var starDisplay = inGameHolder.querySelector(".star-display");
+  var collectStars = starDisplay.querySelectorAll(".collect-star");
   var scoreDisplay = inGameHolder.querySelector(".score-display-text");
+  var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
   
   
   // pause menu
@@ -46,6 +49,15 @@ galaxies.ui = (function() {
   var resumeButton = pauseHolder.querySelector(".resume-button");
   var restartButton = pauseHolder.querySelector(".restart-button");
   var quitButton = pauseHolder.querySelector(".quit-button");
+
+  // Level completion items
+  var levelResults = uiHolder.querySelector(".level-results");
+  var scoreStars = [
+      levelResults.querySelector('.large-star'),
+      levelResults.querySelectorAll('.small-star')[0],
+      levelResults.querySelectorAll('.small-star')[1]
+  ];
+  var resultTitle = levelResults.querySelector(".level-done-title");
   
   // game over menu
   var gameOverHolder = uiHolder.querySelector(".game-over-menu");
@@ -94,26 +106,7 @@ galaxies.ui = (function() {
   var init = function() {
     createjs.CSSPlugin.install();
     
-    /*
-    // Loading indicator transition, setup
-    // Create hidden background images and listen for them to complete loading,
-    // then add fade-in class to scrolling background elements.
-    var element2 = document.createElement("img");
-    element2.addEventListener('load', function() { imageLoaded('.bg2'); } );
-    element2.setAttribute('src', 'images/stars_tile.png');
-    
-    var element1 = document.createElement("img");
-    element1.addEventListener('load', function() { imageLoaded('.bg1'); } );
-    element1.setAttribute('src', 'images/loader_background.jpg');
-    
-    function imageLoaded( selector ) {
-      initBgKeyframes();
-      console.log("image loaded");
-      var holder = document.getElementById("menuHolder").querySelector(selector).parentNode;
-      holder.classList.add('fade-in');
-      holder.classList.remove('invisible');
-    }
-    */
+
     function logoAppear() {
       loadingLogo.classList.add('logo-loading-layout');
 /*      logo.style.width = 0;
@@ -195,7 +188,6 @@ galaxies.ui = (function() {
       progressElement.innerHTML = Math.round(e.progress * 100).toString();
       // update ring
       progressRing.update( e.progress );
-      //console.log( "Progress", e.progress );
     }
     
     galaxies.loadAssets( handleProgress, handleComplete );
@@ -246,26 +238,12 @@ galaxies.ui = (function() {
     // Start the music
     // This could be a singleton, but we're just going to instantiate one like this.
     galaxies.audio.soundField = new galaxies.audio.SoundField( galaxies.audio.getSound('music') );
-    galaxies.audio.soundField.setVolume(0.24); // 0.24
-    
-    /*
-    var test = document.createElement( 'img' );
-    test.src = galaxies.queue.getResult('lux').src;
-    document.getElementById('menuHolder').appendChild(test);
-    */
+    galaxies.audio.soundField.volume = 0.24; // 0.24
     
     // Hide loading logo
     loadingLogo.classList.add('fade-out');
     // Initialize the 3D scene
     galaxies.engine.initScene();
-    
-    
-    
-    // Resize title card and reposition
-    /*
-    loadingLogo.classList.remove('logo-loading-layout');
-    loadingLogo.classList.add("logo-final-layout");
-    */
     
     // Start title sequence
     titleSequence = new galaxies.TitleSequence();
@@ -404,7 +382,105 @@ galaxies.ui = (function() {
     createjs.Tween.removeTweens( title );
     titleActive = false;
   }
-  
+
+  var showLevelResults = function (bonusScore, roundAccuracy) {
+    levelResults.classList.remove("hidden");
+
+    setTimeout(function() {
+      resultTitle.classList.add("level-done-title-on");
+
+      for (var i = 0; i < 3; ++i) {
+        scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
+      }
+    }, 17);
+
+    title.classList.remove("hidden");
+
+    setTimeout(function () {showRoundScore(bonusScore, roundAccuracy);}, 1600)
+  };
+
+  var scaleStar = function (star, collected, delay) {
+    var easing = createjs.Ease.getElasticOut(2, 0.3);
+
+    star.style.transform = "scale(0)";
+
+    if (collected) {
+      star.classList.remove("empty");
+    }
+
+    setTimeout(function () {
+      var tween = createjs.Tween.get(star, {override: true})
+          .to({x: 10}, 1000);
+
+      tween.addEventListener("change", function () {
+        if (!tween.duration) {
+          return;
+        }
+
+        var normalizedPosition = tween.position / tween.duration;
+        var scaleValue = easing(normalizedPosition);
+
+        star.style.transform = "scale(" + scaleValue + ")";
+      });
+    }, delay);
+  };
+
+  var showRoundScore = function (bonus, roundAccuracy) {
+    roundAccuracy = Math.round(roundAccuracy * 100);
+
+    title.innerHTML = '<div class="score-title">BONUS <span class="bonus-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
+    title.classList.add("title-on");
+
+    var bonusElem = title.querySelector(".bonus-score"),
+        accTitle = title.querySelector(".acc-title"),
+        roundAccElem = accTitle.querySelector(".round-acc");
+
+    var scoreTween = createjs.Tween.get(bonusElem)
+        .to({innerHTML: bonus}, 2500);
+
+    scoreTween.addEventListener("change", function () {
+      if (!scoreTween.duration) {
+        return;
+      }
+
+      var interimScore = Math.round(bonus * scoreTween.position / scoreTween.duration);
+
+      bonusElem.innerHTML = galaxies.utils.addCommas(interimScore);
+    });
+
+    setTimeout(function () {
+      accTitle.classList.add("acc-title-on");
+
+      var accTween = createjs.Tween.get(roundAccElem)
+          .to({innerHTML: roundAccuracy}, 1250)
+          .wait(1500);
+
+      accTween.addEventListener("change", function () {
+        if (!accTween.duration) {
+          return;
+        }
+
+        roundAccElem.innerHTML = Math.round(roundAccuracy * accTween.position / accTween.duration);
+      });
+    }, 1250);
+  };
+
+  var clearLevelResults = function () {
+    levelResults.classList.add("fade");
+    title.classList.remove("title-on");
+
+    setTimeout(function () {
+      clearTitle();
+      levelResults.classList.add("hidden");
+      levelResults.classList.remove("fade");
+      resultTitle.classList.remove("level-done-title-on");
+
+      for (var i = 0; i < 3; ++i) {
+        scoreStars[i].style.transform = "scale(0)";
+      }
+    }, 1500);
+  };
+
   // Stop event from reaching other listeners.
   // Used to keep ui buttons from causing fire events on underlying game element.
   var blockEvent = function(e) {
@@ -418,7 +494,6 @@ galaxies.ui = (function() {
     loadingHolder.classList.add('hidden');
     titleSequence.deactivate();
     
-    //gameContainer.classList.remove('hidden');
     inGameHolder.classList.remove('hidden');
     showPauseButton();
     
@@ -508,22 +583,27 @@ galaxies.ui = (function() {
   
   
   
-  var showGameOver = function() {
+  var showGameOver = function( isWin, score, bonus, accuracy ) {
     gameOverHolder.classList.remove('hidden');
     
     window.getComputedStyle(gameOverTitle).top; // reflow
     gameOverTitle.classList.add('game-over-title-on');
     
-    showTitle( "SCORE " +
-               scoreDisplay.innerHTML +
-               "<br>" +
-               levelDisplay.innerHTML, 0);
+    gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
+    
+    showTitle( "SCORE " + galaxies.utils.addCommas(score) +
+               "<br>BONUS " + galaxies.utils.addCommas(bonus) +
+               "<br>ACCURACY " + Math.round(accuracy * 100) + '%');
   }
   var hideGameOver = function() {
     gameOverTitle.classList.remove('game-over-title-on');
     window.getComputedStyle(gameOverTitle).top; // reflow
     
     gameOverHolder.classList.add('hidden');
+  }
+  
+  var updateTimer = function( time ) {
+    timerDisplay.innerHTML = time.toFixed(0);
   }
   
   var updateLevel = function( newPlanetNumber, roundNumber ) {
@@ -542,6 +622,90 @@ galaxies.ui = (function() {
     }
   }
 
+  var getFirstEmptyHeartPosition = function () {
+    var numHearts = lifeHearts.length,
+        i;
+
+    for (i = 0; i < numHearts; ++i) {
+      if (lifeHearts[i].classList.contains("empty")) {
+        return lifeHearts[i].getBoundingClientRect();
+      }
+    }
+
+    return null
+  };
+
+  var createFloatingDiv = function (className) {
+    var floatingDiv = document.createElement("div");
+
+    floatingDiv.className = className;
+    floatingDiv.style.position = "absolute";
+
+    document.body.appendChild(floatingDiv);
+
+    return floatingDiv;
+  };
+
+  var createFloatingHeart = function () {
+    return createFloatingDiv("animated life-heart");
+  };
+  
+  var updateStars = function( starsCollected ) {
+    for ( var i=0; i<collectStars.length; i++ ) {
+      if ( (i+1)<=starsCollected ) {
+        collectStars[i].classList.remove('empty');
+      } else {
+        collectStars[i].classList.add('empty');
+      }
+    }
+  }
+
+  var getFirstEmptyStarPosition = function () {
+    var numStars = collectStars.length,
+        i;
+
+    for (i = 0; i < numStars; ++i) {
+      if (collectStars[i].classList.contains("empty")) {
+        return collectStars[i].getBoundingClientRect();
+      }
+    }
+
+    return null
+
+  };
+
+  var createFloatingStar = function () {
+    return createFloatingDiv("animated collect-star");
+  };
+
+  var animateCollection = function (divElem, sourceObject, finalPosition, callback) {
+    var screenPos = galaxies.utils.getScreenPosition(sourceObject, 50);
+
+    divElem.style.left = (screenPos.x - finalPosition.width / 2) + "px";
+    divElem.style.top = (screenPos.y - finalPosition.height / 2) + "px";
+    divElem.style.transform = "scale(0.5)";
+
+    createjs.Tween.get(divElem.style)
+        .set({transform: "scale(2)"})
+        .wait(500)
+        .set({transform: "scale(1)"});
+
+    createjs.Tween.get(divElem.style)
+        .set({left: finalPosition.left + "px", top: finalPosition.top + "px"})
+        .wait(1000)
+        .call(function () {
+          divElem.remove();
+
+          if (typeof callback === "function") {
+            callback();
+          }
+        });
+  };
+  
+  var updatePowerupCharge = function( newValue ) {
+    powerupCharge.innerHTML = newValue.toFixed(2);
+  }
+
   return {
     init: init,
     gameContainer: gameContainer,
@@ -551,19 +715,24 @@ galaxies.ui = (function() {
     hidePauseButton: hidePauseButton,
     showTitle: showTitle,
     clearTitle: clearTitle,
+    showLevelResults: showLevelResults,
+    clearLevelResults: clearLevelResults,
     updateLevel: updateLevel,
+    updateTimer: updateTimer,
     updateScore: updateScore,
     updateLife: updateLife,
+    getFirstEmptyHeartPosition: getFirstEmptyHeartPosition,
+    createFloatingHeart: createFloatingHeart,
+    updateStars: updateStars,
+    getFirstEmptyStarPosition: getFirstEmptyStarPosition,
+    createFloatingStar: createFloatingStar,
+    animateCollection: animateCollection,
+    updatePowerupCharge: updatePowerupCharge,
     setMixButtons: setMixButtons
   };
   
   
 }());
-
-
-
-
-
 
 
 

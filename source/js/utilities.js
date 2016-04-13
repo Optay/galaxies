@@ -11,6 +11,41 @@ galaxies.utils = this.galaxies.utils || {};
 
 galaxies.utils.PI_2 = Math.PI * 2;
 
+galaxies.utils.shotGroups = [];
+
+galaxies.utils.addShotGroup = function(shots) {
+    if (!(shots instanceof Array)) {
+        shots = [shots];
+    }
+
+    galaxies.utils.shotGroups.push(shots);
+};
+
+galaxies.utils.getConnectedShotGroup = function(shot) {
+    var shotGroups = galaxies.utils.shotGroups,
+        numShotGroups = shotGroups.length;
+
+    for (var i = 0; i < numShotGroups; ++i) {
+        if (shotGroups[i].some(function (item) {return item === shot;})) {
+            return i;
+        }
+    }
+
+    return -1;
+};
+
+galaxies.utils.inShotGroup = function(shot) {
+    return galaxies.utils.getConnectedShotGroup(shot) > -1;
+};
+
+galaxies.utils.removeConnectedShotGroup = function(shot) {
+    var shotGroup = galaxies.utils.getConnectedShotGroup(shot);
+
+    if (shotGroup > -1) {
+        galaxies.utils.shotGroups.splice(shotGroup, 1);
+    }
+};
+
 // A linear tapered sinusoidal easing function.
 // Used for shaking camera.
 galaxies.utils.getShakeEase = function ( frequency ) {
@@ -117,22 +152,13 @@ galaxies.ExhaustiveArray = function() {
   var objects = [];
   var index = 0;
   
-  var shuffle = function() {
-    for (var i=0; i<objects.length; i++ ) {
-      var randomIndex = Math.floor( Math.random() * (i+1) );
-      var temp = objects[randomIndex];
-      objects[randomIndex] = objects[i];
-      objects[i] = temp;
-    }
-  }
-  
   this.add = function( item ) {
     objects.push(item);
   }
   
   this.init = function() {
     index = 0;
-    shuffle();
+    galaxies.utils.shuffleArray(objects);
   }
   
   this.next = function() {
@@ -142,18 +168,32 @@ galaxies.ExhaustiveArray = function() {
       index++;
       if ( index >= objects.length ) {
         index = 0;
-        shuffle();
+        galaxies.utils.shuffleArray(objects);
       }
     }
     
     return nextObject;
   }
   
-  shuffle();
+  galaxies.utils.shuffleArray(objects);
   
 }
 
+// Fisher-Yates shuffle
+galaxies.utils.shuffleArray = function( array ) {
+  for (var i=0, len = array.length; i<len; i++ ) {
+    var randomIndex = Math.floor( Math.random() * (i+1) );
+    var temp = array[randomIndex];
+    array[randomIndex] = array[i];
+    array[i] = temp;
+  }  
+}
 
+
+// modulo without keeping dividend sign.
+galaxies.utils.mod = function( a, n ) {
+  return (a - Math.floor( a/n ) * n);
+}
 
 galaxies.utils.flatLength = function( vector ) {
   return Math.sqrt( Math.pow(vector.x, 2) + Math.pow(vector.y,2) );
@@ -173,7 +213,6 @@ galaxies.utils.rootPosition = function( object ) {
 }
 
 /// Set z-position for objects to map x-y plane to a cone.
-//var parabolicConeSlope = coneSlope/3; // This constant here is related to the radius value used by obstacles
 galaxies.utils.conify = function( object ) {
   object.position.setZ( galaxies.utils.getConifiedDepth( object.position ) );
 }
@@ -181,18 +220,71 @@ galaxies.utils.getConifiedDepth = function( position ) {
   // linear
   return ( (galaxies.utils.flatLength(position)/galaxies.engine.CONE_SLOPE) );
   // parabolic
-  //return ( galaxies.utils.flatLengthSqr(position) * parabolicConeSlope - 0 );
 }
 
+galaxies.utils.calculateRoundScore = function (roundScore, accuracy, numStars) {
+    return Math.round(roundScore * (1 + accuracy) * Math.pow(2, numStars));
+};
+
+galaxies.utils.addCommas = function (number) {
+    var numStr = number.toString(),
+        i;
+
+    for (i = numStr.length - 3; i > 0; i -= 3) {
+        numStr = numStr.slice(0, i) + ',' + numStr.slice(i);
+    }
+
+    return numStr;
+};
 
 
+galaxies.utils.normalizeAngle = function (angle) {
+    var tau = 2 * Math.PI;
 
+    angle = angle % tau;
 
+    if (angle > Math.PI) {
+        angle -= tau;
+    } else if (angle < -Math.PI) {
+        angle += tau;
+    }
+
+    return angle;
+};
+
+galaxies.utils.flatAngle = function(v3) {
+    return Math.atan2(-v3.x, v3.y);
+};
+
+galaxies.utils.flatAngleTo = function (a, b) {
+    return galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(a) - galaxies.utils.flatAngle(b));
+};
+
+galaxies.utils.getScreenPosition = function (obj, margin) {
+    var v3 = new THREE.Vector3(),
+        screenX, screenY;
+
+    v3.setFromMatrixPosition(obj.matrixWorld);
+    v3.project(galaxies.engine.camera);
+
+    screenX = ( v3.x * galaxies.engine.windowHalfX ) + galaxies.engine.windowHalfX;
+    screenY = - ( v3.y * galaxies.engine.windowHalfY ) + galaxies.engine.windowHalfY;
+
+    if (typeof margin === "number") {
+        screenX = Math.max( screenX, margin );
+        screenX = Math.min( screenX, window.innerWidth - margin );
+        screenY = Math.max( screenY, margin );
+        screenY = Math.min( screenY, window.innerHeight - margin );
+    }
+
+    return new THREE.Vector2(screenX, screenY);
+};
 
 
 
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
+// May not be needed in latest version of SPE, but needs to be checked before it can be removed.
 SPE.Emitter.prototype.randomizeExistingVelocityVector3OnSphere = function( v, base, position, speed, speedSpread ) {
         v.copy( position )
             .sub( base )

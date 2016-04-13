@@ -7,340 +7,517 @@
 
 this.galaxies = this.galaxies || {};
 
-
-/// Rename this 'Obstacle'
+/**
+ * PLAIN ASTEROID
+ */
 galaxies.Obstacle = function ( props ) {
-  var PLANET_DISTANCE = 1.25;
-  var RICOCHET_SPEED = 0.35;
-  
-  this.type = props.type;
-  
-  this.particleGroup = props.particleGroup;
-  this.points = props.points;
-  this.explodeType = props.explodeType;
-  
-  var angle = 0;
-  //var angularSpeed = this.speed/radius;
-  
-  var tumble = props.tumble;
-  var tumbling = tumble;
-  var tumbleAxis = new THREE.Vector3();
-  var tumbleOnHit = props.tumbleOnHit;
-  var baseTumbleSpeed = 1.5;
-  var tumbleSpeed = baseTumbleSpeed;
-  
-  var baseSpeed = props.speed;
-  var velocity = new THREE.Vector3();
-  
-  //this.falling = false;
-  var fallSpeed = 8;
-  var fallTimer = 0;
-  var fallTime = 0;
-  var spiralTime = props.spiral * 60 + 1;
-  
-  //this.ricochet = false;
-  this.ricochetCount = 0;
-  
-  // state values: waiting, falling, ricocheting, inactive
-  this.state = 'waiting';
+  // Default values
+  this.type = 'asteroid';
+  this.hitThreshold = 0.6;
+  this.points = [10, 20, 30, 100];
+  this.shakeAmount = 0.2;
+  this.tumbling = true;
+  this.orient = false;
+  this.tumbleAxis = new THREE.Vector3();
+  this.baseTumbleSpeed = 1.5;
+  this.spiral = 0;
+  this.baseSpeed = 0.2;
+  this.mass = 1;
+  this.baseLife = 1;
+  this.state = 'inactive'; // state values: waiting, falling, ricocheting, inactive
   this.isActive = false; // will the object accept interactions
+  this.hitSound = 'asteroidhit';
+  this.rubbleType = 'plain';
+  this.explodeSound = 'asteroidsplode';
+  this.explosionGain = 2
+  this.passSoundId = '';
   
-  this.object = props.anchor;
-  this.object.up.set(0,0,1);
+  // Overrides
+  for ( var propName in props ) {
+    if ( this.hasOwnProperty( propName ) ) {
+      this[propName] = props[propName];
+    } else { console.log("Obstacle attempting to set unknown property.", propName); }
+  }
   
-  this.orient = props.orient;
-  this.model = props.model;
+  // derived values
+  this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
   
-  // Iterate through provided model object to find the actual mesh and its material.
-  // Only the first mesh/material is used.
-  var material = null;
-  var childrens = [];
-  childrens.push(this.model);
-  while ( childrens.length > 0 ) {
-    var child = childrens.shift();
-    if ( child==null ) { continue; }
-    
-    if ( child.material != null ) {
-      material = child.material;
-      break;
-    }
-    
-    for ( var i=0, len = child.children.length; i<len; i++ ) {
-      childrens.push( child.children[i] );
-    }
-  };
-  //
-  
-  //var axisHelper = new THREE.AxisHelper( 2 );
-  //this.object.add( axisHelper );  
-  
-  // Sound
-  var hitSound = props.hitSound;
-  var explodeSound = props.explodeSound;
   this.passSound = null;
-  if ( props.passSound != null ) {
-    //console.log(_passSoundId);
-    this.passSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound( props.passSound), this.object, 0, true );
-    //directionalSources.push(passSound);
-  }
-  if ( typeof( props.explosionGain ) !=='number' ) { props.explosionGain = 2; }
-  var explosionGain = props.explosionGain;
-  
-  var clearDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
-  var startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.2;
-  if (this.passSound != null ) {
-    startDistance = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 2;
-  }
-  
-  this.reset = function() {
-    angle = Math.random()*Math.PI*2;
-    var position = new THREE.Vector3( Math.cos(angle), Math.sin(angle), 0 );
-    
-    position.multiplyScalar( startDistance );
-    this.object.position.copy(position);
-    this.object.lookAt( new THREE.Vector3() );
-    
-    if ( material !== null) {
-      material.transparent = false;
-    }
-    
-    this.state = 'waiting';
-    this.isActive = false;
-    fallTime = Math.random() * 3; // random delay to make obstacles arrive less uniformly
-    fallTimer = 0;
-    velocity.set(0,0,0);
-
-    this.speed = baseSpeed * galaxies.engine.speedScale;
-    
-    tumbleAxis.set( Math.random()*2-1, Math.random()*2 -1, Math.random()*2 -1 );
-    tumbleAxis.normalize();
-    tumbling = tumble;
-    tumbleSpeed = baseTumbleSpeed;
-    
-    //this.ricochet = false;
-  }
-    
-  this.update = function( delta ) {
-    switch ( this.state ) {
-    case 'retreating':
-      this.object.position.add( velocity.clone().multiplyScalar(delta) );
-      break;
-    case 'ricocheting':
-      this.object.position.add( velocity.clone().multiplyScalar(delta) );
-      
-      // Prevent ricochets from traveling all the way out, so
-      // the player cannot score points off-screen
-      var radius = galaxies.utils.flatLength( this.object.position );
-      if ( radius > clearDistance ) { this.deactivate(); }
-      if ( this.isActive && (radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) ) {
-        this.isActive = false;
-        if ( material!=null ) {
-          material.transparent = true;
-        }
-      }
-      break;
-    case 'falling':
-      // fall motion
-      var targetAngle = Math.atan2( -this.object.position.y, -this.object.position.x );
-      angle = targetAngle - (Math.PI/2);
-      //while ( targetAngle<angle) { targetAngle += (Math.PI * 2); }
-      
-      // Time-based spiral
-      fallTimer+=delta;
-      fallTimer = THREE.Math.clamp( fallTimer, 0, spiralTime);
-      var fallAngle = THREE.Math.mapLinear(fallTimer, 0, spiralTime, angle, targetAngle );
-      
-      /*
-      // Distance-based spiral
-      var distance = this.object.position.length();
-      distance = THREE.Math.clamp( distance, 0, radius );
-      //var fallAngle = THREE.Math.mapLinear( radius-distance, 0, radius, angle, targetAngle );
-      var fallAngle = angle;
-      */
-      
-//      angle = angle + ( targetAngle - angle )*delta;
-      
-      velocity.set( Math.cos(fallAngle), Math.sin(fallAngle), 0 );
-      velocity.multiplyScalar( this.speed * delta );
-      
-      var radius = galaxies.utils.flatLength( this.object.position );
-      if (( radius <= PLANET_DISTANCE ) && (velocity.length() < PLANET_DISTANCE) ) {
-        // This order is very important as hitPlayer may trigger game over which
-        // must override the obstacle's state.
-        this.splode();
-        galaxies.engine.hitPlayer();
-        break;
-      }
-      if ( radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
-      this.object.position.add( velocity );
-      
-      /*
-      // clamp vertical position
-      if ( this.object.position.y < -OBSTACLE_START_RADIUS ) { this.object.position.setY( -OBSTACLE_START_RADIUS ); }
-      if ( this.object.position.y > OBSTACLE_START_RADIUS ) { this.object.position.setY( OBSTACLE_START_RADIUS ); }
-      */
-      
-      
-      // idle sound level
-      if ( this.passSound !== null ) {
-        this.passSound.update( delta );
-        var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
-        soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
-        //console.log( soundLevel );
-        this.passSound.volume = soundLevel;
-      }
-      //
-      
-      break;
-    case 'waiting':
-      /*
-      // fixed orbit
-      angle += delta * angularSpeed;
-      
-      var position = new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0 );
-      position.multiplyScalar( radius );
-      this.object.position.copy( position );
-      */
-      fallTimer+=delta;
-      if (fallTimer >= fallTime ) {
-        //this.falling = true;
-        this.state = 'falling';
-        
-        galaxies.engine.rootObject.add( this.object );
-        
-        //velocity.set( -Math.sin(angle), Math.cos(angle) * radius );
-        //angle = angle + (Math.PI/2);
-        
-        angle = angle + (Math.PI/2);
-        // Reusing timer variables for spiral, naughty!
-        fallTime = 0;
-        fallTimer = 0;
-        break;
-      } // switch
-    }
-    
-    if ( tumbling ) {
-      this.object.rotateOnAxis( tumbleAxis, tumbleSpeed * delta );
-    } else if ( this.orient ) {
-      this.object.lookAt( galaxies.engine.rootObject.position );
-    }
-    
-    if ( this.particleGroup != null ) {
-      this.particleGroup.tick(delta);
-    }
-    
-  } 
-  
-  this.removePassSound = function() {
-    if ( this.passSound !== null ) {
-      this.passSound.sound.source.stop(0); // API does not require an argument, but Safari 8 does.
-      //removeSource( this.passSound );
-      this.passSound = null;
-    }
-  }
-  
-  // Reverse course, no more interactions, the day is won
-  this.retreat = function() {
-    this.isActive = false;
-    this.state = 'retreating';
-    
-    velocity.copy( this.object.position );
-    velocity.z = 0;
-    velocity.setLength( 3 * RICOCHET_SPEED * galaxies.engine.speedScale );
-    
-    if (tumbleOnHit) { tumbling = true; }
-    
-    // silence!
-    this.removePassSound();
-    
-  }
-  
-  this.hit = function( hitPosition, ricochet ) {
-    //if ( this.ricochet ) {
-    if ( this.passSound !== null ) {
-      this.passSound.volume = 0;
-    }
-    
-    if ( this.state === 'ricocheting' ) {
-      galaxies.engine.showCombo( (this.ricochetCount * this.points), this.object );
-      this.splode();
-      return;
-    }
-    
-    new galaxies.audio.PositionedSound({
-      source: galaxies.audio.getSound(hitSound),
-      position: galaxies.utils.rootPosition(this.object),
-      baseVolume: 2,
-      loop: false
+  if ( this.passSoundId !== '' ) {
+    this.passSound = new galaxies.audio.SimpleSound({
+      source: galaxies.audio.getSound( this.passSoundId ),
+      baseVolume: 0,
+      loop: true
     });
-    this.state= 'ricocheting';
-    
-    //this.ricochet = true;
-    
-    if ( typeof(ricochet) === 'undefined' ) {
-      this.ricochetCount = 1;
-    } else {
-      this.ricochetCount = ricochet+1;
-    }
-    
-    if ( tumbleOnHit ) {
-      tumbling = true;
-      tumbleSpeed = baseTumbleSpeed * this.ricochetCount * 2.5;
-    }
-    
-    //console.log( this.ricochetCount );
-    
-    velocity.copy( this.object.position );
-    velocity.sub( hitPosition );
-    velocity.z = 0;
-    velocity.setLength( RICOCHET_SPEED * galaxies.engine.speedScale );
-    //console.log(velocity);
   }
   
-  this.splode = function() {
-    new galaxies.audio.PositionedSound({
-      source: galaxies.audio.getSound(explodeSound),
-      position: galaxies.utils.rootPosition(this.object),
-      baseVolume: explosionGain,
-      loop: false
-    });
-    
-    galaxies.fx.shakeCamera(0.5);
-
-    switch ( this.explodeType) {
-      case 'fireworks':
-        galaxies.fx.showFireworks( this.object.position );
-        break;
-      case 'debris':
-        galaxies.fx.showDebris( this.object.position, velocity );
-        break;
-      case 'rubble':
-      default:
-        galaxies.fx.showRubble( this.object.position, velocity );
-    }
-    
-    this.deactivate();
-  }
   
-  this.deactivate = function() {
-    if ( this.passSound !== null ) { this.passSound.volume = 0; }
-    this.state = 'inactive';
-    this.remove();
-    //this.resetPosition();
-  }
   
-  this.remove = function() {
-    if ( this.object.parent!=null) {
-      this.object.parent.remove(this.object);
-    }
-  }
-  
-  // Clear this object, so it will be garbage collected.
-  this.destruct = function() {
-    this.removePassSound();
-    this.remove();
-  }
-  
+  this.initModel();
   this.reset();
+
+}
+
+galaxies.Obstacle.prototype.SPEED_SCALE = 2;
+
+galaxies.Obstacle.prototype.initModel = function() {
   
+  var material = galaxies.resources.materials['asteroid'].clone();
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
+  this.object.scale.set( 0.375, 0.375, 0.375 );
+  this.object.up.set(0,0,1);
+}
+
+galaxies.Obstacle.prototype.setAngle = function( newAngle ) {
+  this.angle = newAngle;
+  this.updatePosition();
+}
+
+galaxies.Obstacle.prototype.updatePosition = function() {
+  this.object.position.set( Math.cos(this.angle) * this.radius,
+                            Math.sin(this.angle) * this.radius,
+                            this.object.position.z );
+  galaxies.utils.conify( this.object );
+}
+
+galaxies.Obstacle.prototype.reset = function() {
+  this.age = 0;
+
+  this.angle = Math.random()*Math.PI*2;
+  this.radius = galaxies.engine.OBSTACLE_START_DISTANCE;
+  this.updatePosition();
+  
+  this.object.lookAt( new THREE.Vector3() );
+  
+  this.life = this.baseLife;
+
+  this.state = 'falling';
+  
+  this.isActive = false;
+  
+  this.velocityRadial = 0;
+  this.velocityTangential = this.baseSpeed * this.spiral;
+  
+  this.tumbleAxis.set( Math.random()*2-1, Math.random()*2 -1, Math.random()*2 -1 );
+  this.tumbleAxis.normalize();
+  this.tumbleSpeed = this.baseTumbleSpeed;
+
+  if ( this.passSound !== null ) {
+    this.passSound.volume = 0;
+  }
+  
+  galaxies.engine.rootObject.add( this.object );
+
+  galaxies.engine.planeSweep.add(this);
+}
+
+galaxies.Obstacle.prototype.update = function( delta ) {
+  this.age += delta;
+  
+  // creates a nice curve that starts at 1 and increase to SPEED_SCALE
+  // steeply as the obstacle approaches the planet
+  // Graph it:
+  // https://www.desmos.com/calculator
+  var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
+  speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) ); 
+  
+  this.angle += this.velocityTangential * delta/this.radius;
+  this.radius += speedScale * this.velocityRadial * delta;
+  this.updatePosition();
+  
+  switch ( this.state ) {
+    // retreat and ricochet are no longer part of the game mechanics
+  case 'retreating':
+    break;
+  case 'ricocheting':
+    break;
+  case 'falling':
+    // accelerate and cap at prescribed obstacle speed
+    this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
+    this.velocityRadial = Math.max( -this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial );
+    
+    if (( this.radius <= galaxies.engine.PLANET_DISTANCE )) {
+      // This order is very important as hitPlayer may trigger game over which
+      // must override the obstacle's state.
+      this.splode( false );
+      galaxies.engine.hitPlayer();
+      break;
+    }
+    if ( this.radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
+    
+    
+    // idle sound level
+    if ( this.passSound !== null ) {
+      var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
+      soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
+      
+      if (this.age < 2) {
+        soundLevel *= this.age / 2;
+      }
+      
+      this.passSound.volume = soundLevel;
+    }
+    //
+    
+    break;
+  case 'waiting':
+
+  } // switch
+
+  if ( this.tumbling ) {
+    this.object.rotateOnAxis( this.tumbleAxis, this.tumbleSpeed * delta );
+  } else if ( this.orient ) {
+    this.object.lookAt( galaxies.engine.rootObject.position );
+  }
+  
+} 
+
+galaxies.Obstacle.prototype.removePassSound = function() {
+  if ( this.passSound !== null ) {
+    this.passSound.stop(0); // API does not require an argument, but Safari 8 does.
+    this.passSound = null;
+  }
+}
+
+// Reverse course, no more interactions, the day is won
+galaxies.Obstacle.prototype.retreat = function() {
+  this.isActive = false;
+  this.state = 'retreating';
+  
+  this.velocityRadial = ( 3 * this.baseSpeed * galaxies.engine.speedScale );
+  
+  this.tumbling = true;
+  
+  // silence!
+  this.removePassSound();
+  
+}
+
+galaxies.Obstacle.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+  if ( this.state === 'inactive' ) { return; }
+  
+  this.life--;
+  
+  if (typeof(multiply)!=='number') { multiply = 1; }
+  
+  this.velocityRadial = galaxies.Projectile.prototype.PROJECTILE_SPEED * 0.10;
+  // update angular velocity based on hit position.
+  var hitVector = this.object.position.clone();
+  hitVector.sub( hitPosition );
+  var hitDistance = hitVector.length();
+  
+  var angleDiff = this.angle - Math.atan2( hitPosition.y, hitPosition.x );
+  angleDiff = galaxies.utils.mod( (angleDiff+Math.PI), (2*Math.PI)) - Math.PI; // Convert to minimum angle -Pi to Pi
+  
+  // This is an approximation as we are using angle*radius which gives us an arc length.
+  // We should really be calculating the chord length 2*sin(angle/2).
+  // This will be (roughly) between -1 and 1.
+  var angularAmount = angleDiff * this.radius / hitDistance;
+  
+  this.velocityTangential += galaxies.Projectile.prototype.PROJECTILE_SPEED * 0.20 * angularAmount;
+  
+  // update tumble
+  this.tumbleSpeed += (this.baseTumbleSpeed * angularAmount);
+  
+  if ( forceDestroy || (this.life <=0 ) ) {
+    
+    var pointIndex = Math.floor( (this.points.length) * (1 - ( (this.radius-galaxies.engine.PLANET_DISTANCE) / (galaxies.engine.OBSTACLE_START_DISTANCE-galaxies.engine.PLANET_DISTANCE) )) );
+    pointIndex = Math.min( this.points.length - 1, pointIndex );
+    
+    galaxies.engine.showCombo( this.points[pointIndex], multiply, this.object );
+    this.splode();
+    return;
+  }
+  
+  new galaxies.audio.PositionedSound({
+    source: galaxies.audio.getSound(this.hitSound),
+    position: galaxies.utils.rootPosition(this.object),
+    baseVolume: 2,
+    loop: false
+  });
+  
+  
+
+}
+
+galaxies.Obstacle.prototype.splode = function( spawn ) {
+  // Object must be deactivated first to prevent circular hit/splode calls for comets
+  this.deactivate();
+  
+  if ( typeof(spawn)!=='boolean') {
+    spawn = true;
+  }
+  
+  new galaxies.audio.PositionedSound({
+    source: galaxies.audio.getSound(this.explodeSound),
+    position: galaxies.utils.rootPosition(this.object),
+    baseVolume: this.explosionGain,
+    loop: false
+  });
+  
+  galaxies.fx.shakeCamera(this.shakeAmount);
+  
+  var c = Math.cos(this.angle);
+  var s = Math.sin(this.angle);
+  var velocity = new THREE.Vector3( c * this.velocityRadial - s * this.velocityTangential,
+                                    s * this.velocityRadial + c * this.velocityTangential,
+                                    0 );
+  galaxies.fx.showRubble( this.rubbleType, this.object.position, velocity );
+  
+  if ( spawn ) {
+    for (var i=0; i<this.spawnNumber; i++ ) {
+      var child = galaxies.engine.addObstacle( this.spawnType );
+      
+      child.radius = this.radius + THREE.Math.randFloatSpread( this.hitThreshold * galaxies.engine.CONE_SLOPE );
+
+      // Create range of velocities from -baseSpeed to +baseSpeed scaled by a constant.
+      var tan = this.velocityTangential + ((2 * i/(this.spawnNumber-1))-1) * (this.baseSpeed * 4);
+      child.velocityRadial = this.velocityRadial;
+      child.velocityTangential = tan;
+      child.angle = this.angle + (tan/10);
+      
+      child.updatePosition();
+      galaxies.utils.conify( child.object );
+    }
+  }
+  
+  
+}
+
+galaxies.Obstacle.prototype.deactivate = function() {
+  if ( this.passSound !== null ) { this.passSound.volume = 0; }
+  this.state = 'inactive';
+  this.remove();
+}
+
+galaxies.Obstacle.prototype.remove = function() {
+  galaxies.engine.planeSweep.remove(this);
+
+  if ( this.object.parent!=null) {
+    this.object.parent.remove(this.object);
+  }
+}
+
+// Clear this object, so it will be garbage collected.
+galaxies.Obstacle.prototype.destruct = function() {
+  this.removePassSound();
+  this.remove();
+}
+
+
+
+
+/**
+ * ICE ASTEROID
+ */
+galaxies.ObstacleIce = function () {
+  var props = {};
+  props.type = 'asteroidice';
+  props.points = [25, 50, 100, 250];
+  props.shakeAmount = 0.6;
+  props.baseSpeed = 0.25;
+  props.mass = 2;
+  props.baseLife = 2;
+  
+  galaxies.Obstacle.call(this, props);
+}
+galaxies.ObstacleIce.prototype = Object.create( galaxies.Obstacle.prototype );
+galaxies.ObstacleIce.prototype.constructor = galaxies.ObstacleIce;
+galaxies.ObstacleIce.prototype.initModel = function() {
+  var material = galaxies.resources.materials['asteroid'].clone();
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
+  this.object.scale.set( 0.40, 0.40, 0.40 );
+  
+  this.ice = new THREE.Mesh( new THREE.DodecahedronGeometry( 1.2 ),
+                            galaxies.resources.materials['asteroidice'] );
+  this.object.add( this.ice );
+}
+galaxies.ObstacleIce.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+  // parent object's hit
+  galaxies.Obstacle.prototype.hit.call( this, hitPosition, multiply, forceDestroy );
+  
+  // Lose the ice shell
+  if ( this.life === 1 ) {
+    this.object.remove( this.ice );
+    
+    var c = Math.cos(this.angle);
+    var s = Math.sin(this.angle);
+    var velocity = new THREE.Vector3( c * this.velocityRadial - s * this.velocityTangential,
+                                      s * this.velocityRadial + c * this.velocityTangential,
+                                      1 );
+    galaxies.fx.showRubble( 'ice', this.object.position, velocity );
+  }
+}
+galaxies.ObstacleIce.prototype.reset = function() {
+  galaxies.Obstacle.prototype.reset.call( this );
+  this.object.add( this.ice );
+}
+
+/**
+ * COMET
+ */
+galaxies.ObstacleComet = function() {
+  var props = {};
+  props.type = 'comet';
+  props.baseLife = 2;
+  props.baseSpeed = 0.6;//1.2;
+  props.spiral = 0.8;
+  props.points = [100, 200, 375, 750];
+  props.shakeAmount = 1.6;
+  props.tumbling = false;
+  props.orient = true;
+  props.rubbleType = '';
+  props.passSoundId = 'cometloop';
+  
+  props.explodeSound = 'cometexplode';
+  props.explosionGain = 7;
+  
+  galaxies.Obstacle.call( this, props );
+}
+galaxies.ObstacleComet.prototype = Object.create( galaxies.Obstacle.prototype );
+galaxies.ObstacleComet.prototype.constructor = galaxies.ObstacleComet;
+galaxies.ObstacleComet.prototype.initModel = function() {
+  var emitterSettings = {
+    type: SPE.distributions.BOX,
+    particleCount: 160,
+    duration: null,
+    maxAge: { value: 1.5 },
+    position: { spread: new THREE.Vector3(0.6, 0.6, 0.6) },
+    velocity: { value: new THREE.Vector3(0, 0, -5), 
+                spread: new THREE.Vector3(0.2, 0.2, 2) },
+    color: { value: [new THREE.Color("rgb(6, 6, 20)"), new THREE.Color("rgb(255, 77, 0)") ] },
+    opacity: { value: [0.8, 0.1] },
+    size: { value: [6, 2],
+            spread: [4] }
+  };
+  
+  var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
+  texture.needsUpdate = true;
+  this.particleGroup = new SPE.Group({
+    texture: { value: texture },
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    alphaTest: 0,
+    depthWrite: false
+  });
+  this.particleGroup.addEmitter( new SPE.Emitter( emitterSettings) );
+  
+  this.object = this.particleGroup.mesh;
+  this.object.up.set(0,0,1);
+
+  // solid core (for when particles are thin at edge of screen )
+  var mat = new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true, blending: THREE.AdditiveBlending } );
+  var core = new THREE.Sprite( mat );
+  this.object.add( core );
+}
+galaxies.ObstacleComet.prototype.update = function(delta) {
+  galaxies.Obstacle.prototype.update.call( this, delta );
+  this.particleGroup.tick(delta);
+}
+galaxies.ObstacleComet.prototype.splode = function() {
+  galaxies.Obstacle.prototype.splode.call( this, false );
+  
+  galaxies.fx.showFireworks( this.object.position );
+  
+  // hit all obstacles within range of explosion
+  var range = 5;
+  for ( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
+    var obs = galaxies.engine.obstacles[i];
+    if ( obs === this ) { continue; }
+    var relativePosition = new THREE.Vector3();
+    relativePosition.subVectors( obs.object.position, this.object.position );
+    relativePosition.z = 0;
+    if ( relativePosition.length() < range ) {
+      obs.hit( this.object.position, 2 );
+    }
+  }
+  
+}
+
+/**
+ * RADIOACTIVE ROID, spawns three babies
+ */
+galaxies.ObstacleRad = function() {
+  var props = {};
+  props.type = 'asteroidrad';
+  props.baseLife = 3;
+  props.baseSpeed = 0.3;
+  props.points = [50, 75, 150, 500];
+  props.shakeAmount = 1.2;
+  props.hitThreshold = 0.9;
+  props.rubbleType = 'rad';
+  this.spawnType = 'asteroidradchild';
+  this.spawnNumber = 3;
+  
+  galaxies.Obstacle.call( this, props );
+  
+}
+galaxies.ObstacleRad.prototype = Object.create( galaxies.Obstacle.prototype );
+galaxies.ObstacleRad.prototype.constructor = galaxies.ObstacleRad;
+galaxies.ObstacleRad.prototype.initModel = function() {
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], galaxies.resources.materials['asteroidrad'] );
+  this.object.scale.set( 0.5, 0.5, 0.5 );
+  
+  galaxies.fx.addGlowbject( this.object, 0x00ff00 );
+  
+}
+
+/**
+ * SON OF RADIOACTIVE ROID
+ */
+galaxies.ObstacleRadChild = function() {
+  var props = {};
+  props.type = 'asteroidradchild';
+  props.baseLife = 1;
+  props.baseSpeed = 0.4;
+  props.points = [50, 75, 150, 500];
+  props.hitThreshold = 0.5;
+  props.rubbleType = 'rad';
+  
+  galaxies.Obstacle.call( this, props );
+}
+galaxies.ObstacleRadChild.prototype = Object.create( galaxies.Obstacle.prototype );
+galaxies.ObstacleRadChild.prototype.constructor = galaxies.ObstacleRadChild;
+galaxies.ObstacleRadChild.prototype.initModel = function() {
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], galaxies.resources.materials['asteroidrad'] );
+  this.object.scale.set( 0.3, 0.3, 0.3 );
+      
+  galaxies.fx.addGlowbject( this.object, 0x00ff00 );
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+/// Factory function for creating standard obstacles.
+galaxies.Obstacle.create = function( type ) {
+ 
+  switch(type) {
+
+    case 'comet':
+      return new galaxies.ObstacleComet();
+      break;
+    case 'asteroidmetal':
+    case 'asteroidice':
+      return new galaxies.ObstacleIce();
+      break;
+    case 'asteroidrad':
+      return new galaxies.ObstacleRad();
+      break;
+    case 'asteroidradchild':
+      return new galaxies.ObstacleRadChild();
+      break;
+    case 'asteroid':
+    default:
+      return new galaxies.Obstacle();
+      break;
+      
+  }
 }

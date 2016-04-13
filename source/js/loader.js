@@ -14,7 +14,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   
   // Set audio extension
   var ext;
-  if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  // Don't use EC3 in the mobile version
+  //if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
+  if ( false ) { ext = '.mp4'; }
   else if ( galaxies.utils.supportsOGG ) { ext='.ogg'; }
   else { ext = '.m4a'; }
   
@@ -59,9 +61,14 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'trunkfordlaugh2', src:'trunkford_laugh_02', type: createjs.AbstractLoader.BINARY },
     { id: 'trunkfordlaugh3', src:'trunkford_laugh_03', type: createjs.AbstractLoader.BINARY },
     { id: 'trunkfordlaugh4', src:'trunkford_laugh_04', type: createjs.AbstractLoader.BINARY },
-    { id: 'buttonover', src:'button_rollover', type: createjs.AbstractLoader.BINARY }
-    
-    
+    { id: 'buttonover', src:'button_rollover', type: createjs.AbstractLoader.BINARY },
+    { id: 'starcollect', src:'star', type: createjs.AbstractLoader.BINARY },
+    { id: 'heartcollect', src:'heart', type: createjs.AbstractLoader.BINARY },
+    { id: 'powerupcollect', src: 'powerup', type: createjs.AbstractLoader.BINARY },
+    { id: 'round3music', src: 'music_round3', type: createjs.AbstractLoader.BINARY },
+    { id: 'aliengrowl', src: 'alien_growl', type: createjs.AbstractLoader.BINARY },
+    { id: 'tripleraquet', src: 'triple_raquet_fire', type: createjs.AbstractLoader.BINARY }
+
     
     
   ];
@@ -79,6 +86,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'skyboxfront5', src: 'spacesky_front5.jpg' },
     { id: 'skyboxback6', src: 'spacesky_back6.jpg' },
     { id: 'lux', src: 'lux.png' },
+    { id: 'luxclone', src: 'lux_clone.png' },
+    { id: 'luxgolden', src: 'lux_golden.png' },
+    { id: 'luxspread', src: 'lux_triple.png' },
     { id: 'trunkford', src: 'trunkford.png' },
     { id: 'projhitparticle', src: 'hit_sprite.png' },
     { id: 'asteroidcolor', src:'asteroid_color.jpg' },
@@ -96,9 +106,24 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'title3', src: 'title_03_dolby.png' },
     { id: 'title4', src: 'title_04_trunkford.png' },
     { id: 'titleExtraLux', src: 'title_luxamillion_planet.png' },
-    { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' }
-    
-    
+    { id: 'titleExtraTrunkford', src: 'title_trunkford_in_ufo.png' },
+    { id: 'heart', src: 'heart_life.png' },
+    { id: 'star', src: 'star_collect.png' },
+    { id: 'planetjupiter', src: 'planet_jupiter.png' },
+    { id: 'planetmars', src: 'planet_mars.png' },
+    { id: 'planetpluto', src: 'planet_1.png' },
+    { id: 'planetneptune', src: 'planet_2.png' },
+    { id: 'planeturanus', src: 'planet_3.png' },
+    { id: 'planetsaturn', src: 'planet_4.png' },
+    { id: 'planetjupiter', src: 'planet_5.png' },
+    { id: 'planetmars', src: 'planet_6.png' },
+    { id: 'planetearth', src: 'planet_7.png' },
+    { id: 'sparkle', src: 'sparticle.png' },
+    { id: 'smoke', src: 'smokeparticle.png' },
+    { id: 'lensFlare', src: 'lensflare3.png' },
+    { id: 'sun', src: 'sun_on_black.jpg' },
+    { id: 'charactershadow', src: 'character_shadow.png' }
+
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;

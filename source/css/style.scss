@@ -3,7 +3,7 @@
 
 #container {
   padding:0;
-  margin:0;  
+  margin:0;
 }
 
 body {
@@ -12,7 +12,14 @@ body {
   padding: 0;
   overflow: hidden;
   
-  -ms-touch-action: none !important; /* DISABLE DOUBLE-TAP-ZOOM */
+  -ms-touch-action: none; /* DISABLE DOUBLE-TAP-ZOOM */
+  touch-action: none;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
 }
 
 .hidden {
@@ -110,7 +117,7 @@ body {
   z-index: 25;
 }
 .game-over-menu {
-  width: 600px;
+  width: 640px;
 }
 .pause-menu, .game-over-menu {
   position: absolute;
@@ -330,7 +337,7 @@ body {
 /*****************
  * in-game
  *****************/
-.level-display, .score-display {
+.level-display, .score-display, .powerup-charge-display, .timer-display {
   margin: 20px;
   
   color: $score-color;
@@ -342,6 +349,11 @@ body {
   line-height: 35px;
 }
 
+.timer-display {
+  position: absolute;
+  top: 40px;
+  right: 0;
+}
 .level-display {
   position: absolute;
   top: 0;
@@ -358,6 +370,12 @@ body {
   font-size: 28px;
   line-height: 34px;
   vertical-align: top;
+}
+
+.powerup-charge-display {
+  position: absolute;
+  top: 40px;
+  left: 0;
 }
 
 
@@ -377,10 +395,39 @@ body {
   background: url('../images/life_heart.png');
   background-size: cover;
   background-position: bottom;
+
+  transition: background-position 0.5s ease;
 }
 .life-heart.empty {
   background-position: top;
 }
+
+.star-display {
+  position: absolute;
+  top: 0;
+  right: 180px;
+  margin-top: 27px;
+}
+.collect-star {
+  width: 28px;
+  height: 28px;
+  float: left;
+  margin-right: 5px;
+  //display: inline-block;
+  
+  background: url('../images/collect_star.png');
+  background-size: cover;
+  background-position: bottom;
+  transition: background-position 0.5s ease;
+}
+.collect-star.empty {
+  background-position: top;
+}
+
+.life-heart.animated, .collect-star.animated {
+  transition: transform 0.5s ease, left 1s ease, top 1s ease;
+}
+
 
 
 .game-logo {
@@ -405,6 +452,7 @@ body {
   left:0;
   right:0;
   margin: 70px auto;
+  padding-top: 50px;
   
   top: 100%;
   transition: top $transition-time ease;
@@ -417,6 +465,83 @@ body {
 }
 .title-on {
   top: 50%;
+}
+
+.level-results {
+  position: absolute;
+  width: 100%;
+  top: 80px;
+  text-align: center;
+
+  transition: opacity $transition-time+1s ease;
+}
+
+.level-results.fade {
+  opacity: 0;
+}
+
+.score-title {
+  .bonus-score {
+    display: inline-block;
+    width: 6ch;
+    text-align: right;
+  }
+}
+
+.acc-title {
+  position: relative;
+  top: 800px;
+
+  transition: top $transition-time ease;
+
+  .round-acc {
+    display: inline-block;
+    width: 3ch;
+    text-align: right;
+  }
+}
+
+.acc-title-on {
+  top: 0;
+}
+
+.level-done-star {
+  position: relative;
+  margin: 0 8px;
+  display: inline-block;
+
+  background: url('../images/collect_star.png');
+  background-size: cover;
+  background-position: bottom;
+}
+.level-done-star.empty {
+  background-position: top;
+}
+
+.level-done-stars .small-star {
+  width: 32px;
+  height: 32px;
+  margin-top: 32px;
+}
+
+.level-done-stars .large-star {
+  width: 56px;
+  height: 56px;
+}
+
+.level-done-title {
+  transform: scale(50);
+
+  font-family: 'HorizonBT-Regular';
+  font-size: 90px;
+  line-height: 1.2em;
+  color: white;
+
+  transition: transform $transition-time ease;
+}
+
+.level-done-title-on {
+  transform: scale(1);
 }
 
 .browser-recommend {

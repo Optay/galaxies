@@ -29,7 +29,6 @@ galaxies.audio.positionedSounds = [];
 // Create a new AudioBufferSource node for a given sound.
 galaxies.audio.getSound = function( id ) {
   var buffer = galaxies.audio.loadedSounds[id].next();
-  //console.log( "getSound", id, buffer, typeof(buffer) );
   if ( typeof( buffer ) === 'undefined' ) {
     console.log("Requested sound not loaded.", id)
     return null;
@@ -46,6 +45,7 @@ galaxies.audio.sounds = {
   'fpo': ['fpo1'],
   'ufo': ['ufo'],
   'music': ['music'],
+  'round3music': ['round3music'],
   'ufohit': ['ufohit1', 'ufohit2'],
   'ufoshoot': ['ufoshoot'],
   'planetsplode': ['planetsplode'],
@@ -56,7 +56,12 @@ galaxies.audio.sounds = {
   'satellitesplode': ['satellitesplode'],
   'asteroidhit': ['asteroidhit1', 'asteroidhit2', 'asteroidhit3', 'asteroidhit4'],
   'trunkfordlaugh': ['trunkfordlaugh1', 'trunkfordlaugh2', 'trunkfordlaugh3', 'trunkfordlaugh4' ],
-  'buttonover': ['buttonover']
+  'buttonover': ['buttonover'],
+  'heartcollect': ['heartcollect'],
+  'starcollect': ['starcollect'],
+  'powerupcollect': ['powerupcollect'],
+  'aliengrowl': ['aliengrowl'],
+  'tripleraquet': ['tripleraquet']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
@@ -64,13 +69,13 @@ galaxies.audio.initAudio = function( complete ) {
   var AudioContext = window.AudioContext || window.webkitAudioContext;
   galaxies.audio.audioCtx = galaxies.audio.audioCtx || new AudioContext(); // audio context will already have been defined in mobile touch-to-start event.
   galaxies.audio.listener = galaxies.audio.audioCtx.listener;
-  //audioCtx.destination.maxChannelCount = 6;
   console.log("initAudio");
-  //console.log( "Output channels:", galaxies.audio.audioCtx.destination.channelCountMode, galaxies.audio.audioCtx.destination.channelCount, galaxies.audio.audioCtx.destination.maxChannelCount );
   
   // Global mute
   galaxies.audio.outNode = galaxies.audio.audioCtx.createGain();
   galaxies.audio.outNode.connect( galaxies.audio.audioCtx.destination );
+  galaxies.audio.simpleOutNode = galaxies.audio.audioCtx.createGain();
+  galaxies.audio.simpleOutNode.connect( galaxies.audio.audioCtx.destination );
 
   // Boost volume for EC-3 playback in Safari 9.0, OSX.
   // There is a problem in that EC-3 decoder which results in muted playback.
@@ -96,8 +101,6 @@ galaxies.audio.initAudio = function( complete ) {
   for( var i=0; i<soundIds.length; i++ ) {
     galaxies.audio.loadedSounds[ soundIds[i] ] = new galaxies.ExhaustiveArray();
     for ( var j=0; j<galaxies.audio.sounds[ soundIds[i] ].length; j++ ) {
-      //console.log( sounds[soundIds[i]][j] );
-      //console.log( galaxies.queue.getResult( sounds[soundIds[i]][j]) );
       decodeFile( soundIds[i], galaxies.audio.sounds[soundIds[i]][j] );
     }
   }
@@ -105,11 +108,9 @@ galaxies.audio.initAudio = function( complete ) {
   function decodeFile( soundId, fileId ) {
     var loadedId = soundId;
     var result = galaxies.queue.getResult( fileId, true );
-    //console.log( result );
     if ( result != null ) {
       galaxies.audio.audioCtx.decodeAudioData( result,
         function(buffer) {
-          //console.log("decoded", loadedId );
           galaxies.audio.loadedSounds[ loadedId ].add( buffer );  
           fileComplete();
         },
@@ -118,13 +119,11 @@ galaxies.audio.initAudio = function( complete ) {
           
           // Add an empty buffer to the cache to prevent errors when trying to play this sound.
           galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
-          //loadedSounds[loadedId].add( null );
           fileComplete();
         } );
     } else {
       // Add an empty buffer
       galaxies.audio.loadedSounds[ loadedId ].add( galaxies.audio.audioCtx.createBuffer(2, 22050, 44100) );
-      //loadedSounds[loadedId].add( null );
       fileComplete();
     }
   }
@@ -193,7 +192,6 @@ galaxies.audio.PositionedSound = function( props ) {
   this.toSource = new THREE.Vector3(); // vector from listener to source
   
   this.muteVolume = galaxies.audio.audioCtx.createGain();
-  
   this.preAmp = galaxies.audio.audioCtx.createGain();
   this.muteVolume.connect( this.preAmp );
   Object.defineProperty(this, "volume", { set:
@@ -262,8 +260,6 @@ galaxies.audio.PositionedSound = function( props ) {
   }
   
   this.updatePosition = function( newPosition ) {
-    // TODO - Evaluate this against the listener object direction for a more versatile system.
-    //        Transform the vector into the listener local space.
     this.toSource.subVectors( newPosition, galaxies.audio.listenerObject.position );
     this.distance = this.toSource.length();
     
@@ -275,10 +271,7 @@ galaxies.audio.PositionedSound = function( props ) {
         
         // base level based on distance
         var gain = galaxies.audio.DISTANCE_REF / (galaxies.audio.DISTANCE_REF + galaxies.audio.DISTANCE_ROLL * (this.distance - galaxies.audio.DISTANCE_REF)); // linear, to match panner algorithm in stereo mix
-        //var gain = 1 / Math.exp(this.distance * DISTANCE_ATTENUATION); // exponential
         if ( galaxies.audio.channelAngles[iOutput] !== null ) {
-          // cosine falloff function
-          //var directionAttenuation = (Math.cos( galaxies.audio.channelAngles[iOutput] - source.bearing ) + 1)/2;
           
           // exponential falloff function
           // calculate short distance between the angles
@@ -300,7 +293,7 @@ galaxies.audio.PositionedSound = function( props ) {
     if ( this.source != null ) {
       this.source.stop(0);
     }
-    try{
+    try {
       this.source = galaxies.audio.audioCtx.createBufferSource();
       this.source.loop = this.loop;
       this.source.buffer = buffer;
@@ -360,6 +353,71 @@ galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start )
   }
 }
 
+/** A simpler sound object that works the same way as Positioned Sound. May include
+ * a stereo spatial mix, but it will be simple.
+ * 
+ * properties:
+ * buffer, loop, start, dispose, baseVolume, position
+ **/
+galaxies.audio.SimpleSound = function( props ) {
+  if ( typeof(props.dispose) !=='boolean' ) { props.dispose = true; }
+  var dispose = props.dispose;
+  
+  if ( typeof(props.loop) !=='boolean' ) { props.loop = true; }
+  this.loop = props.loop;
+
+  if ( typeof(props.start) !=='boolean' ) { props.start = true; }
+  
+  var buffer = props.source; // hold on to the buffer, so we can replay non-looping sounds
+  
+  this.toSource = new THREE.Vector3(); // vector from listener to source
+  
+  this.muteVolume = galaxies.audio.audioCtx.createGain();
+  this.preAmp = galaxies.audio.audioCtx.createGain();
+  this.muteVolume.connect( this.preAmp );
+  Object.defineProperty(this, "volume", { set:
+    function (value) {
+      this._volume = value;
+      this.preAmp.gain.value = this._volume;
+    },
+    get: function() {
+      return this._volume;
+    }
+  });
+  if ( typeof( props.baseVolume ) !=='number' ) { props.baseVolume = 1; }
+  this.volume = props.baseVolume;
+  
+  this.startSound = function() {
+    if ( this.source != null ) {
+      this.source.stop(0);
+    }
+    try{
+      this.source = galaxies.audio.audioCtx.createBufferSource();
+      this.source.loop = this.loop;
+      this.source.buffer = buffer;
+      this.source.connect( this.muteVolume );
+      this.source.start(0);
+      
+      //this.source.onended = function() { console.log("SimpleSound ended"); };
+      
+    } catch(e) {
+      console.log("Unable to start sound", e );
+    }
+  }
+  
+  this.init = function() {
+    this.preAmp.connect( galaxies.audio.simpleOutNode );
+    
+  }
+  
+  this.init();
+  
+  if ( props.start ) {
+    this.startSound();
+  }  
+  
+}
+
 
 // Plays a non-positioned sound. So vanilla.
 galaxies.audio.playSound = function ( buffer ) {
@@ -372,31 +430,6 @@ galaxies.audio.playSound = function ( buffer ) {
 
 
 
-
-// Debug tool to display surround mix gains.
-/*
-function visualizeSource( directionalSource ) {
-  var visDivs = []; // L, R, C, LFE, SL, SR
-  visDivs[0] = document.getElementById('fl');
-  visDivs[1] = document.getElementById('fr');
-  visDivs[2] = document.getElementById('c');
-  visDivs[4] = document.getElementById('sl');
-  visDivs[5] = document.getElementById('sr');
-  
-  for( var i=0; i< visDivs.length; i++ ) {
-    if ( typeof( visDivs[i] ) !== 'undefined' ) {
-      visDivs[i].innerHTML = directionalSource.channels[i].gain.value.toFixed(2);
-    }
-  }
-  
-  //console.log( directionalSource.distance );
-  document.getElementById('bearing').innerHTML = directionalSource.bearing.toFixed(2);
-}*/
-
-
-
-
-
 /// A multi-channel source that is mixed based on an arbitrary angle which
 /// rotates the soundfield.
 galaxies.audio.SoundField = function ( buffer ) {
@@ -404,46 +437,71 @@ galaxies.audio.SoundField = function ( buffer ) {
   // Only L, R, SL, and SR channels are rotated, so we list the corresponding indices here.
   var channelMap = [0, 1, 4, 5];
   var playThrough = [2, 3];
-  
-  this.source = galaxies.audio.audioCtx.createBufferSource();
-  this.source.loop = true;
-  this.source.buffer = buffer;
 
-  this.angle = 0;
-  this.angularVelocity = 1;
-  
-  // Add input
   var volumeNode = galaxies.audio.audioCtx.createGain();
-  this.source.connect( volumeNode );
   var splitter = galaxies.audio.audioCtx.createChannelSplitter(6);
-  volumeNode.connect( splitter );
   var combiner = galaxies.audio.audioCtx.createChannelMerger(6);
-  combiner.connect(galaxies.audio.outNode);
-  
-  this.gains = [];
-  
-  // hook up channels that will not be remixed directly
-  for (var i=0; i<playThrough.length; i++ ) {
-    splitter.connect(combiner, playThrough[i], playThrough[i] );
-  }
-  
-  // Add gain nodes for mixing moving channels
-  for ( var iOutput = 0; iOutput<channelMap.length; iOutput ++ ) {   // into each output channel
-    this.gains[iOutput] = [];
-    for (var iSource=0; iSource<channelMap.length; iSource++ ) {     // mix the source channels
-      var newGainNode = galaxies.audio.audioCtx.createGain();
-      splitter.connect( newGainNode, channelMap[iSource], 0 );
-      newGainNode.connect( combiner, 0, channelMap[iOutput] );
-      this.gains[iOutput][iSource] = newGainNode;
-    }
-  }
 
-  this.setVolume = function( value ) {
-    volumeNode.gain.value = value;
-  }
+  this.changeSource = function (buffer) {
+    if (this.source) {
+      this.source.stop();
+      this.source.disconnect();
+      delete this.source;
+    }
+
+    this.source = galaxies.audio.audioCtx.createBufferSource();
+    this.source.loop = true;
+    this.source.buffer = buffer;
+
+    this.angle = 0;
+    this.angularVelocity = 1;
+
+    this.gains = [];
+
+    // Add input
+
+    this.source.connect( volumeNode );
+
+    volumeNode.disconnect();
+    volumeNode.connect( splitter );
+
+    combiner.disconnect();
+    combiner.connect(galaxies.audio.outNode);
+
+    // hook up channels that will not be remixed directly
+    splitter.disconnect();
+    for (var i=0; i<playThrough.length; i++ ) {
+      splitter.connect(combiner, playThrough[i], playThrough[i] );
+    }
+
+    // Add gain nodes for mixing moving channels
+    for ( var iOutput = 0; iOutput<channelMap.length; iOutput ++ ) {   // into each output channel
+      this.gains[iOutput] = [];
+      for (var iSource=0; iSource<channelMap.length; iSource++ ) {     // mix the source channels
+        var newGainNode = galaxies.audio.audioCtx.createGain();
+        splitter.connect( newGainNode, channelMap[iSource], 0 );
+        newGainNode.connect( combiner, 0, channelMap[iOutput] );
+        this.gains[iOutput][iSource] = newGainNode;
+      }
+    }
+
+    this.source.start(0);
+  };
+
+  this.changeSource(buffer);
+
+  Object.defineProperty(this, "volume", {
+    set: function (value) {
+      this._volume = value;
+      volumeNode.gain.value = value;
+    },
+    get: function () {
+      return this._volume
+    }
+  });
   
-  this.setVolume(0.24);
-  this.source.start(0);
+  this.volume = 0.6; // global music volume. should be a const
+
   
   this.update = function(delta) {
     this.angle += this.angularVelocity * delta;
@@ -516,17 +574,19 @@ galaxies.audio.setAllMute = function( mute ) {
   galaxies.audio.setMusicMute( false );
   if ( mute ) {
     galaxies.audio.outNode.gain.value = 0;
+    galaxies.audio.simpleOutNode.gain.value = 0;
   } else {
     galaxies.audio.outNode.gain.value = galaxies.audio.globalGain;
+    galaxies.audio.simpleOutNode.gain.value = galaxies.audio.globalGain;
   }
 }
 
 // could be private
 galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
-    galaxies.audio.soundField.setVolume(0);
+    galaxies.audio.soundField.volume = 0;
   } else {
-    galaxies.audio.soundField.setVolume(0.24);
+    galaxies.audio.soundField.volume = 0.6; // global music volume, should be a const
   }
 }
 
