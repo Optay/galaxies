@@ -288,6 +288,7 @@ this.galaxies.Player = function() {
       targetAngle: 0,
       targetObject: null,
       maxWanderAngle: Math.PI / 6,
+      targetingRangeSq: 0.64,
       shotTracking: [],
       ufo: {
           previousPosition: null,
@@ -336,6 +337,8 @@ this.galaxies.Player = function() {
     var proj = new galaxies.Projectile(projMesh, cloneAIData.angle, 0, false, galaxies.fx.getPurpleTrailEmitter());
     galaxies.engine.projectiles.push(proj);
 
+    proj.firedByClone = true;
+
     // delay adding the projectile and the sound to synchronize with the animation
     createjs.Tween.get(clone).wait(250)
         .call(function () {
@@ -361,6 +364,11 @@ this.galaxies.Player = function() {
     cloneAIData.shotCooldown = galaxies.engine.SHOOT_TIME;
 
     return proj;
+  };
+
+  var logProjectileHit = function(hitPos) {
+      cloneAIData.targetingRangeSq = (0.8 * cloneAIData.targetingRangeSq) +
+          (0.2 * galaxies.utils.flatLengthSqr(hitPos) / Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2));
   };
 
   var alreadyTargetedByClone = function(object) {
@@ -440,7 +448,7 @@ this.galaxies.Player = function() {
   };
 
   var targetAsteroid = function (defaultAngle, defaultLookVector) {
-      var checkRadiusSq = Math.pow(Math.min(0.2 + galaxies.engine.obstacles.length / 8, 1) * galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2),
+      var checkRadiusSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2) * cloneAIData.targetingRangeSq,
           asteroidsInRange = galaxies.engine.obstacles.filter(function (asteroid) {
               return asteroid.state !== "inactive" &&
                   !alreadyTargetedByClone(asteroid) &&
@@ -727,6 +735,7 @@ this.galaxies.Player = function() {
     removeClone: removeClone,
     animateShoot: animateShoot,
     animateHit: animateHit,
+    logProjectileHit: logProjectileHit,
     clearTweens: clearTweens,
     teleportIn: teleportIn,
     teleportOut: teleportOut,

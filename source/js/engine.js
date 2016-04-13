@@ -1037,7 +1037,8 @@ galaxies.engine.update = function() {
           proj.hit();
         }
       } else if (galaxies.engine.neutrals.indexOf(other) !== -1) {
-        if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
+        if (!proj.firedByClone &&
+            other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
           other.hit();
           proj.hit();
         }

@@ -12,6 +12,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
 
   this.angularSpeed = 10;
   this.isExpired = false;
+  this.firedByClone = false;
   this.particleEmitters = [];
   this.particleGroups = [];
 
@@ -98,6 +99,10 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
       ++galaxies.engine.projectilesHitRound;
 
       galaxies.utils.removeConnectedShotGroup(this);
+    }
+
+    if (!this.firedByClone) {
+      galaxies.engine.player.logProjectileHit(this.object.position);
     }
 
     if ( !this.indestructible ) {
