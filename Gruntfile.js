@@ -12,7 +12,7 @@ module.exports = function(grunt) {
     concat: {
       js: {
         // the files to concatenate
-        src: '<%= dirs.src %>/js/*.js',
+        src: ['<%= dirs.src %>/js/*.js', '<%= dirs.src %>/js/postprocessing/*.js'],
         // the location of the resulting JS file
         dest: '<%= dirs.dest %>/js/engine.js'
       }
@@ -58,7 +58,7 @@ module.exports = function(grunt) {
     },
     watch: {
       scripts: {
-        files: ['<%=dirs.src %>/js/*.js'],
+        files: ['<%=dirs.src %>/js/*.js', '<%=dirs.src %>/js/postprocessing/*.js'],
         tasks: ['concat:js']
       },
       css: {

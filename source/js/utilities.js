@@ -260,11 +260,17 @@ galaxies.utils.flatAngleTo = function (a, b) {
     return galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(a) - galaxies.utils.flatAngle(b));
 };
 
-galaxies.utils.getScreenPosition = function (obj, margin) {
-    var v3 = new THREE.Vector3(),
-        screenX, screenY;
+galaxies.utils.getObjScreenPosition = function (obj, margin) {
+    var v3 = new THREE.Vector3();
 
     v3.setFromMatrixPosition(obj.matrixWorld);
+
+    return galaxies.utils.getScreenPosition(v3, margin);
+};
+
+galaxies.utils.getScreenPosition = function (v3, margin) {
+    var screenX, screenY;
+
     v3.project(galaxies.engine.camera);
 
     screenX = ( v3.x * galaxies.engine.windowHalfX ) + galaxies.engine.windowHalfX;
@@ -278,6 +284,12 @@ galaxies.utils.getScreenPosition = function (obj, margin) {
     }
 
     return new THREE.Vector2(screenX, screenY);
+};
+
+galaxies.utils.getNormalizedScreenPosition = function (v3) {
+    v3.project(galaxies.engine.camera);
+
+    return new THREE.Vector2(0.5 + v3.x * 0.5, 0.5 + v3.y * 0.5);
 };
 
 

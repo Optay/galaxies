@@ -128,10 +128,14 @@ galaxies.engine.onWindowResize = function() {
   galaxies.engine.camera.updateProjectionMatrix();
 
   galaxies.engine.renderer.setSize( window.innerWidth, window.innerHeight );
+  galaxies.engine.composer.setSize( window.innerWidth, window.innerHeight );
 
   // Recalculate "constants"
   galaxies.engine.updateView();
-  
+
+  if (galaxies.passes.warpPass && galaxies.passes.warpPass.enabled) {
+    galaxies.fx.updateWarpBubble();
+  }
 }
 
 // Set view parameters
@@ -252,7 +256,16 @@ galaxies.engine.initScene = function() {
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );
   
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextlost", galaxies.engine.handleContextLost, false);
-  galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);  
+  galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);
+
+  galaxies.engine.composer = new THREE.EffectComposer(galaxies.engine.renderer);
+
+  galaxies.passes = galaxies.passes || {};
+
+  galaxies.passes.renderPass = new THREE.RenderPass(galaxies.engine.scene, galaxies.engine.camera);
+  galaxies.passes.renderPass.renderToScreen = true;
+
+  galaxies.engine.composer.addPass(galaxies.passes.renderPass);
   
   window.addEventListener( 'resize', galaxies.engine.onWindowResize, false );
   window.addEventListener( 'orientationchange', galaxies.engine.onWindowResize, false );
@@ -309,7 +322,8 @@ galaxies.engine.initGame = function() {
   for (var i = galaxies.resources.bgPlanetTextures.length - 1; i > -1; --i) {
     galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[i].texture;
 
-    galaxies.engine.renderer.render(galaxies.engine.scene, galaxies.engine.camera);
+    //galaxies.engine.renderer.render(galaxies.engine.scene, galaxies.engine.camera);
+    galaxies.engine.composer.render();
   }
 
   galaxies.engine.rootObject.remove(galaxies.engine.bgPlanet);
@@ -1120,7 +1134,7 @@ galaxies.engine.update = function() {
   galaxies.audio.soundField.update(delta);
   
   
-  galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
+  galaxies.engine.composer.render();
 
   if (stats) {
     stats.end();
@@ -1407,7 +1421,7 @@ galaxies.engine.collectStar = function(fromObject) {
 
 
 galaxies.engine.showCombo = function( value, multiplier, obj ) {
-  var screenPos = galaxies.utils.getScreenPosition(obj, 50);
+  var screenPos = galaxies.utils.getObjScreenPosition(obj, 50);
 
   var divElem = document.createElement('div');
   divElem.classList.add("points");

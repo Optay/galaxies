@@ -226,8 +226,8 @@ galaxies.TitleSequence = function() {
     
     galaxies.engine.driftObject.rotateOnAxis( driftAxis, driftSpeed * delta );
     title.material.rotation = titlePivot.rotation.z; // match lean angle of wheel
-    
-    galaxies.engine.renderer.render( galaxies.engine.scene, galaxies.engine.camera );
+
+    galaxies.engine.composer.render();
   }
   
   

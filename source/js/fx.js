@@ -388,6 +388,17 @@ galaxies.fx = (function() {
     smokeGroup.addPool(12, smokeSettings, true);
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
+
+    galaxies.passes.warpInfo = {
+      worldSpaceOrigin: new THREE.Vector3(),
+      worldSpaceEdge: new THREE.Vector3()
+    };
+
+    galaxies.passes.warpPass = new THREE.ShaderPass(galaxies.shaders.postProcess.warpBubble);
+    galaxies.passes.warpPass.renderToScreen = true;
+    galaxies.passes.warpPass.enabled = false;
+
+    galaxies.engine.composer.addPass(galaxies.passes.warpPass);
   } // init
   
   var showFireworks = function( position ) {
@@ -397,6 +408,37 @@ galaxies.fx = (function() {
       sparkleGroup.triggerPoolEmitter(1, position);
     }, 700);
   }
+
+  var showWarpBubble = function ( worldPosition, worldBubbleEdge ) {
+    var passes = galaxies.passes,
+        warpInfo = passes.warpInfo;
+
+    passes.warpPass.enabled = true;
+    passes.warpPass.uniforms["progression"].value = 0.0;
+    passes.renderPass.renderToScreen = false;
+
+    warpInfo.worldSpaceOrigin = worldPosition;
+    warpInfo.worldSpaceEdge = worldBubbleEdge;
+
+    updateWarpBubble();
+  };
+
+  var updateWarpBubble = function () {
+    var passes = galaxies.passes,
+        warpPass = passes.warpPass,
+        warpInfo = passes.warpInfo,
+        screenSpaceCenter = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceOrigin),
+        screenSpaceEdge = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceEdge),
+        screenAdjust = new THREE.Vector2(galaxies.engine.windowHalfY, galaxies.engine.windowHalfX).normalize();
+
+    warpPass.uniforms["center"].value = screenSpaceCenter;
+    warpPass.uniforms["maxRadius"].value = screenAdjust.multiplyScalar(screenSpaceEdge.sub(screenSpaceCenter).divide(screenAdjust).length());
+  };
+
+  var hideWarpBubble = function () {
+    galaxies.passes.warpPass.enabled = false;
+    galaxies.passes.renderPass.renderToScreen = true;
+  };
   
   var showStaricles = function( position, type ) {
     
@@ -521,6 +563,14 @@ galaxies.fx = (function() {
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
+    }
+
+    if (galaxies.passes.warpPass.enabled) {
+      galaxies.passes.warpPass.uniforms["progression"].value += delta * 2;
+
+      if (galaxies.passes.warpPass.uniforms["progression"].value >= 1) {
+        hideWarpBubble();
+      }
     }
     
     // lux flying away
@@ -677,6 +727,9 @@ galaxies.fx = (function() {
     update: update,
     showHit: showHit,
     showFireworks: showFireworks,
+    showWarpBubble: showWarpBubble,
+    updateWarpBubble: updateWarpBubble,
+    hideWarpBubble: hideWarpBubble,
     showRubble: showRubble,
     showPlanetSplode: showPlanetSplode,
     shakeCamera: shakeCamera,

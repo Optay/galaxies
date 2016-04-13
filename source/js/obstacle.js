@@ -431,7 +431,15 @@ galaxies.ObstacleComet.prototype.splode = function() {
       obs.hit( this.object.position, 2 );
     }
   }
-  
+
+  var worldPos = this.object.localToWorld(new THREE.Vector3()),
+      edgePos = this.object.position.clone().normalize().multiplyScalar(range);
+
+  edgePos.set(-edgePos.y, edgePos.x, edgePos.z).add(this.object.position);
+
+  edgePos.setZ(galaxies.utils.getConifiedDepth(edgePos));
+
+  galaxies.fx.showWarpBubble(worldPos, edgePos);
 }
 
 /**

@@ -679,7 +679,7 @@ galaxies.ui = (function() {
   };
 
   var animateCollection = function (divElem, sourceObject, finalPosition, callback) {
-    var screenPos = galaxies.utils.getScreenPosition(sourceObject, 50);
+    var screenPos = galaxies.utils.getObjScreenPosition(sourceObject, 50);
 
     divElem.style.left = (screenPos.x - finalPosition.width / 2) + "px";
     divElem.style.top = (screenPos.y - finalPosition.height / 2) + "px";
