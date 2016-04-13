@@ -398,6 +398,7 @@ this.galaxies.Ufo = function() {
     smokeEmitter.disable();
 
     this.waggler.rotation.z = 0;
+    this.spinOut = false;
     
     if ( galaxies.engine.isGameOver ) {
       this.deactivate();
