@@ -451,7 +451,7 @@ this.galaxies.Player = function() {
                   return false;
               }
 
-              threatLevelSq += (1 - flSqr / visRadiusSq) * 0.2;
+              threatLevelSq += (1 - flSqr / visRadiusSq) * 0.2 * asteroid.life;
 
               return true;
           }),
