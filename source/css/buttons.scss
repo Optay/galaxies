@@ -36,7 +36,7 @@
   -webkit-transform: translateX( 50% ) translateY(50%);
   transform: translateX( 50% ) translateY(50%);
   
-  background-image: url('../images/button_audio_on.png');
+  background-image: url('../images/interface/button_audio_on.png');
   z-index: 22; /* needs to be over pause overlay */
   
   /*transition: right $transition-time ease-out;*/
@@ -74,7 +74,7 @@
   bottom: 60px - (31px/2);
   right: 60px + ($small-button-size/2) + 10px;
   
-  background-image: url('../images/logo_dolby_digital_plus.png');
+  background-image: url('../images/interface/logo_dolby_digital_plus.png');
   background-size: contain;
 }
 
@@ -86,7 +86,7 @@
   -webkit-transform: translateX( -50% ) translateY(50%);
   transform: translateX( -50% ) translateY(50%);
   
-  background-image: url('../images/button_pause_small.png');
+  background-image: url('../images/interface/button_pause_small.png');
   
   transition: left $transition-time ease-out;
 }
@@ -94,7 +94,7 @@
   left: 60px;
 }
 .pause-button:hover {
-  background-image: url('../images/button_pause_small_rollover.png');
+  background-image: url('../images/interface/button_pause_small_rollover.png');
 }
 
 .play-button {
@@ -106,10 +106,10 @@
   -webkit-transform: translateX( -50% ) translateY(-50%);
   transform: translateX( -50% ) translateY(-50%);
   
-  background-image: url('../images/button_play_large.png');
+  background-image: url('../images/interface/button_play_large.png');
 }
 .play-button:hover {
-  background-image: url('../images/button_play_large_rollover.png');
+  background-image: url('../images/interface/button_play_large_rollover.png');
 }
 
 .bottomed {
@@ -121,28 +121,28 @@
   @extend .large-button;
   @extend .bottomed;
   
-  background-image: url('../images/button_play_large.png');
+  background-image: url('../images/interface/button_play_large.png');
 }
 .resume-button:hover {
-  background-image: url('../images/button_play_large_rollover.png');
+  background-image: url('../images/interface/button_play_large_rollover.png');
 }
 .restart-button {
   @extend .large-button;
   @extend .bottomed;
   
-  background-image: url('../images/button_replay_large.png');
+  background-image: url('../images/interface/button_replay_large.png');
 }
 .restart-button:hover {
-  background-image: url('../images/button_replay_large_rollover.png');
+  background-image: url('../images/interface/button_replay_large_rollover.png');
 }
 .quit-button {
   @extend .large-button;
   @extend .bottomed;
 
-  background-image: url('../images/button_home_large.png');
+  background-image: url('../images/interface/button_home_large.png');
 }
 .quit-button:hover {
-  background-image: url('../images/button_home_large_rollover.png');
+  background-image: url('../images/interface/button_home_large_rollover.png');
 }
 
 /* positioning */
@@ -204,11 +204,11 @@
 }
 
 .stereo-button {
-  background-image: url('../images/button_stereo.png');
+  background-image: url('../images/interface/button_stereo.png');
   
 }
 .surround-button {
-  background-image: url('../images/button_surround.png');
+  background-image: url('../images/interface/button_surround.png');
 }
 
 .touch-to-start-button {
@@ -216,5 +216,5 @@
   height: 120px;
   margin: auto;
   background-size: 100%;
-  background-image: url('../images/button_touch_to_start_large.png');
+  background-image: url('../images/interface/button_touch_to_start_large.png');
 }

@@ -171,7 +171,7 @@ body {
 }
 
 .bg1 {
-  background-image: url("../images/loader_background.jpg");
+  background-image: url("../images/interface/loader_background.jpg");
   background-repeat: repeat-x;
   background-size: auto 100%;
   z-index: -2;
@@ -181,7 +181,7 @@ body {
 }
 
 .bg2 {
-  background-image: url("../images/stars_tile.png");
+  background-image: url("../images/interface/stars_tile.png");
   background-repeat: repeat-x;
   background-size: auto 100%;
   z-index: -1;
@@ -234,10 +234,10 @@ body {
   left: 50%;
 }
 .half-ring-blue {
-  background-image:url('../images/button_circle_half_blue.png');
+  background-image:url('../images/interface/button_circle_half_blue.png');
 }
 .half-ring-white {
-  background-image:url('../images/button_circle_half_white.png');
+  background-image:url('../images/interface/button_circle_half_white.png');
 }
 .rotate180 {
   -webkit-transform: rotate(180deg);
@@ -253,7 +253,7 @@ body {
 .progress-ring {
   width: 92px;
   height: 92px;
-  /*background: url('../images/button_circle_large.png');
+  /*background: url('../images/interface/button_circle_large.png');
   background-size: 100%;
   background-repeat: no-repeat;*/
 }
@@ -283,7 +283,7 @@ body {
   left: -52px;
   width: 52px;
   height: 52px;
-  background: url('../images/button_play_large_no_circle.png');
+  background: url('../images/interface/button_play_large_no_circle.png');
   background-size: 92px 92px;
   background-position: 50% 50%;
 }
@@ -303,7 +303,7 @@ body {
   right: 0;
   width: 0;
   height: 0;
-  background: url('../images/logo_feisty_galaxies.png');
+  background: url('../images/interface/logo_feisty_galaxies.png');
   background-size: 140%;
   background-repeat: no-repeat;
   background-position: 50% 100%;
@@ -392,7 +392,7 @@ body {
   margin-right: 5px;
   //display: inline-block;
   
-  background: url('../images/life_heart.png');
+  background: url('../images/interface/life_heart.png');
   background-size: cover;
   background-position: bottom;
 
@@ -415,7 +415,7 @@ body {
   margin-right: 5px;
   //display: inline-block;
   
-  background: url('../images/collect_star.png');
+  background: url('../images/interface/collect_star.png');
   background-size: cover;
   background-position: bottom;
   transition: background-position 0.5s ease;
@@ -438,7 +438,7 @@ body {
   right: 0;
   width: 141px;
   height: 96px;
-  background: url('../images/logo_feisty_galaxies.png');
+  background: url('../images/interface/logo_feisty_galaxies.png');
   background-size: 100%;
   background-repeat: no-repeat;
   z-index: 30;
@@ -510,7 +510,7 @@ body {
   margin: 0 8px;
   display: inline-block;
 
-  background: url('../images/collect_star.png');
+  background: url('../images/interface/collect_star.png');
   background-size: cover;
   background-position: bottom;
 }
@@ -564,14 +564,14 @@ body {
 }
 
 .recommend-safari {
-  background-image: url('../images/button_mac_safari.png');
+  background-image: url('../images/interface/button_mac_safari.png');
 }
 .recommend-edge {
-  background-image: url('../images/button_microsoft_edge.png');
+  background-image: url('../images/interface/button_microsoft_edge.png');
 }
 
 .touch-to-start {
-  background-image: url('../images/feisty_galaxies_touch_to_start_background.jpg');
+  background-image: url('../images/interface/feisty_galaxies_touch_to_start_background.jpg');
   background-size: cover;
   background-position: center;
   z-index: 101;
@@ -579,7 +579,7 @@ body {
 .touch-to-start-logo {
   width: 449px;
   height: 300px;
-  background: url("../images/logo_feisty_galaxies.png");
+  background: url("../images/interface/logo_feisty_galaxies.png");
   background-size: contain;
   background-repeat: no-repeat;
   margin: auto;  
