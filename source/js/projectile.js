@@ -101,10 +101,6 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
       galaxies.utils.removeConnectedShotGroup(this);
     }
 
-    if (!this.firedByClone) {
-      galaxies.engine.player.logProjectileHit(this.object.position);
-    }
-
     if ( !this.indestructible ) {
       this.destroy();
     }

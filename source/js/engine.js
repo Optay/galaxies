@@ -1051,10 +1051,11 @@ galaxies.engine.update = function() {
           proj.hit();
         }
       } else if (galaxies.engine.neutrals.indexOf(other) !== -1) {
-        if (!proj.firedByClone &&
-            other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
-          other.hit();
-          proj.hit();
+        if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
+          if (!(other instanceof galaxies.Capsule && proj.firedByClone)) {
+            other.hit();
+            proj.hit();
+          }
         }
       }
     }

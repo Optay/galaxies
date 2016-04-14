@@ -287,8 +287,7 @@ this.galaxies.Player = function() {
       angle: 0,
       targetAngle: 0,
       targetObject: null,
-      maxWanderAngle: Math.PI / 6,
-      targetingRangeSq: 0.64,
+      maxWanderAngle: Math.PI * 0.6,
       shotTracking: [],
       ufo: {
           previousPosition: null,
@@ -366,11 +365,6 @@ this.galaxies.Player = function() {
     return proj;
   };
 
-  var logProjectileHit = function(hitPos) {
-      cloneAIData.targetingRangeSq = (0.8 * cloneAIData.targetingRangeSq) +
-          (0.2 * galaxies.utils.flatLengthSqr(hitPos) / Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2));
-  };
-
   var alreadyTargetedByClone = function(object) {
       return cloneAIData.shotTracking.some(function (shotPair) {
         return shotPair[1] === object;
@@ -426,12 +420,12 @@ this.galaxies.Player = function() {
 
   var targetBonus = function (defaultAngle, defaultLookVector) {
       var validNeutrals = galaxies.engine.neutrals.filter(function (neutral) {
-          if (neutral instanceof galaxies.Capsule && neutral.powerup !== "heart") {
-              return false;
-          }
+              if (neutral instanceof galaxies.Capsule && neutral.powerup !== "heart") {
+                  return false;
+              }
 
-          return neutral.isActive && !alreadyTargetedByClone(neutral);
-      }),
+              return neutral.isActive && !alreadyTargetedByClone(neutral);
+          }),
           i, angleDiff, neutral;
 
       for (i = 0; i < validNeutrals.length; ++i) {
@@ -448,13 +442,23 @@ this.galaxies.Player = function() {
   };
 
   var targetAsteroid = function (defaultAngle, defaultLookVector) {
-      var checkRadiusSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2) * cloneAIData.targetingRangeSq,
-          asteroidsInRange = galaxies.engine.obstacles.filter(function (asteroid) {
-              return asteroid.state !== "inactive" &&
-                  !alreadyTargetedByClone(asteroid) &&
-                  (galaxies.utils.flatLengthSqr(asteroid.object.position) < checkRadiusSq);
-          }).filter(function (asteroid) {
-              return Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle;
+      var visRadiusSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2),
+          threatLevelSq = 0,
+          validAsteroids = galaxies.engine.obstacles.filter(function (asteroid) {
+              var flSqr = galaxies.utils.flatLengthSqr(asteroid.object.position);
+
+              if (asteroid.state === "inactive" || alreadyTargetedByClone(asteroid) || flSqr > visRadiusSq) {
+                  return false;
+              }
+
+              threatLevelSq += (1 - flSqr / visRadiusSq) * 0.2;
+
+              return true;
+          }),
+          checkRadiusSq = visRadiusSq * (0.4 + Math.min(Math.max(threatLevelSq * 0.6, 0), 0.6)),
+          asteroidsInRange = validAsteroids.filter(function (asteroid) {
+              return (Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle) &&
+                  galaxies.utils.flatLengthSqr(asteroid.object.position) < checkRadiusSq;
           });
 
       if (asteroidsInRange.length > 0) {
@@ -537,7 +541,7 @@ this.galaxies.Player = function() {
       }
 
       if (cloneAIData.targetObject) {
-        var cloneAngleDelta = galaxies.utils.normalizeAngle(cloneAIData.targetAngle - cloneAIData.angle);
+        var cloneAngleDelta = cloneAIData.targetAngle - cloneAIData.angle;
         cloneAIData.angle += cloneAngleDelta * delta * 10;
       }
 
@@ -735,7 +739,6 @@ this.galaxies.Player = function() {
     removeClone: removeClone,
     animateShoot: animateShoot,
     animateHit: animateHit,
-    logProjectileHit: logProjectileHit,
     clearTweens: clearTweens,
     teleportIn: teleportIn,
     teleportOut: teleportOut,
