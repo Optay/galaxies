@@ -35,34 +35,27 @@ galaxies.Capsule = function( isHeart ) {
   galaxies.BaseTarget.call(this);
   
   //isHeart = true; // test hearts
+  var map, scale = 1;
   
   if ( isHeart ) {
-    // Sprite
-    var map = new THREE.Texture( galaxies.queue.getResult('heart') );
-    map.minFilter = THREE.LinearFilter;
-    map.needsUpdate = true;
-    var heartMaterial = new THREE.SpriteMaterial({
-      map: map,
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.0
-    } );
-    this.model = new THREE.Sprite( heartMaterial );
-    var scale = 0.45; // scale it down a little
-    this.model.scale.set( scale, scale, scale );    
+    map = new THREE.Texture( galaxies.queue.getResult('heart') );
+    scale = 0.45;
   } else {
-    // Capsule mesh
-    var geometry = new THREE.SphereGeometry(0.2, 10, 10);
-    var mat = new THREE.MeshPhongMaterial( {
-        color: 0xaaaaaa,
-        specular: 0xffffff,
-        shininess: 5,
-        opacity: 0.0,
-        transparent: true } );
-    this.model = new THREE.Mesh( geometry, mat );
+    map = new THREE.Texture(galaxies.queue.getResult('alienproicon'));
   }
-  
-  
+
+  map.minFilter = THREE.LinearFilter;
+  map.needsUpdate = true;
+
+  var mat = new THREE.SpriteMaterial({
+    map: map,
+    color: 0xFFFFFF,
+    transparent: true,
+    opacity: 0.0
+  });
+
+  this.model = new THREE.Sprite(mat);
+  this.model.scale.set(scale, scale, scale);
   
   this.object.add( this.model );
   galaxies.engine.rootObject.add( this.object );
@@ -145,17 +138,28 @@ galaxies.Capsule.prototype.updatePowerup = function() {
   } else {
     this.powerup = 'heart';
   }
-  var color;
+
+  var map;
+
   switch (this.powerup) {
-    case "clone": color = 0xcc33ff; break;
-    case "spread": color = 0xaaaaaa; break;
-    case "golden": color = 0xffdd33; break;
+    case "clone":
+        map = new THREE.Texture(galaxies.queue.getResult("alienproicon"));
+      break;
+    case "spread":
+        map = new THREE.Texture(galaxies.queue.getResult("tripleicon"));
+      break;
+    case "golden":
+        map = new THREE.Texture(galaxies.queue.getResult("rainbowicon"));
+      break;
     case "heart":
-    default:
-      color = 0xffffff;
+        map = new THREE.Texture(galaxies.queue.getResult("heart"));
       break;
   }
-  this.model.material.color.setHex( color );
+
+  map.minFilter = THREE.LinearFilter;
+  map.needsUpdate = true;
+
+  this.model.material.map = map;
 }
 
 galaxies.Capsule.prototype.update = function( delta ) {
