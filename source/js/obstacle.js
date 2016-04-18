@@ -29,7 +29,7 @@ galaxies.Obstacle = function ( props ) {
   this.hitSound = 'asteroidhit';
   this.rubbleType = 'plain';
   this.explodeSound = 'asteroidsplode';
-  this.explosionGain = 2
+  this.explosionGain = 2;
   this.passSoundId = '';
   
   // Overrides
@@ -491,11 +491,55 @@ galaxies.ObstacleRadChild.prototype.initModel = function() {
 }
 
 
+galaxies.ObstacleSpiky = function () {
+  var props = {};
 
+  props.type = 'asteroidmetal';
+  props.hitThreshold = 0.6;
+  props.points = [100, 150, 300, 800];
+  props.shakeAmount = 1.4;
+  props.baseTumbleSpeed = 0.8;
+  props.spiral = 0.75;
+  props.baseSpeed = 0.5;
+  props.mass = 3;
+  props.baseLife = 5;
+  props.hitSound = 'metalhit';
+  props.rubbleType = '';
+  props.explodeSound = 'satellitesplode';
 
+  galaxies.Obstacle.call(this, props);
+};
 
+galaxies.ObstacleSpiky.prototype = Object.create( galaxies.Obstacle.prototype );
+galaxies.ObstacleSpiky.prototype.constructor = galaxies.ObstacleSpiky;
+galaxies.ObstacleSpiky.prototype.initModel = function() {
+  this.object = new THREE.Mesh(galaxies.resources.geometries['spiky'], galaxies.resources.materials['spiky'].clone());
+  this.object.scale.set(0.4, 0.4, 0.4);
+};
 
+galaxies.ObstacleSpiky.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+  // parent object's hit
+  galaxies.Obstacle.prototype.hit.call( this, hitPosition, multiply, forceDestroy );
 
+  var emissiveColor;
+
+  switch (this.life) {
+    case 4:
+        emissiveColor = 0x00FF00;
+      break;
+    case 3:
+        emissiveColor = 0xFFFF00;
+      break;
+    case 2:
+        emissiveColor = 0xFFA000;
+      break;
+    case 1:
+        emissiveColor = 0xFF0000;
+      break;
+  }
+
+  this.object.material.emissive.setHex(emissiveColor);
+};
 
 
 
@@ -509,6 +553,7 @@ galaxies.Obstacle.create = function( type ) {
       return new galaxies.ObstacleComet();
       break;
     case 'asteroidmetal':
+      return new galaxies.ObstacleSpiky();
     case 'asteroidice':
       return new galaxies.ObstacleIce();
       break;

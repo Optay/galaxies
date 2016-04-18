@@ -93,6 +93,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'projhitparticle', src: 'effects/hit_sprite.png' },
     { id: 'asteroidcolor', src:'textures/asteroid_color.jpg' },
     { id: 'asteroidnormal', src:'textures/asteroid_normal.jpg' },
+    { id: 'spikycolor', src:'textures/asteroid_spiky_v2_color.jpg' },
+    { id: 'spikynormal', src:'textures/asteroid_spiky_v2_normal.jpg' },
+    { id: 'spikyspecular', src:'textures/asteroid_spiky_v2_specular.jpg' },
+    { id: 'spikyemissive', src:'textures/asteroid_spiky_v2_emissive.jpg' },
     { id: 'satellitecolor', src:'textures/mercury_pod_color.jpg' },
     { id: 'starparticle', src: 'effects/star.png' },
     { id: 'moonocclusion', src: 'textures/moon_lores_occlusion.jpg' },
@@ -141,8 +145,9 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'projmodel', src: 'models/shuttlecock.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'satellitemodel', src: 'models/mercury_pod.obj', type: createjs.AbstractLoader.TEXT },
     { id: 'moonmodel', src: 'models/moon_lores.obj', type: createjs.AbstractLoader.TEXT },
-    { id: 'satellitedebrismodel', src: 'models/pod_chunk.obj', type: createjs.AbstractLoader.TEXT }
-    
+    { id: 'satellitedebrismodel', src: 'models/pod_chunk.obj', type: createjs.AbstractLoader.TEXT },
+    { id: 'spikyasteroidmodel', src: 'models/asteroid_spiky_v2.obj', type: createjs.AbstractLoader.TEXT }
+
   );
   
   

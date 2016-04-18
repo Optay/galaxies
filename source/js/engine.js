@@ -40,6 +40,7 @@ galaxies.engine.obstacleTypes = ['asteroid',
                                  'asteroidice',
                                  'asteroidrad',
                                  'asteroidradchild',
+                                 'asteroidmetal',
                                  'comet'];//['asteroid', 'satellite', 'comet'];
 
 // View, play parameters

@@ -138,6 +138,8 @@ galaxies.generator = (function() {
       { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 12, type: 'asteroid', random: true },
       { time: 18, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' },
       { time: 20, startAngle: 0, endAngle: 360, type: 'star', random: true },
+      { time: 0, startAngle: 0, endAngle: 360, type: 'asteroidmetal', random: true },
+      { time: 0, startAngle: 0, endAngle: 360, type: 'asteroidmetal', random: true },
       { time: 24, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: 'asteroid', random: true },
       { time: 31, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
     ],

@@ -84,6 +84,8 @@ galaxies.Resources = function() {
   var objLoader = new THREE.OBJLoader();
   var parsed = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
   this.geometries['asteroid'] = parsed.children[0].geometry;
+  var spikymodel = objLoader.parse(galaxies.queue.getResult('spikyasteroidmodel'));
+  this.geometries['spiky'] = spikymodel.children[0].geometry;
   var projmodel = objLoader.parse( galaxies.queue.getResult('projmodel') );
   this.geometries['proj'] = projmodel.children[0].geometry;
   var satmodel = objLoader.parse( galaxies.queue.getResult('satellitemodel') );
@@ -134,7 +136,28 @@ galaxies.Resources = function() {
       normalMap: asteroidNormal,
       shading: THREE.SmoothShading
   } );
-  
+
+  var spikyColor = new THREE.Texture(galaxies.queue.getResult('spikycolor'), THREE.UVMapping);
+  var spikyNormal = new THREE.Texture(galaxies.queue.getResult('spikynormal'), THREE.UVMapping);
+  var spikySpecular = new THREE.Texture(galaxies.queue.getResult('spikyspecular'), THREE.UVMapping);
+  var spikyEmissive = new THREE.Texture(galaxies.queue.getResult('spikyemissive'), THREE.UVMapping);
+
+  spikyColor.needsUpdate = true;
+  spikyNormal.needsUpdate = true;
+  spikySpecular.needsUpdate = true;
+  spikyEmissive.needsUpdate = true;
+
+  this.materials['spiky'] = new THREE.MeshPhongMaterial({
+      color: 0xFFFFFF,
+      map: spikyColor,
+      specular: 0xFFFFFF,
+      specularMap: spikySpecular,
+      normalMap: spikyNormal,
+      emissive: 0x000000,
+      emissiveMap: spikyEmissive,
+      shading: THREE.SmoothShading
+  });
+
   
   var satColor = new THREE.Texture( galaxies.queue.getResult('satellitecolor'), THREE.UVMapping );
   satColor.needsUpdate = true;
