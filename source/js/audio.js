@@ -295,6 +295,7 @@ galaxies.audio.PositionedSound = function( props ) {
     }
     try {
       this.source = galaxies.audio.audioCtx.createBufferSource();
+      this.source.playbackRate.value = galaxies.engine.timeDilation;
       this.source.loop = this.loop;
       this.source.buffer = buffer;
       this.source.connect( this.muteVolume );
@@ -393,6 +394,7 @@ galaxies.audio.SimpleSound = function( props ) {
     }
     try{
       this.source = galaxies.audio.audioCtx.createBufferSource();
+      this.source.playbackRate.value = galaxies.engine.timeDilation;
       this.source.loop = this.loop;
       this.source.buffer = buffer;
       this.source.connect( this.muteVolume );
@@ -450,6 +452,7 @@ galaxies.audio.SoundField = function ( buffer ) {
     }
 
     this.source = galaxies.audio.audioCtx.createBufferSource();
+    this.source.playbackRate.value = galaxies.engine.timeDilation;
     this.source.loop = true;
     this.source.buffer = buffer;
 

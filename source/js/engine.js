@@ -28,6 +28,28 @@ galaxies.engine.driftSpeed = 0.01;
 
 galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
+galaxies.engine._timeDilation = 1.0;
+
+Object.defineProperty(galaxies.engine, "timeDilation", {
+  get: function() {
+    return galaxies.engine._timeDilation;
+  },
+  set: function(value) {
+    galaxies.engine._timeDilation = value;
+
+    galaxies.audio.positionedSounds.forEach(function (sound) {
+      sound.source.playbackRate.value = value;
+    });
+
+    galaxies.engine.obstacles.forEach(function (obstacle) {
+      if (obstacle.passSound) {
+        obstacle.passSound.source.playbackRate.value = value;
+      }
+    });
+
+    galaxies.audio.soundField.source.playbackRate.value = value;
+  }
+});
 
 galaxies.engine.START_LEVEL_NUMBER = 1;
 
@@ -65,9 +87,9 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
-galaxies.engine.powerups = ['clone', 'spread', 'golden'];
+galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp'];
 galaxies.engine.currentPowerup = 'boottime';
-galaxies.engine.powerupMessagesShown = [];
+galaxies.engine.powerupMessagesShown = {};
 
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 4.5;
@@ -884,7 +906,8 @@ galaxies.engine.animate = function() {
 // Game Loop
 galaxies.engine.update = function() {
   var delta = galaxies.engine.clock.getDelta(),
-      stats = galaxies.debug.stats;
+      stats = galaxies.debug.stats,
+      scaledDelta;
 
   if (stats) {
     stats.begin();
@@ -900,6 +923,8 @@ galaxies.engine.update = function() {
 
   if ( delta > 0.25 ) { delta = 0.25; } // Cap simulation at 4 ticks/second delta to prevent projectiles from passing through objects.
 
+  scaledDelta = delta * galaxies.engine.timeDilation;
+
   var activeObstacleCount = 0;
 
   galaxies.engine.obstacles.forEach(function (obstacle) {
@@ -907,12 +932,12 @@ galaxies.engine.update = function() {
       galaxies.engine.inactiveObstacles.push(obstacle);
     } else {
       ++activeObstacleCount;
-      obstacle.update(delta);
+      obstacle.update(scaledDelta);
     }
   });
 
   galaxies.engine.neutrals.forEach(function (neutral) {
-    neutral.update(delta);
+    neutral.update(scaledDelta);
   });
 
   var expiredProjectiles = [];
@@ -1084,20 +1109,20 @@ galaxies.engine.update = function() {
   // Powerup timer
   // Only changes while the level is running.
   if ( galaxies.engine.levelRunning && (galaxies.engine.powerupTimer > 0) ) {
-    galaxies.engine.powerupTimer -= delta;
+    galaxies.engine.powerupTimer -= scaledDelta;
     if ( galaxies.engine.powerupTimer <=0 ) {
       galaxies.engine.setPowerup('');
     }
   }
   
   // update ufo
-  galaxies.engine.ufo.update(delta);
+  galaxies.engine.ufo.update(scaledDelta);
   
   // update world
   galaxies.engine.driftObject.rotateOnAxis(galaxies.engine.driftAxis, galaxies.engine.driftSpeed * delta );
 
   // update fx
-  galaxies.fx.update(delta);
+  galaxies.fx.update(scaledDelta);
   
   // update bg and sun
   var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
@@ -1131,7 +1156,7 @@ galaxies.engine.update = function() {
   
   // TIME
   if ( !galaxies.engine.isGameOver && !galaxies.generator.isLevelComplete() ) {
-    galaxies.generator.tick( delta );
+    galaxies.generator.tick( scaledDelta );
   } else {
     galaxies.engine.levelComplete = true;
   }
@@ -1146,7 +1171,7 @@ galaxies.engine.update = function() {
   
   
   // AUDIO
-  galaxies.audio.soundField.update(delta);
+  galaxies.audio.soundField.update(scaledDelta);
   
   
   galaxies.engine.composer.render();
@@ -1550,10 +1575,6 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     return;
   }
 
-  galaxies.engine.currentPowerup = newPowerup;
-
-  galaxies.engine.player.setPowerup( newPowerup );
-
   var powerupMessage = '';
   
   switch(newPowerup) {
@@ -1569,6 +1590,9 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
       galaxies.engine.shootFunction = function() { galaxies.engine.shoot(true); };
       powerupMessage = 'Rainbow of Death';
       break;
+    case 'timeWarp':
+      powerupMessage = 'Time Warp';
+      break;
     default:
       galaxies.engine.shootFunction = galaxies.engine.shoot;
       break;
@@ -1579,5 +1603,12 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
 
     galaxies.ui.showTitle(powerupMessage, 1.8);
   }
-  
+
+  if (newPowerup === "timeWarp") {
+    createjs.Tween.get(galaxies.engine).to({timeDilation: 0.5}, 1000).wait(20000).to({timeDilation: 1.0}, 1000);
+  } else {
+    galaxies.engine.currentPowerup = newPowerup;
+
+    galaxies.engine.player.setPowerup(newPowerup);
+  }
 }

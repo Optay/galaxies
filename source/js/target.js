@@ -153,6 +153,9 @@ galaxies.Capsule.prototype.updatePowerup = function() {
       break;
     case "heart":
         map = new THREE.Texture(galaxies.queue.getResult("heart"));
+        break;
+    case "timeWarp":
+        map = new THREE.Texture(galaxies.queue.getResult("slomo"));
       break;
   }
 

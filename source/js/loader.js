@@ -113,6 +113,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'titleExtraTrunkford', src: 'interface/title_trunkford_in_ufo.png' },
     { id: 'heart', src: 'sprites/heart_life.png' },
     { id: 'star', src: 'sprites/star_collect.png' },
+    { id: 'slomo', src: 'sprites/clock.png'},
     { id: 'alienproicon', src: 'sprites/alien_pro_icon.png' },
     { id: 'rainbowicon', src: 'sprites/rainbow_of_death_icon.png' },
     { id: 'tripleicon', src: 'sprites/triple_racquet_icon.png' },
