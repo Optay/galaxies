@@ -345,11 +345,15 @@ this.galaxies.Ufo = function() {
     //console.log( 'orbit -> out' );
   }
   
-  this.hit = function( forceDestroy ) {
+  this.hit = function( damage, forceDestroy ) {
+    if (typeof damage !== "number") {
+      damage = 1;
+    }
+
     if ( forceDestroy ) {
       hitCounter = HITS;
     } else {
-      hitCounter++;
+      hitCounter += damage;
     }
 
     var self = this;

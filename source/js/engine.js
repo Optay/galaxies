@@ -1020,7 +1020,13 @@ galaxies.engine.update = function() {
           other = notProjectiles[0],
           projLine = proj.object.position.clone().sub(proj.lastPos),
           isUFO = other === galaxies.engine.ufo,
+          didHit = false,
+          isRainbow = proj.indestructible,
           ufoPosition, otherLine, scalar, checkPoint;
+
+      if (proj.alreadyCollidedWith.indexOf(other) > -1) {
+        return;
+      }
 
       if (isUFO) {
         if (!other.isHittable) {
@@ -1043,21 +1049,28 @@ galaxies.engine.update = function() {
 
       if (isUFO) {
         if (ufoPosition.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
-          other.hit( false );
+          other.hit(isRainbow ? 2 : 1);
           proj.hit();
+          didHit = true;
         }
       } else if (galaxies.engine.obstacles.indexOf(other) !== -1) {
         if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
-          other.hit(proj.object.position, 1, proj.indestructible);
+          other.hit(proj.object.position, isRainbow ? 2 : 1);
           proj.hit();
+          didHit = true;
         }
       } else if (galaxies.engine.neutrals.indexOf(other) !== -1) {
         if (other.object.position.distanceToSquared(checkPoint) <= Math.pow(other.hitThreshold, 2)) {
           if (!(other instanceof galaxies.Capsule && proj.firedByClone)) {
             other.hit();
             proj.hit();
+            didHit = true;
           }
         }
+      }
+
+      if (didHit) {
+        proj.alreadyCollidedWith.push(other);
       }
     }
   });

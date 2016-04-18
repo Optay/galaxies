@@ -193,10 +193,14 @@ galaxies.Obstacle.prototype.retreat = function() {
   
 }
 
-galaxies.Obstacle.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
   if ( this.state === 'inactive' ) { return; }
+
+  if (typeof damage !== "number") {
+    damage = 1;
+  }
   
-  this.life--;
+  this.life -= damage;
   
   if (typeof(multiply)!=='number') { multiply = 1; }
   
@@ -332,9 +336,9 @@ galaxies.ObstacleIce.prototype.initModel = function() {
                             galaxies.resources.materials['asteroidice'] );
   this.object.add( this.ice );
 }
-galaxies.ObstacleIce.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+galaxies.ObstacleIce.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
   // parent object's hit
-  galaxies.Obstacle.prototype.hit.call( this, hitPosition, multiply, forceDestroy );
+  galaxies.Obstacle.prototype.hit.call( this, hitPosition, damage, multiply, forceDestroy );
   
   // Lose the ice shell
   if ( this.life === 1 ) {
@@ -428,7 +432,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
     relativePosition.subVectors( obs.object.position, this.object.position );
     relativePosition.z = 0;
     if ( relativePosition.length() < range ) {
-      obs.hit( this.object.position, 2 );
+      obs.hit( this.object.position, 1, 2 );
     }
   }
 
@@ -517,9 +521,9 @@ galaxies.ObstacleSpiky.prototype.initModel = function() {
   this.object.scale.set(0.4, 0.4, 0.4);
 };
 
-galaxies.ObstacleSpiky.prototype.hit = function( hitPosition, multiply, forceDestroy ) {
+galaxies.ObstacleSpiky.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
   // parent object's hit
-  galaxies.Obstacle.prototype.hit.call( this, hitPosition, multiply, forceDestroy );
+  galaxies.Obstacle.prototype.hit.call( this, hitPosition, damage, multiply, forceDestroy );
 
   var emissiveColor;
 

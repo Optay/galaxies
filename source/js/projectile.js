@@ -15,6 +15,7 @@ galaxies.Projectile = function( model, startAngle, directionOffset, indestructib
   this.firedByClone = false;
   this.particleEmitters = [];
   this.particleGroups = [];
+  this.alreadyCollidedWith = [];
 
   if (particles) {
     if (!(particles instanceof Array)) {
