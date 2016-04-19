@@ -80,6 +80,9 @@ galaxies.fx = (function() {
   var rainbowJetGroup;
   var purpleTrailGroup;
   var smokeGroup;
+
+  // Bubble shield
+  var bubblePopGroup;
   
   // projectile hit particles
   var emitterSettings = {
@@ -289,7 +292,7 @@ galaxies.fx = (function() {
     
     stariclesGroup = new SPE.Group({
       texture: { value: starTexture },
-      maxParticleCount: 500
+      maxParticleCount: 700
     });
     galaxies.engine.rootObject.add( stariclesGroup.mesh );
 
@@ -317,6 +320,38 @@ galaxies.fx = (function() {
     staricles['star'] = new SPE.Emitter( baseSettings );
     staricles['star'].disable();
     stariclesGroup.addEmitter( staricles['star'] );
+
+    baseSettings.color = { value: new THREE.Color('white') };
+    staricles['timeWarp'] = new SPE.Emitter( baseSettings );
+    staricles['timeWarp'].disable();
+    stariclesGroup.addEmitter( staricles['timeWarp'] );
+
+    baseSettings.color = { value: new THREE.Color(0x0099FF) };
+    staricles['shield'] = new SPE.Emitter( baseSettings );
+    staricles['shield'].disable();
+    stariclesGroup.addEmitter( staricles['shield'] );
+
+    bubblePopGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 500
+    });
+
+    var bubblePopSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 500,
+      duration: 0.1,
+      maxAge: { value: 0.8, spread: 0.3 },
+      position: { radius: 1.15 },
+      velocity: { value: new THREE.Vector3(2, 0, 0), spread: new THREE.Vector3(1, 0, 0) },
+      rotation: { axisSpread: new THREE.Vector3(2, 2, 2), angleSpread: 2*Math.PI },
+      color: { value: new THREE.Color(0x0099FF) },
+      opacity: { value: [1, 0] },
+      size: { value: 0.3, spread: 0.1 }
+    };
+
+    bubblePopGroup.addPool(2, bubblePopSettings, true);
+
+    galaxies.engine.rootObject.add ( bubblePopGroup.mesh );
 
     var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     sparkleTexture.needsUpdate = true;
@@ -560,6 +595,7 @@ galaxies.fx = (function() {
     rainbowJetGroup.tick(delta);
     purpleTrailGroup.tick(delta);
     smokeGroup.tick(delta);
+    bubblePopGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -718,6 +754,10 @@ galaxies.fx = (function() {
 
     return [smallFlameJetGroup, smokeGroup.getFromPool()];
   };
+
+  var popBubble = function () {
+    bubblePopGroup.triggerPoolEmitter(1);
+  };
   
   
   
@@ -738,6 +778,7 @@ galaxies.fx = (function() {
     showStaricles: showStaricles,
     getRainbowEmitter: getRainbowEmitter,
     getPurpleTrailEmitter: getPurpleTrailEmitter,
-    getSmallFlameJet: getSmallFlameJet
+    getSmallFlameJet: getSmallFlameJet,
+    popBubble: popBubble
   };
 })();

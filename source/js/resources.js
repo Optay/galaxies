@@ -186,7 +186,13 @@ galaxies.Resources = function() {
       shading: THREE.SmoothShading
   } );
   
-  
+
+  this.materials['shield'] = new THREE.ShaderMaterial({
+      uniforms: galaxies.shaders.materials.shield.uniforms,
+      vertexShader: galaxies.shaders.materials.shield.vertexShader,
+      fragmentShader: galaxies.shaders.materials.shield.fragmentShader,
+      transparent: true
+  });
   
   
   var ufoColor = new THREE.Texture( galaxies.queue.getResult('ufocolor') );

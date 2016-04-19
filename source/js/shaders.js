@@ -9,13 +9,13 @@ galaxies.shaders = {
                 "tDiffuse":    { type: "t",  value: null },
                 "center":      { type: "v2", value: new THREE.Vector2(0.5, 0.6) },
                 "maxRadius":   { type: "v2", value: new THREE.Vector2(0.09, 0.16) },
-                "warpFactor":  { type: "f",  value: 0.2 },
+                "warpFactor":  { type: "f",  value: 2.0 },
                 "progression": { type: "f",  value: 0.0 }
             },
             vertexShader: [
                 "varying vec2 vUv;",
 
-                "void main () {",
+                "void main() {",
                 "  vUv = uv;",
                 "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
                 "}"
@@ -45,11 +45,41 @@ galaxies.shaders = {
                 "    return;",
                 "  }",
 
-                "  float uvWarp = 1.0 - clamp(pow(dist / outerEdge, 2.0) * invProgression * 2.0, 0.0, 1.0);",
+                "  float uvWarp = 1.0 - clamp(pow(dist / outerEdge, warpFactor) * invProgression * 2.0, 0.0, 1.0);",
 
                 "  vec2 wUv = center + diff * uvWarp;",
 
                 "  gl_FragColor = texture2D(tDiffuse, wUv);",
+                "}"
+            ].join('\n')
+        }
+    },
+    materials: {
+        shield: {
+            uniforms: {
+                "color":   { type: "c", value: new THREE.Color(0x0099FF) },
+                "opacity": { type: "f", value: 1 }
+            },
+            vertexShader: [
+                "varying float angleSin;",
+
+                "void main() {",
+                "  vec4 worldPosition = modelMatrix * vec4(position, 1.0);",
+                "  vec3 worldNormal = normalize(mat3(modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz) * normal);",
+                "  vec3 I = normalize(cameraPosition - worldPosition.xyz);",
+
+                "  angleSin = 1.0 - abs(dot(worldNormal, I));",
+
+                "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+                "}"
+            ].join('\n'),
+            fragmentShader: [
+                "uniform vec3 color;",
+                "uniform float opacity;",
+                "varying float angleSin;",
+
+                "void main() {",
+                "  gl_FragColor = vec4(color, angleSin * opacity);",
                 "}"
             ].join('\n')
         }

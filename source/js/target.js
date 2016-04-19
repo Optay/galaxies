@@ -143,19 +143,22 @@ galaxies.Capsule.prototype.updatePowerup = function() {
 
   switch (this.powerup) {
     case "clone":
-        map = new THREE.Texture(galaxies.queue.getResult("alienproicon"));
+      map = new THREE.Texture(galaxies.queue.getResult("alienproicon"));
       break;
     case "spread":
-        map = new THREE.Texture(galaxies.queue.getResult("tripleicon"));
+      map = new THREE.Texture(galaxies.queue.getResult("tripleicon"));
       break;
     case "golden":
-        map = new THREE.Texture(galaxies.queue.getResult("rainbowicon"));
+      map = new THREE.Texture(galaxies.queue.getResult("rainbowicon"));
       break;
     case "heart":
-        map = new THREE.Texture(galaxies.queue.getResult("heart"));
-        break;
+      map = new THREE.Texture(galaxies.queue.getResult("heart"));
+      break;
     case "timeWarp":
-        map = new THREE.Texture(galaxies.queue.getResult("slomo"));
+      map = new THREE.Texture(galaxies.queue.getResult("slomo"));
+      break;
+    case "shield":
+      map = new THREE.Texture(galaxies.queue.getResult("shield"));
       break;
   }
 

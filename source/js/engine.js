@@ -28,6 +28,8 @@ galaxies.engine.driftSpeed = 0.01;
 
 galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
+galaxies.engine.shielded = false;
+galaxies.engine.shieldTime = 0.0;
 galaxies.engine._timeDilation = 1.0;
 
 Object.defineProperty(galaxies.engine, "timeDilation", {
@@ -87,7 +89,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
-galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp'];
+galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
 galaxies.engine.currentPowerup = 'boottime';
 galaxies.engine.powerupMessagesShown = {};
 
@@ -326,7 +328,9 @@ galaxies.engine.initGame = function() {
   galaxies.engine.rootObject.add( galaxies.engine.planet );
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
-  
+
+  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(1.3, 18, 18), galaxies.resources.materials['shield']);
+
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -1123,6 +1127,16 @@ galaxies.engine.update = function() {
 
   // update fx
   galaxies.fx.update(scaledDelta);
+
+  if (galaxies.engine.shielded) {
+    galaxies.engine.shieldTime += scaledDelta;
+
+    if (galaxies.engine.shieldTime < 1) {
+      galaxies.engine.shieldBubble.material.uniforms.opacity.value = galaxies.engine.shieldTime * 0.6;
+    } else {
+      galaxies.engine.shieldBubble.material.uniforms.opacity.value = 0.8 + Math.cos(galaxies.engine.shieldTime * Math.PI) * 0.2;
+    }
+  }
   
   // update bg and sun
   var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
@@ -1237,6 +1251,13 @@ galaxies.engine.initRootRotation = function() {
 galaxies.engine.hitPlayer = function() {
   if ( galaxies.engine.isGameOver ) { return; } // prevent any rogue obstacles from causing double-death
   if ( galaxies.engine.isGracePeriod ) { return; }
+
+  if ( galaxies.engine.shielded ) {
+    galaxies.engine.shielded = false;
+    galaxies.engine.planet.remove(galaxies.engine.shieldBubble);
+    galaxies.fx.popBubble();
+    return;
+  }
   
   galaxies.engine.playerLife--;
   galaxies.ui.updateLife( galaxies.engine.playerLife );
@@ -1593,6 +1614,9 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     case 'timeWarp':
       powerupMessage = 'Time Warp';
       break;
+    case 'shield':
+      powerupMessage = 'Lunar Defense';
+      break;
     default:
       galaxies.engine.shootFunction = galaxies.engine.shoot;
       break;
@@ -1606,6 +1630,10 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
 
   if (newPowerup === "timeWarp") {
     createjs.Tween.get(galaxies.engine).to({timeDilation: 0.5}, 1000).wait(20000).to({timeDilation: 1.0}, 1000);
+  } else if (newPowerup === "shield") {
+    galaxies.engine.shielded = true;
+    galaxies.engine.shieldTime = 0;
+    galaxies.engine.planet.add(galaxies.engine.shieldBubble);
   } else {
     galaxies.engine.currentPowerup = newPowerup;
 
