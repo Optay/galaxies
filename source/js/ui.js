@@ -686,11 +686,13 @@ galaxies.ui = (function() {
     divElem.style.transform = "scale(0.5)";
 
     createjs.Tween.get(divElem.style)
+        .wait(17)
         .set({transform: "scale(2)"})
         .wait(500)
         .set({transform: "scale(1)"});
 
     createjs.Tween.get(divElem.style)
+        .wait(17)
         .set({left: finalPosition.left + "px", top: finalPosition.top + "px"})
         .wait(1000)
         .call(function () {
