@@ -1298,6 +1298,9 @@ galaxies.engine.startTimers = function() {
 galaxies.engine.pauseGame = function() {
   galaxies.engine.isPaused = true;
   galaxies.engine.stopTimers();
+
+  galaxies.audio.setAllMute(true);
+
   if ( galaxies.engine.animationFrameRequest != null ) {
     window.cancelAnimationFrame(galaxies.engine.animationFrameRequest);
     galaxies.engine.animationFrameRequest = null;
@@ -1306,6 +1309,9 @@ galaxies.engine.pauseGame = function() {
 galaxies.engine.resumeGame = function() {
   galaxies.engine.isPaused = false;
   galaxies.engine.startTimers();
+  
+  galaxies.audio.applyMuteState();
+  
   if ( galaxies.engine.animationFrameRequest == null ) {
     galaxies.engine.animate();
   }

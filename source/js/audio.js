@@ -555,22 +555,35 @@ galaxies.audio.toggleTargetMix = function( value ) {
 
 galaxies.audio.toggleMuteState = function() {
   switch(galaxies.audio.muteState) {
-  case ('none'):
-    galaxies.audio.muteState = 'music';
-    galaxies.audio.setAllMute( false );
-    galaxies.audio.setMusicMute( true );
-    break;
-  case ('music'):
-    galaxies.audio.muteState = 'all';
-    galaxies.audio.setAllMute( true );
-    break;
-  case ('none'):
-  default:
-    galaxies.audio.muteState = 'none'
-    galaxies.audio.setAllMute( false );
-    break;
+    case 'none':
+      galaxies.audio.muteState = 'music';
+      break;
+    case 'music':
+      galaxies.audio.muteState = 'all';
+      break;
+    case 'all':
+    default:
+      galaxies.audio.muteState = 'none';
+      break;
   }
-}
+
+  galaxies.audio.applyMuteState();
+};
+
+galaxies.audio.applyMuteState = function() {
+  switch (galaxies.audio.muteState) {
+    case 'none':
+      galaxies.audio.setAllMute(false);
+      break;
+    case 'music':
+      galaxies.audio.setAllMute(false);
+      galaxies.audio.setMusicMute(true);
+      break;
+    case 'all':
+      galaxies.audio.setAllMute(true);
+      break;
+  }
+};
 
 // could be private
 galaxies.audio.setAllMute = function( mute ) {
