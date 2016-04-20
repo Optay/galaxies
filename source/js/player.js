@@ -451,7 +451,7 @@ this.galaxies.Player = function() {
                   return false;
               }
 
-              threatLevelSq += (1 - flSqr / visRadiusSq) * 0.2 * asteroid.life;
+              threatLevelSq += (1 - flSqr / visRadiusSq) * 0.5 * asteroid.life;
 
               return true;
           }),
@@ -507,14 +507,12 @@ this.galaxies.Player = function() {
 
             angleDiff = Math.abs(cloneAIData.targetAngle - cloneAIData.angle);
 
-            if (angleDiff < Math.PI / 8) {
-                if (Math.random() * angleDiff < 0.01) {
-                    var projectile = fireCloneProjectile();
+            if (angleDiff < 0.02) {
+                var projectile = fireCloneProjectile();
 
-                    cloneAIData.shotTracking.push([projectile, cloneAIData.targetObject]);
+                cloneAIData.shotTracking.push([projectile, cloneAIData.targetObject]);
 
-                    cloneAIData.targetObject = null;
-                }
+                cloneAIData.targetObject = null;
             }
         }
     } else {
