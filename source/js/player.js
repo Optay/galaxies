@@ -567,7 +567,15 @@ this.galaxies.Player = function() {
     character.rotation.set(0,0,0);
     character.material.rotation = angle;
     character.position.y = galaxies.engine.CHARACTER_POSITION;
-    
+
+    teleportCloneComplete();
+
+    if (cloneRotator.parent === rootObject) {
+      rootObject.remove(cloneRotator);
+    }
+
+    clone.rotation.set(0, 0, 0);
+    clone.position.y = galaxies.engine.CHARACTER_POSITION;
   }
   
   
@@ -596,7 +604,7 @@ this.galaxies.Player = function() {
   }
   
   var teleportOutClone = function( callback ) {
-    if ( clone.parent !== null ) {
+    if ( cloneRotator.parent !== null ) {
       teleportingClone = true;
       
       clone.add( cloneTeleportSprite );
@@ -660,7 +668,7 @@ this.galaxies.Player = function() {
       
     teleporting = true;
     
-    if ( clone.parent !== null ) {
+    if ( cloneRotator.parent !== null ) {
       teleportInClone();
     }
     
@@ -688,9 +696,9 @@ this.galaxies.Player = function() {
       .to( { opacity: 0 }, TELEPORT_TIME_HALF_MS )
       .call( teleportCloneComplete );
 
-      createjs.Tween.removeTweens(cloneShadow.material);
-      createjs.Tween.get(cloneShadow.material)
-          .to({opacity: 1}, TELEPORT_TIME_HALF_MS);
+    createjs.Tween.removeTweens(cloneShadow.material);
+    createjs.Tween.get(cloneShadow.material)
+      .to({opacity: 1}, TELEPORT_TIME_HALF_MS);
   }
   
   var setPowerup = function( powerup ) {
@@ -713,8 +721,22 @@ this.galaxies.Player = function() {
   }
   
   var die = function() {
-      characterShadow.material.opacity = 0;
-      cloneShadow.material.opacity = 0;
+    characterShadow.material.opacity = 0;
+    cloneShadow.material.opacity = 0;
+
+    if (teleportingClone) {
+        createjs.Tween.removeTweens(cloneTeleportSprite.material);
+        createjs.Tween.removeTweens(cloneShadow.material);
+
+        cloneTeleportSprite.material.opacity = 0;
+        clone.material.opacity = 0;
+
+        if (cloneRotator.parent === rootObject) {
+            rootObject.remove(cloneRotator);
+        }
+
+        teleportCloneComplete();
+    }
 
     activeAnimator.updateFrame(10);
   }
@@ -731,6 +753,7 @@ this.galaxies.Player = function() {
   return {
     root: rootObject,
     sprite: character,
+    cloneSprite: clone,
     show: show,
     hide: hide,
     addClone: addClone,

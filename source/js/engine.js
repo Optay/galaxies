@@ -1261,13 +1261,14 @@ galaxies.engine.hitPlayer = function() {
   
   galaxies.engine.playerLife--;
   galaxies.ui.updateLife( galaxies.engine.playerLife );
-  galaxies.engine.setPowerup('');
   
   if ((!galaxies.engine.invulnerable) && (galaxies.engine.playerLife<=0)) {
     galaxies.engine.player.clearTweens();
     galaxies.engine.gameOver();
     return;
   }
+
+  galaxies.engine.setPowerup('');
   
   // Hop player sprite to show its been hit
   galaxies.engine.player.animateHit();

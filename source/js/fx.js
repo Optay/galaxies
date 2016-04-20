@@ -612,9 +612,16 @@ galaxies.fx = (function() {
     // lux flying away
     // planet.parent is used to test if planet exploded to prevent Lux from flying away from a won game.
     if (galaxies.engine.isGameOver && (galaxies.engine.planet.parent == null) ) {
-      galaxies.engine.player.sprite.position.y = galaxies.engine.player.sprite.position.y + CHARACTER_FLY_SPEED * delta;
-      galaxies.engine.player.sprite.rotation.z = galaxies.engine.player.sprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
-      galaxies.engine.player.sprite.material.rotation = galaxies.engine.player.sprite.rotation.z;
+      var playerSprite = galaxies.engine.player.sprite,
+          cloneSprite = galaxies.engine.player.cloneSprite;
+
+      playerSprite.position.y = playerSprite.position.y + CHARACTER_FLY_SPEED * delta;
+      playerSprite.rotation.z = playerSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
+      playerSprite.material.rotation = playerSprite.rotation.z;
+
+      cloneSprite.position.y = cloneSprite.position.y + CHARACTER_FLY_SPEED * delta;
+      cloneSprite.rotation.z = cloneSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
+      cloneSprite.material.rotation = cloneSprite.rotation.z;
     }
     
     
