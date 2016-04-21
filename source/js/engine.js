@@ -329,7 +329,7 @@ galaxies.engine.initGame = function() {
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
 
-  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(1.3, 18, 18), galaxies.resources.materials['shield']);
+  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(2.5, 72, 72), galaxies.resources.materials['shield']);
 
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
@@ -1638,9 +1638,11 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   if (newPowerup === "timeWarp") {
     createjs.Tween.get(galaxies.engine).to({timeDilation: 0.5}, 1000).wait(20000).to({timeDilation: 1.0}, 1000);
   } else if (newPowerup === "shield") {
-    galaxies.engine.shielded = true;
-    galaxies.engine.shieldTime = 0;
-    galaxies.engine.planet.add(galaxies.engine.shieldBubble);
+    if (!galaxies.engine.shielded) {
+      galaxies.engine.shielded = true;
+      galaxies.engine.shieldTime = 0;
+      galaxies.engine.planet.add(galaxies.engine.shieldBubble);
+    }
   } else {
     galaxies.engine.currentPowerup = newPowerup;
 

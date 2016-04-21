@@ -333,20 +333,20 @@ galaxies.fx = (function() {
 
     bubblePopGroup = new SPE.Group({
       texture: { value: starTexture },
-      maxParticleCount: 500
+      maxParticleCount: 3000
     });
 
     var bubblePopSettings = {
       type: SPE.distributions.SPHERE,
-      particleCount: 500,
+      particleCount: 1000,
       duration: 0.1,
       maxAge: { value: 0.8, spread: 0.3 },
-      position: { radius: 1.15 },
+      position: { radius: 2.4 },
       velocity: { value: new THREE.Vector3(2, 0, 0), spread: new THREE.Vector3(1, 0, 0) },
       rotation: { axisSpread: new THREE.Vector3(2, 2, 2), angleSpread: 2*Math.PI },
       color: { value: new THREE.Color(0x0099FF) },
       opacity: { value: [1, 0] },
-      size: { value: 0.3, spread: 0.1 }
+      size: { value: 1.5, spread: 0.1 }
     };
 
     bubblePopGroup.addPool(2, bubblePopSettings, true);
@@ -763,7 +763,7 @@ galaxies.fx = (function() {
   };
 
   var popBubble = function () {
-    bubblePopGroup.triggerPoolEmitter(1);
+    bubblePopGroup.triggerPoolEmitter(1, new THREE.Vector3());
   };
   
   

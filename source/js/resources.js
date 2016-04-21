@@ -191,7 +191,8 @@ galaxies.Resources = function() {
       uniforms: galaxies.shaders.materials.shield.uniforms,
       vertexShader: galaxies.shaders.materials.shield.vertexShader,
       fragmentShader: galaxies.shaders.materials.shield.fragmentShader,
-      transparent: true
+      transparent: true,
+      depthWrite: false
   });
   
   
