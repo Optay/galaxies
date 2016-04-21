@@ -81,6 +81,9 @@ window.addEventListener("load", function(event) {
   document.body.appendChild(galaxies.debug.stats.domElement);
 
   document.addEventListener("keyup", galaxies.debug.onDocumentKeyUp);
+
+  galaxies.debug.stats.domElement.classList.add("hidden");
+  galaxies.debug.datgui.domElement.classList.add("hidden");
 });
 
 
