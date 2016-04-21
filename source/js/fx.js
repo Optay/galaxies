@@ -430,10 +430,19 @@ galaxies.fx = (function() {
     };
 
     galaxies.passes.warpPass = new THREE.ShaderPass(galaxies.shaders.postProcess.warpBubble);
-    galaxies.passes.warpPass.renderToScreen = true;
     galaxies.passes.warpPass.enabled = false;
 
     galaxies.engine.composer.addPass(galaxies.passes.warpPass);
+
+    galaxies.passes.focus = new THREE.ShaderPass(THREE.FocusShader);
+    galaxies.passes.focus.enabled = false;
+
+    galaxies.engine.composer.addPass(galaxies.passes.focus);
+
+    galaxies.passes.vignette = new THREE.ShaderPass(THREE.VignetteShader);
+    galaxies.passes.vignette.enabled = false;
+
+    galaxies.engine.composer.addPass(galaxies.passes.vignette);
   } // init
   
   var showFireworks = function( position ) {
@@ -450,7 +459,8 @@ galaxies.fx = (function() {
 
     passes.warpPass.enabled = true;
     passes.warpPass.uniforms["progression"].value = 0.0;
-    passes.renderPass.renderToScreen = false;
+
+    updatePasses();
 
     warpInfo.worldSpaceOrigin = worldPosition;
     warpInfo.worldSpaceEdge = worldBubbleEdge;
@@ -472,7 +482,60 @@ galaxies.fx = (function() {
 
   var hideWarpBubble = function () {
     galaxies.passes.warpPass.enabled = false;
-    galaxies.passes.renderPass.renderToScreen = true;
+
+    updatePasses();
+  };
+
+  var showTimeDilation = function () {
+    galaxies.passes.focus.enabled = true;
+    galaxies.passes.focus.uniforms.sampleDistance.value = 0;
+
+    createjs.Tween.get(galaxies.passes.focus.uniforms.sampleDistance)
+        .set({value: 0})
+        .to({value: 0.6}, 1000);
+
+    galaxies.passes.vignette.enabled = true;
+    galaxies.passes.vignette.uniforms.offset.value = 0.2;
+    galaxies.passes.vignette.uniforms.darkness.value = 0.0;
+
+    createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
+        .set({value: 0})
+        .to({value: 8.0}, 1000);
+
+    updatePasses();
+  };
+
+  var hideTimeDilation = function () {
+    createjs.Tween.get(galaxies.passes.focus.uniforms.sampleDistance)
+        .to({value: 0}, 1000)
+        .call(function () {
+          galaxies.passes.focus.enabled = false;
+          updatePasses();
+        });
+
+    createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
+        .to({value: 0}, 1000)
+        .call(function () {
+          galaxies.passes.vignette.enabled = false;
+          updatePasses();
+        });
+  };
+
+  var updatePasses = function () {
+    var passes = galaxies.engine.composer.passes,
+        renderToScreenSet = false,
+        i;
+
+    for (i = passes.length - 1; i > -1; --i) {
+      if (passes[i].enabled) {
+        if (renderToScreenSet) {
+          passes[i].renderToScreen = false;
+        } else {
+          passes[i].renderToScreen = true;
+          renderToScreenSet = true;
+        }
+      }
+    }
   };
   
   var showStaricles = function( position, type ) {
@@ -777,6 +840,9 @@ galaxies.fx = (function() {
     showWarpBubble: showWarpBubble,
     updateWarpBubble: updateWarpBubble,
     hideWarpBubble: hideWarpBubble,
+    showTimeDilation: showTimeDilation,
+    hideTimeDilation: hideTimeDilation,
+    updatePasses: updatePasses,
     showRubble: showRubble,
     showPlanetSplode: showPlanetSplode,
     shakeCamera: shakeCamera,

@@ -37,19 +37,21 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
     return galaxies.engine._timeDilation;
   },
   set: function(value) {
+    var soundValue = 1 - (1 - value) * 0.4;
+
     galaxies.engine._timeDilation = value;
 
     galaxies.audio.positionedSounds.forEach(function (sound) {
-      sound.source.playbackRate.value = value;
+      sound.source.playbackRate.value = soundValue;
     });
 
     galaxies.engine.obstacles.forEach(function (obstacle) {
       if (obstacle.passSound) {
-        obstacle.passSound.source.playbackRate.value = value;
+        obstacle.passSound.source.playbackRate.value = soundValue;
       }
     });
 
-    galaxies.audio.soundField.source.playbackRate.value = value;
+    galaxies.audio.soundField.source.playbackRate.value = soundValue;
   }
 });
 
@@ -160,6 +162,11 @@ galaxies.engine.onWindowResize = function() {
 
   if (galaxies.passes.warpPass && galaxies.passes.warpPass.enabled) {
     galaxies.fx.updateWarpBubble();
+  }
+
+  if (galaxies.passes.focus) {
+    galaxies.passes.focus.uniforms.screenWidth = window.innerWidth;
+    galaxies.passes.focus.uniforms.screenHeight = window.innerHeight;
   }
 }
 
@@ -1658,7 +1665,12 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   }
 
   if (newPowerup === "timeWarp") {
-    createjs.Tween.get(galaxies.engine).to({timeDilation: 0.5}, 1000).wait(20000).to({timeDilation: 1.0}, 1000);
+    createjs.Tween.get(galaxies.engine)
+        .call(galaxies.fx.showTimeDilation)
+        .to({timeDilation: 0.1}, 500)
+        .wait(10000)
+        .call(galaxies.fx.hideTimeDilation)
+        .to({timeDilation: 1.0}, 500);
   } else if (newPowerup === "shield") {
     if (!galaxies.engine.shielded) {
       galaxies.engine.shielded = true;
