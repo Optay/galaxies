@@ -607,10 +607,23 @@ galaxies.ui = (function() {
   }
   
   var updateLevel = function( newPlanetNumber, roundNumber ) {
-    levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();;
+    levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
   }
   var updateScore = function( newScore ) {
-    scoreDisplay.innerHTML = newScore.toString();
+    var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, '')),
+        scoreDiff = newScore - startScore,
+        scoreTween = createjs.Tween.get(scoreDisplay, {override: true})
+            .to({innerHTML: newScore}, Math.min(Math.sqrt(scoreDiff) * 25, 4000));
+
+    scoreTween.addEventListener("change", function () {
+      if (!scoreTween.duration) {
+        return;
+      }
+
+      var interimScore = Math.round(startScore + scoreDiff * scoreTween.position / scoreTween.duration);
+
+      scoreDisplay.innerHTML = galaxies.utils.addCommas(interimScore);
+    });
   }
   var updateLife = function( newLifeValue ) {
     for ( var i=0; i<lifeHearts.length; i++ ) {

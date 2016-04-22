@@ -140,7 +140,6 @@ galaxies.generator = (function() {
       { time: 20, startAngle: 0, endAngle: 360, type: 'star', random: true },
       { time: 24, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: 'asteroid', random: true },
       { time: 31, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
-      { time: 0, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
     ],
     [ // Pluto 1-2
       //{ time: 0, type: 'ufo' }, //TEST
