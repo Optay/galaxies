@@ -504,7 +504,7 @@ galaxies.fx = (function() {
 
     createjs.Tween.get(galaxies.passes.focus.uniforms.sampleDistance)
         .set({value: 0})
-        .to({value: 0.6}, 1000);
+        .to({value: 0.4}, 1000);
 
     galaxies.passes.vignette.enabled = true;
     galaxies.passes.vignette.uniforms.offset.value = 0.2;
