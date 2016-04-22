@@ -705,8 +705,18 @@ galaxies.ui = (function() {
   };
   
   var updatePowerupCharge = function( newValue ) {
-    powerupCharge.innerHTML = newValue.toFixed(2);
+    //powerupCharge.innerHTML = newValue.toFixed(2);
   }
+
+  var updateShotCount = function ( value ) {
+    if (value > 1 && powerupCharge.classList.contains("hidden")) {
+      powerupCharge.classList.remove("hidden");
+    } else if (value === 0) {
+      powerupCharge.classList.add("hidden");
+    }
+
+    powerupCharge.innerHTML = value;
+  };
 
   return {
     init: init,
@@ -730,7 +740,8 @@ galaxies.ui = (function() {
     createFloatingStar: createFloatingStar,
     animateCollection: animateCollection,
     updatePowerupCharge: updatePowerupCharge,
-    setMixButtons: setMixButtons
+    setMixButtons: setMixButtons,
+    updateShotCount: updateShotCount
   };
   
   

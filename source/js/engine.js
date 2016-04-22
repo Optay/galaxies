@@ -93,6 +93,7 @@ galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 100;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
 galaxies.engine.currentPowerup = 'boottime';
+galaxies.engine.shotCounter = 0;
 galaxies.engine.powerupMessagesShown = {};
 
 galaxies.engine.PLANET_RADIUS = 1;
@@ -800,6 +801,16 @@ galaxies.engine.shoot = function( indestructible ) {
 
   ++galaxies.engine.projectilesLaunchedRound;
 
+  if (indestructible) {
+    --galaxies.engine.shotCounter;
+
+    galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
+
+    if (galaxies.engine.shotCounter === 0) {
+      galaxies.engine.setPowerup('');
+    }
+  }
+
   // Instantiate shot object
   var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
   var projScale = 0.1;
@@ -876,6 +887,14 @@ galaxies.engine.shoot3 = function() {
   galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 
   ++galaxies.engine.projectilesLaunchedRound;
+
+  --galaxies.engine.shotCounter;
+
+  galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
+
+  if (galaxies.engine.shotCounter === 0) {
+    galaxies.engine.setPowerup('');
+  }
 
   var projs = [];
 
@@ -1626,7 +1645,18 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     return;
   }
 
-  galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
+  switch (newPowerup) {
+    case 'spread':
+    case 'golden':
+      // TODO
+      galaxies.engine.powerupTimer = 0;
+      galaxies.engine.shotCounter = 20;
+      galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
+      break;
+    default:
+      galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
+      break;
+  }
 
   if (newPowerup === galaxies.engine.currentPowerup) {
     return;
