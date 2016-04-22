@@ -26,6 +26,8 @@ galaxies.engine.rootObject; // inner object container that contains all game obj
 
 galaxies.engine.driftSpeed = 0.01;
 
+galaxies.engine.SHIELD_RADIUS = 2.5;
+
 galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
 galaxies.engine.shielded = false;
@@ -337,7 +339,7 @@ galaxies.engine.initGame = function() {
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
 
-  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(2.5, 72, 72), galaxies.resources.materials['shield']);
+  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(galaxies.engine.SHIELD_RADIUS, 72, 72), galaxies.resources.materials['shield']);
 
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({

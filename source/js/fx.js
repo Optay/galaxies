@@ -342,7 +342,7 @@ galaxies.fx = (function() {
       particleCount: 1000,
       duration: 0.1,
       maxAge: { value: 0.8, spread: 0.3 },
-      position: { radius: 2.4 },
+      position: { radius: galaxies.engine.SHIELD_RADIUS - 0.1 },
       velocity: { value: new THREE.Vector3(2, 0, 0), spread: new THREE.Vector3(1, 0, 0) },
       rotation: { axisSpread: new THREE.Vector3(2, 2, 2), angleSpread: 2*Math.PI },
       color: { value: new THREE.Color(0x0099FF) },
