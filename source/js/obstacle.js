@@ -136,7 +136,7 @@ galaxies.Obstacle.prototype.update = function( delta ) {
     this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
     this.velocityRadial = Math.max( -this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial );
     
-    if ( this.radius <= (galaxies.engine.shielded ? galaxies.engine.SHIELD_RADIUS : galaxies.engine.PLANET_DISTANCE) ) {
+    if ( this.radius <= (galaxies.engine.shielded ? galaxies.engine.SHIELD_RADIUS - 0.8 : galaxies.engine.PLANET_DISTANCE) ) {
       // This order is very important as hitPlayer may trigger game over which
       // must override the obstacle's state.
       this.splode( false );
