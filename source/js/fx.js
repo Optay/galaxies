@@ -83,6 +83,7 @@ galaxies.fx = (function() {
 
   // Bubble shield
   var bubblePopGroup;
+  var bubbleInGroup;
   
   // projectile hit particles
   var emitterSettings = {
@@ -352,6 +353,17 @@ galaxies.fx = (function() {
     bubblePopGroup.addPool(2, bubblePopSettings, true);
 
     galaxies.engine.rootObject.add ( bubblePopGroup.mesh );
+
+    bubbleInGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 3000
+    });
+
+    bubblePopSettings.direction = -1;
+
+    bubbleInGroup.addPool(2, bubblePopSettings, true);
+
+    galaxies.engine.rootObject.add( bubbleInGroup.mesh );
 
     var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     sparkleTexture.needsUpdate = true;
@@ -659,6 +671,7 @@ galaxies.fx = (function() {
     purpleTrailGroup.tick(delta);
     smokeGroup.tick(delta);
     bubblePopGroup.tick(delta);
+    bubbleInGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -829,7 +842,9 @@ galaxies.fx = (function() {
     bubblePopGroup.triggerPoolEmitter(1, new THREE.Vector3());
   };
   
-  
+  var bringBubbleIn = function () {
+    bubbleInGroup.triggerPoolEmitter(1, new THREE.Vector3());
+  };
   
             
   return {
@@ -852,6 +867,7 @@ galaxies.fx = (function() {
     getRainbowEmitter: getRainbowEmitter,
     getPurpleTrailEmitter: getPurpleTrailEmitter,
     getSmallFlameJet: getSmallFlameJet,
-    popBubble: popBubble
+    popBubble: popBubble,
+    bringBubbleIn: bringBubbleIn
   };
 })();
