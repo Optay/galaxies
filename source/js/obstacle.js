@@ -364,7 +364,7 @@ galaxies.ObstacleComet = function() {
   var props = {};
   props.type = 'comet';
   props.baseLife = 1;
-  props.baseSpeed = 0.6;//1.2;
+  props.baseSpeed = 1.5;//1.2;
   props.spiral = 0.8;
   props.points = [100, 200, 375, 750];
   props.shakeAmount = 1.6;
@@ -419,9 +419,9 @@ galaxies.ObstacleComet.prototype.update = function(delta) {
   this.particleGroup.tick(delta);
 
   if (this.state === 'falling') {
-    this.radius += delta * this.age / 150;
+    this.velocityRadial += delta * this.age / 10;
 
-    this.radius = Math.max(this.radius, galaxies.engine.PLANET_RADIUS + 0.1);
+    this.radius = Math.max(this.radius, galaxies.engine.PLANET_RADIUS + this.hitThreshold + 0.1);
 
     if (this.age > 2 && this.radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
       this.passSound.volume = Math.max(this.passSound.volume - delta, 0);

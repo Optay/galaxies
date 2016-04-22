@@ -1042,6 +1042,10 @@ galaxies.engine.update = function() {
           obsB = notProjectiles[1];
 
       if (galaxies.engine.obstacles.indexOf(obsA) !== -1 && galaxies.engine.obstacles.indexOf(obsB) !== -1) {
+        if (obsA instanceof galaxies.ObstacleComet || obsB instanceof galaxies.ObstacleComet) {
+          return;
+        }
+
         var distSq = obsA.object.position.distanceToSquared(obsB.object.position);
 
         if (distSq <= Math.pow(obsA.hitThreshold + obsB.hitThreshold, 2)) {
