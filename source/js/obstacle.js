@@ -363,7 +363,7 @@ galaxies.ObstacleIce.prototype.reset = function() {
 galaxies.ObstacleComet = function() {
   var props = {};
   props.type = 'comet';
-  props.baseLife = 2;
+  props.baseLife = 1;
   props.baseSpeed = 0.6;//1.2;
   props.spiral = 0.8;
   props.points = [100, 200, 375, 750];
@@ -417,6 +417,20 @@ galaxies.ObstacleComet.prototype.initModel = function() {
 galaxies.ObstacleComet.prototype.update = function(delta) {
   galaxies.Obstacle.prototype.update.call( this, delta );
   this.particleGroup.tick(delta);
+
+  if (this.state === 'falling') {
+    this.radius += delta * this.age / 150;
+
+    this.radius = Math.max(this.radius, galaxies.engine.PLANET_RADIUS + 0.1);
+
+    if (this.age > 2 && this.radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
+      this.passSound.volume = Math.max(this.passSound.volume - delta, 0);
+
+      if (this.passSound.volume === 0) {
+        this.deactivate();
+      }
+    }
+  }
 }
 galaxies.ObstacleComet.prototype.splode = function() {
   galaxies.Obstacle.prototype.splode.call( this, false );
