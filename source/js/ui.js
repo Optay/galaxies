@@ -610,7 +610,7 @@ galaxies.ui = (function() {
     levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
   }
   var updateScore = function( newScore ) {
-    var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, '')),
+    var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, '')) || newScore,
         scoreDiff = newScore - startScore,
         scoreTween = createjs.Tween.get(scoreDisplay, {override: true})
             .to({innerHTML: newScore}, Math.min(Math.sqrt(scoreDiff) * 25, 4000));

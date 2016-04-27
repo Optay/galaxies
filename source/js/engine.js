@@ -1654,15 +1654,16 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   switch (newPowerup) {
     case 'spread':
     case 'golden':
-      // TODO
       galaxies.engine.powerupTimer = 0;
       galaxies.engine.shotCounter = 20;
-      galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
       break;
     default:
+      galaxies.engine.shotCounter = 0;
       galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;
       break;
   }
+
+  galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
 
   if (newPowerup === galaxies.engine.currentPowerup) {
     return;
