@@ -353,7 +353,7 @@ this.galaxies.Player = function() {
         new galaxies.audio.SimpleSound({
             source: galaxies.audio.getSound("aliengrowl"),
             position: galaxies.utils.rootPosition( galaxies.engine.player.sprite ),
-            baseVolume: 0.8,//10,
+            baseVolume: 0.8,
             loop: false
         });
     }
@@ -463,7 +463,8 @@ this.galaxies.Player = function() {
 
       if (asteroidsInRange.length > 0) {
           var closestAsteroid = null,
-              closestDist = Number.MAX_VALUE;
+              closestDist = Number.MAX_VALUE,
+              angleDiff;
 
           asteroidsInRange.forEach(function (asteroid) {
               var dist = asteroid.object.position.lengthManhattan();
@@ -474,7 +475,10 @@ this.galaxies.Player = function() {
               }
           });
 
-          cloneAIData.targetAngle = galaxies.utils.flatAngle(closestAsteroid.object.position);
+          angleDiff = galaxies.utils.flatAngleTo(closestAsteroid.object.position, defaultLookVector);
+
+          cloneAIData.targetAngle = defaultAngle + angleDiff;
+
           return closestAsteroid;
       }
 
