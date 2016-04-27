@@ -660,7 +660,7 @@ galaxies.ui = (function() {
   };
 
   var createFloatingHeart = function () {
-    return createFloatingDiv("animated life-heart");
+    return createFloatingDiv("life-heart");
   };
   
   var updateStars = function( starsCollected ) {
@@ -688,18 +688,21 @@ galaxies.ui = (function() {
   };
 
   var createFloatingStar = function () {
-    return createFloatingDiv("animated collect-star");
+    return createFloatingDiv("collect-star");
   };
 
   var animateCollection = function (divElem, sourceObject, finalPosition, callback) {
     var screenPos = galaxies.utils.getObjScreenPosition(sourceObject, 50);
 
-    divElem.style.left = (screenPos.x - finalPosition.width / 2) + "px";
-    divElem.style.top = (screenPos.y - finalPosition.height / 2) + "px";
+    divElem.style.left = Math.round(screenPos.x - finalPosition.width / 2) + "px";
+    divElem.style.top = Math.round(screenPos.y - finalPosition.height / 2) + "px";
     divElem.style.transform = "scale(0.5)";
 
     createjs.Tween.get(divElem.style)
         .wait(17)
+        .call(function () {
+          divElem.classList.add("animated");
+        })
         .set({transform: "scale(2)"})
         .wait(500)
         .set({transform: "scale(1)"});
