@@ -29,8 +29,8 @@ this.galaxies.Ufo = function() {
     side: THREE.DoubleSide
   } );
   var trunkford = new THREE.Mesh( new THREE.PlaneGeometry(1.23,1), trunkMat ); // 1.23 is aspect ratio of texture
-  trunkford.position.set( 0, 0.4, 0.4 );
-  trunkford.scale.set(0.6, 0.6, 1);
+  trunkford.position.set( 0, 0.35, 0 );
+  trunkford.scale.set(1.4, 1.4, 1.4);
   trunkford.rotation.set( 0, Math.PI, 0 );
   this.model.add( trunkford );
   

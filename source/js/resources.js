@@ -214,7 +214,8 @@ galaxies.Resources = function() {
     opacity: 0.9,
     transparent: true,
     shading: THREE.SmoothShading,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
   });
 
   var projColor = new THREE.Texture( galaxies.queue.getResult('projcolor'), THREE.UVMapping );
