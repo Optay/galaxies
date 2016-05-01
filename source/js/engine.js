@@ -1657,6 +1657,10 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
       galaxies.engine.powerupTimer = 0;
       galaxies.engine.shotCounter = 20;
       break;
+    case 'timeWarp':
+    case 'shield':
+      // Has no impact on shot counter/timer
+      break;
     default:
       galaxies.engine.shotCounter = 0;
       galaxies.engine.powerupTimer = galaxies.engine.POWERUP_DURATION;

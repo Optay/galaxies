@@ -39,7 +39,7 @@ galaxies.Capsule = function( isHeart ) {
   
   if ( isHeart ) {
     map = new THREE.Texture( galaxies.queue.getResult('heart') );
-    scale = 0.45;
+    scale = 0.7;
   } else {
     map = new THREE.Texture(galaxies.queue.getResult('alienproicon'));
   }
@@ -219,7 +219,7 @@ galaxies.Star = function( angle ) {
     opacity: 0.0
   } );
   this.model = new THREE.Sprite( starMaterial );
-  var starScale = 0.525; // scale it down a little
+  var starScale = 0.8; // scale it down a little
   this.model.scale.set( starScale, starScale, starScale );
 
   
