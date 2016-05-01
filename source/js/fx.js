@@ -167,10 +167,10 @@ galaxies.fx = (function() {
       position: { radius: 0.6 },
       velocity: { value: new THREE.Vector3(12) },
       acceleration: { value: new THREE.Vector3(-7) },
-      color: { value: [new THREE.Color(1.4, 0.6, 0.6), new THREE.Color(1.4, 1.4, 0.6), new THREE.Color(0.6, 1.4, 0.6), new THREE.Color(0.6, 1.4, 1.4), new THREE.Color(0.6, 0.6, 1.4), new THREE.Color(1.4, 0.6, 1.4)] },
+      color: { value: [new THREE.Color(1.6, 0.8, 0.8), new THREE.Color(1.6, 1.6, 0.8), new THREE.Color(0.8, 1.6, 0.8), new THREE.Color(0.8, 1.6, 1.6), new THREE.Color(0.8, 0.8, 1.6), new THREE.Color(1.6, 0.8, 1.6)] },
       wiggle: { spread: 5 },
       opacity: { value: [1, 1, 1, 0.1] },
-      size: { value: [1.3, 0.4] }
+      size: { value: [2.5, 1.4] }
     };
   
     var starTexture = new THREE.Texture( galaxies.queue.getResult('starparticle') );

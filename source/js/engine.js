@@ -374,7 +374,6 @@ galaxies.engine.initGame = function() {
   galaxies.fx.init( galaxies.engine.scene );
 
   galaxies.engine.startGame();
-  
 } // initGame
 
 
