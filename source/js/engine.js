@@ -251,7 +251,8 @@ galaxies.engine.initScene = function() {
   var sunMat = new THREE.MeshBasicMaterial({map: sunTex, transparent: true, blending: THREE.AdditiveBlending});
 
   galaxies.engine.sun = new THREE.Mesh( new THREE.PlaneGeometry(100, 100, 1, 1), sunMat);
-  galaxies.engine.sun.visible = false;
+  galaxies.engine.sun.position.set(-86, 44, -100);
+  galaxies.engine.sun.scale.set(2, 2, 2);
 
   var flareTex = new THREE.Texture(galaxies.queue.getResult('lensFlare'));
   flareTex.needsUpdate = true;
@@ -336,6 +337,7 @@ galaxies.engine.initGame = function() {
   
   galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
+  THREE.SceneUtils.detach(galaxies.engine.sun, galaxies.engine.rootObject, galaxies.engine.scene);
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
 
