@@ -168,8 +168,8 @@ galaxies.engine.onWindowResize = function() {
   }
 
   if (galaxies.passes.focus) {
-    galaxies.passes.focus.uniforms.screenWidth = window.innerWidth;
-    galaxies.passes.focus.uniforms.screenHeight = window.innerHeight;
+    galaxies.passes.focus.uniforms.screenWidth.value = window.innerWidth;
+    galaxies.passes.focus.uniforms.screenHeight.value = window.innerHeight;
   }
 }
 
