@@ -82,7 +82,7 @@ this.galaxies.Ufo = function() {
     texture: { value: texture },
     blending: THREE.AdditiveBlending,
     transparent: true,
-    
+    maxParticleCount: 100
   });
   var laserChargeEmitter = new SPE.Emitter( laserChargeParticles );
   laserChargeGroup.addEmitter( laserChargeEmitter );
@@ -121,7 +121,8 @@ this.galaxies.Ufo = function() {
   var smokeGroup = new SPE.Group({
     texture: { value: smokeTexture },
     blending: THREE.NormalBlending,
-    transparent: true
+    transparent: true,
+    maxParticleCount: 100
   });
   var smokeEmitter = new SPE.Emitter( smokeParticles );
   smokeGroup.addEmitter( smokeEmitter );

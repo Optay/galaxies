@@ -402,7 +402,8 @@ galaxies.ObstacleComet.prototype.initModel = function() {
     blending: THREE.AdditiveBlending,
     transparent: true,
     alphaTest: 0,
-    depthWrite: false
+    depthWrite: false,
+    maxParticleCount: 200
   });
   this.particleGroup.addEmitter( new SPE.Emitter( emitterSettings) );
   
