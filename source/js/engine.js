@@ -14,7 +14,7 @@ this.galaxies = this.galaxies || {};
 
 galaxies.engine = galaxies.engine || {};
 
-galaxies.engine.invulnerable = true;//false;
+galaxies.engine.invulnerable = false;
 
 galaxies.engine.gameInitialized = false;
 

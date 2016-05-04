@@ -20,7 +20,8 @@ galaxies.debug.onDocumentKeyUp = function(event) {
 
 // init debug controls
 window.addEventListener("load", function(event) {
-  var datgui = new dat.GUI();
+  var datgui = new dat.GUI(),
+      isDev = location.search.search(/[\?&]dev\b/g) !== -1;
   
   datgui.close();
   
@@ -42,7 +43,7 @@ window.addEventListener("load", function(event) {
     clone: function() { galaxies.engine.setPowerup('clone'); },
     spread: function() { galaxies.engine.setPowerup('spread'); },
     golden: function() { galaxies.engine.setPowerup('golden'); },
-    invulnerable: true
+    invulnerable: isDev
   };
   
   datgui.add(userValues, 'pluto' );
@@ -56,6 +57,8 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'clone' );
   datgui.add(userValues, 'spread' );
   datgui.add(userValues, 'golden' );
+
+  galaxies.engine.invulnerable = isDev;
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
   invulnerableController.onChange( setInvulnerable );
@@ -82,8 +85,10 @@ window.addEventListener("load", function(event) {
 
   document.addEventListener("keyup", galaxies.debug.onDocumentKeyUp);
 
-  galaxies.debug.stats.domElement.classList.add("hidden");
-  galaxies.debug.datgui.domElement.classList.add("hidden");
+  if (!isDev) {
+    galaxies.debug.stats.domElement.classList.add("hidden");
+    galaxies.debug.datgui.domElement.classList.add("hidden");
+  }
 });
 
 
