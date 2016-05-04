@@ -84,6 +84,10 @@ galaxies.fx = (function() {
   // Bubble shield
   var bubblePopGroup;
   var bubbleInGroup;
+
+  // Teleporting
+  var teleportInGroup;
+  var teleportOutGroup;
   
   // projectile hit particles
   var emitterSettings = {
@@ -364,6 +368,40 @@ galaxies.fx = (function() {
     bubbleInGroup.addPool(2, bubblePopSettings, true);
 
     galaxies.engine.rootObject.add( bubbleInGroup.mesh );
+
+
+    var teleportSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 750,
+      duration: 0.1,
+      maxAge: { value: 0.8, spread: 0.3 },
+      position: { radius: galaxies.engine.CHARACTER_HEIGHT / 5 },
+      velocity: { value: new THREE.Vector3(2, 0, 0), spread: new THREE.Vector3(1, 0, 0) },
+      rotation: { axisSpread: new THREE.Vector3(2, 2, 2), angleSpread: 2*Math.PI },
+      color: { value: new THREE.Color(0xFFFF00) },
+      opacity: { value: [1, 0] },
+      size: { value: 1.5, spread: 0.1 }
+    };
+
+    teleportOutGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 3000
+    });
+
+    teleportOutGroup.addPool(2, teleportSettings, true);
+
+    galaxies.engine.rootObject.add(teleportOutGroup.mesh);
+
+    teleportInGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 3000
+    });
+
+    teleportSettings.direction = -1;
+
+    teleportInGroup.addPool(2, teleportSettings, true);
+
+    galaxies.engine.rootObject.add(teleportInGroup.mesh);
 
     var sparkleTexture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     sparkleTexture.needsUpdate = true;
@@ -672,6 +710,8 @@ galaxies.fx = (function() {
     smokeGroup.tick(delta);
     bubblePopGroup.tick(delta);
     bubbleInGroup.tick(delta);
+    teleportOutGroup.tick(delta);
+    teleportInGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -845,7 +885,15 @@ galaxies.fx = (function() {
   var bringBubbleIn = function () {
     bubbleInGroup.triggerPoolEmitter(1, new THREE.Vector3());
   };
-  
+
+  var teleportIn = function (position) {
+    teleportInGroup.triggerPoolEmitter(1, position);
+  };
+
+  var teleportOut = function (position) {
+    teleportOutGroup.triggerPoolEmitter(1, position);
+  };
+
             
   return {
     init: init,
@@ -868,6 +916,8 @@ galaxies.fx = (function() {
     getPurpleTrailEmitter: getPurpleTrailEmitter,
     getSmallFlameJet: getSmallFlameJet,
     popBubble: popBubble,
-    bringBubbleIn: bringBubbleIn
+    bringBubbleIn: bringBubbleIn,
+    teleportIn: teleportIn,
+    teleportOut: teleportOut
   };
 })();

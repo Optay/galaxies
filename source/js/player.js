@@ -585,6 +585,11 @@ this.galaxies.Player = function() {
   
   
   var teleportOut = function() {
+    var angle = character.material.rotation,
+        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
+
+    galaxies.fx.teleportOut(new THREE.Vector3(-Math.sin(angle) * scalar, Math.cos(angle) * scalar, 1.125));
+
     teleporting = true;
     
     character.add( teleportSprite );
@@ -609,6 +614,11 @@ this.galaxies.Player = function() {
   
   var teleportOutClone = function( callback ) {
     if ( cloneRotator.parent !== null ) {
+      var angle = clone.material.rotation,
+          scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
+
+      galaxies.fx.teleportOut(new THREE.Vector3(-Math.sin(angle) * scalar, Math.cos(angle) * scalar, 1.125));
+
       teleportingClone = true;
       
       clone.add( cloneTeleportSprite );
@@ -650,6 +660,10 @@ this.galaxies.Player = function() {
   }
   
   var teleportIn = function( callback ) {
+    var angle = character.material.rotation,
+        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
+
+    galaxies.fx.teleportIn(new THREE.Vector3(-Math.sin(angle) * scalar, Math.cos(angle) * scalar, 1.125));
     
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
@@ -680,6 +694,11 @@ this.galaxies.Player = function() {
   
   var teleportInClone = function() {
     teleportingClone = true;
+
+    var angle = clone.material.rotation,
+        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
+
+    galaxies.fx.teleportIn(new THREE.Vector3(-Math.sin(angle) * scalar, Math.cos(angle) * scalar, 1.125));
     
     clone.add( cloneTeleportSprite );
     cloneTeleportSprite.material.rotation = clone.material.rotation;
