@@ -138,6 +138,7 @@ for(var i=0, len = galaxies.engine.obstacleTypes.length; i<len; i++ ) {
 }
 
 // Projectiles
+galaxies.engine.projectilePool = [];
 galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 galaxies.engine.projectiles = [];
 
@@ -373,8 +374,20 @@ galaxies.engine.initGame = function() {
 
   galaxies.fx.init( galaxies.engine.scene );
 
+  galaxies.engine.fillPools();
+
   galaxies.engine.startGame();
 } // initGame
+
+galaxies.engine.fillPools = function () {
+  var i, proj;
+
+  for (i = 0; i < 6; ++i) {
+    proj = galaxies.engine.createDefaultProjectile();
+
+    galaxies.engine.projectilePool.push(proj);
+  }
+};
 
 
 galaxies.engine.startGame = function() {
@@ -782,6 +795,34 @@ galaxies.engine.addObstacle = function( type ) {
   
   return obstacle;
 }
+
+galaxies.engine.getProjectile = function (startAngle, directionOffset, indestructible, particles) {
+  var projMesh = new THREE.Mesh(galaxies.resources.geometries['proj'], galaxies.resources.materials['proj']),
+      proj;
+
+  projMesh.scale.set(0.1, 0.1, 0.1);
+
+  if (galaxies.engine.projectilePool.length > 0) {
+    proj = galaxies.engine.projectilePool.pop();
+
+    proj.initialize(projMesh, startAngle, directionOffset, indestructible, particles);
+  } else {
+    proj = new galaxies.Projectile(projMesh, startAngle, directionOffset, indestructible, particles);
+  }
+
+  galaxies.engine.projectiles.push(proj);
+
+  return proj;
+};
+
+galaxies.engine.createDefaultProjectile = function () {
+  var projMesh = new THREE.Mesh(galaxies.resources.geometries['proj'], galaxies.resources.materials['proj']);
+
+  projMesh.scale.set(0.1, 0.1, 0.1);
+
+  return new galaxies.Projectile(projMesh, 0, 0, false);
+};
+
 galaxies.engine.addStar = function( angle ) {
   console.log("addStar");
   var star = new galaxies.Star( angle );
@@ -815,12 +856,7 @@ galaxies.engine.shoot = function( indestructible ) {
   }
 
   // Instantiate shot object
-  var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
-  var projScale = 0.1;
-  projMesh.scale.set(projScale, projScale, projScale );
-  
-  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null );
-  galaxies.engine.projectiles.push( proj );
+  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null);
 
   galaxies.utils.addShotGroup(proj);
     
@@ -841,12 +877,7 @@ galaxies.engine.shoot2 = function() {
   ++galaxies.engine.projectilesLaunchedRound;
 
   // Instantiate shot object
-  var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
-  var projScale = 0.1;
-  projMesh.scale.set(projScale, projScale, projScale );
-
-  var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, 0, false, galaxies.fx.getPurpleTrailEmitter() );
-  galaxies.engine.projectiles.push( proj );
+  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, false, galaxies.fx.getPurpleTrailEmitter());
 
   galaxies.utils.addShotGroup(proj);
 
@@ -903,12 +934,7 @@ galaxies.engine.shoot3 = function() {
 
   for ( var i=-1; i<=1; i++ ) {
     // Instantiate shot object
-    var projMesh = new THREE.Mesh( galaxies.resources.geometries['proj'], galaxies.resources.materials['proj'] );
-    var projScale = 0.1;
-    projMesh.scale.set(projScale, projScale, projScale );
-    
-    var proj = new galaxies.Projectile( projMesh, galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJet(i === 0) );
-    galaxies.engine.projectiles.push( proj );
+    var proj = galaxies.engine.getProjectile(galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJet(i === 0));
 
     projs.push(proj);
       
@@ -1017,6 +1043,8 @@ galaxies.engine.update = function() {
     }
 
     proj.remove();
+
+    galaxies.engine.projectilePool.push(proj);
   });
 
   galaxies.engine.inactiveObstacles = [];
