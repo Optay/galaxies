@@ -641,7 +641,7 @@ galaxies.engine.startPlanetMove = function() {
   }
   
   // Set outbound end position and inbound starting position for planet
-  var outPosition = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,-30,20) );
+  var outPosition = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,-40,20) );
   //var outPosition = new THREE.Vector3(0,0,-100);
   var inPosition = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,100,0) );
   
