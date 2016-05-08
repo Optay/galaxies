@@ -145,7 +145,8 @@ this.galaxies.Ufo = function() {
     map: laserTexture,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 1
+    opacity: 1,
+    blending: THREE.AdditiveBlending
   } );
   var laserBeam = new THREE.Mesh( laserGeometry, laserMaterial );
   laserBeam.position.set(0.5, 0, 0);
