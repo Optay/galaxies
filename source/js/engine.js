@@ -253,7 +253,7 @@ galaxies.engine.initScene = function() {
   var sunMat = new THREE.MeshBasicMaterial({map: sunTex, transparent: true, blending: THREE.AdditiveBlending});
 
   galaxies.engine.sun = new THREE.Mesh( new THREE.PlaneGeometry(100, 100, 1, 1), sunMat);
-  galaxies.engine.sun.position.set(-86, 44, -100);
+  galaxies.engine.sun.position.set(75, 24, -100);
   galaxies.engine.sun.scale.set(2, 2, 2);
 
   var flareTex = new THREE.Texture(galaxies.queue.getResult('lensFlare'));
@@ -265,8 +265,8 @@ galaxies.engine.initScene = function() {
   galaxies.engine.sunFlares.add(flareTex, 60, 0.41, THREE.AdditiveBlending, new THREE.Color(1.3, 2, 1.3));
   galaxies.engine.sunFlares.add(flareTex, 230, 0.6, THREE.AdditiveBlending, new THREE.Color(0.6, 1, 1));
 
-  galaxies.engine.rootObject.add(galaxies.engine.sun);
-  galaxies.engine.sun.add(galaxies.engine.sunFlares);
+  galaxies.engine.scene.add(galaxies.engine.sun);
+  galaxies.engine.scene.add(galaxies.engine.sunFlares);
 
   galaxies.engine.setLightPosition([0,0]);
   

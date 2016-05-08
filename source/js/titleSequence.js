@@ -227,6 +227,11 @@ galaxies.TitleSequence = function() {
     galaxies.engine.driftObject.rotateOnAxis( driftAxis, driftSpeed * delta );
     title.material.rotation = titlePivot.rotation.z; // match lean angle of wheel
 
+    var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
+
+    galaxies.engine.sun.lookAt(cameraScenePos);
+    galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).multiplyScalar(0.5).add(cameraScenePos));
+
     galaxies.engine.composer.render();
   }
   
