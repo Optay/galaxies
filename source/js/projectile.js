@@ -38,6 +38,8 @@ galaxies.Projectile.prototype.initialize = function (model, startAngle, directio
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0).add(this.startPos);
 
   this.object.lookAt(direction);
+
+  galaxies.utils.conify(this.object);
 };
 
 galaxies.Projectile.prototype.reset = function () {
@@ -46,8 +48,6 @@ galaxies.Projectile.prototype.reset = function () {
   this.alreadyCollidedWith = [];
   this.lastPos = new THREE.Vector3();
   this.lifeTimer = 0;
-
-  galaxies.utils.conify(this.object);
 };
 
 galaxies.Projectile.prototype.setModel = function (model) {
@@ -67,6 +67,8 @@ galaxies.Projectile.prototype.setModel = function (model) {
   }
 
   this.model.rotation.x = galaxies.engine.CONE_ANGLE;
+  this.model.rotation.y = 0;
+  this.model.rotation.z = 0;
 };
 
 galaxies.Projectile.prototype.attachParticles = function (particles) {
@@ -169,8 +171,10 @@ galaxies.Projectile.prototype.remove = function () {
   this.particleEmitters = [];
 
   this.particleGroups.forEach(function (group) {
+    this.object.remove(group.mesh);
+
     group.dispose();
-  });
+  }, this);
 
   this.particleGroups = [];
 };
