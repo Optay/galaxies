@@ -14,6 +14,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   
   // Set audio extension
   var ext;
+
+  var isMobile = galaxies.utils.isMobile();
   // Don't use EC3 in the mobile version
   //if ( galaxies.utils.supportsEC3 ) { ext = '.mp4'; }
   if ( false ) { ext = '.mp4'; }
@@ -79,12 +81,12 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
   
   // add texture images
   var imageItems = [
-    { id: 'skyboxright1', src: 'environment/spacesky_right1.jpg' },
-    { id: 'skyboxleft2', src: 'environment/spacesky_left2.jpg' },
-    { id: 'skyboxtop3', src: 'environment/spacesky_top3.jpg' },
-    { id: 'skyboxbottom4', src: 'environment/spacesky_bottom4.jpg' },
-    { id: 'skyboxfront5', src: 'environment/spacesky_front5.jpg' },
-    { id: 'skyboxback6', src: 'environment/spacesky_back6.jpg' },
+    { id: 'skyboxright1', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_right1.jpg' },
+    { id: 'skyboxleft2', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_left2.jpg' },
+    { id: 'skyboxtop3', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_top3.jpg' },
+    { id: 'skyboxbottom4', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_bottom4.jpg' },
+    { id: 'skyboxfront5', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_front5.jpg' },
+    { id: 'skyboxback6', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_back6.jpg' },
     { id: 'lux', src: 'sprites/lux.png' },
     { id: 'luxclone', src: 'sprites/lux_clone.png' },
     { id: 'luxgolden', src: 'sprites/lux_golden.png' },
