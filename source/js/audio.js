@@ -19,7 +19,7 @@ galaxies.audio.DISTANCE_ATTENUATION = 0.1;//0.05;
 galaxies.audio.DISTANCE_REF = 2;
 galaxies.audio.DISTANCE_ROLL = 1;
 galaxies.audio.DIRECTION_FOCUS = 1; // How much sounds spread to neighboring speakers: higher values produces sharper spatialization, lower values spread sound more evenly
-galaxies.audio.DOPPLER_FACTOR = 70; // Higher numbers result in less doppler shift.
+galaxies.audio.DOPPLER_FACTOR = 5; // Higher numbers result in less doppler shift.
 
 galaxies.audio.muteState = 'none'; // Designates which audio is muted: none, music, all
 
@@ -295,7 +295,7 @@ galaxies.audio.PositionedSound = function( props ) {
     }
     try {
       this.source = galaxies.audio.audioCtx.createBufferSource();
-      this.source.playbackRate.value = galaxies.engine.timeDilation;
+      this.source.playbackRate.value = galaxies.engine.soundDilation;
       this.source.loop = this.loop;
       this.source.buffer = buffer;
       this.source.connect( this.muteVolume );
@@ -349,7 +349,8 @@ galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start )
     this.sound.updatePosition( galaxies.utils.rootPosition( this.object ) );
     
     var deltaDistance = (this.lastDistance - this.sound.distance)/delta;
-    this.sound.source.playbackRate.value = 1 + (deltaDistance/galaxies.audio.DOPPLER_FACTOR);
+    this.sound.source.playbackRate.value = Math.max(galaxies.engine.soundDilation +
+        (deltaDistance/galaxies.audio.DOPPLER_FACTOR), 0);
     this.lastDistance = this.sound.distance;
   }
 }
@@ -394,7 +395,7 @@ galaxies.audio.SimpleSound = function( props ) {
     }
     try{
       this.source = galaxies.audio.audioCtx.createBufferSource();
-      this.source.playbackRate.value = galaxies.engine.timeDilation;
+      this.source.playbackRate.value = galaxies.engine.soundDilation;
       this.source.loop = this.loop;
       this.source.buffer = buffer;
       this.source.connect( this.muteVolume );
@@ -452,7 +453,7 @@ galaxies.audio.SoundField = function ( buffer ) {
     }
 
     this.source = galaxies.audio.audioCtx.createBufferSource();
-    this.source.playbackRate.value = galaxies.engine.timeDilation;
+    this.source.playbackRate.value = galaxies.engine.soundDilation;
     this.source.loop = true;
     this.source.buffer = buffer;
 

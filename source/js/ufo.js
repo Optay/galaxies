@@ -312,7 +312,7 @@ this.galaxies.Ufo = function() {
     // Engine sound level - reduce to 0 when all the way behind listener.
     this.ufoSound.update( delta );
     var engineLevel = idleZ - this.object.position.z;
-    engineLevel = THREE.Math.clamp( engineLevel, 0, 1 );
+    engineLevel = THREE.Math.clamp( engineLevel, 0.5, 5 );
     this.ufoSound.volume = engineLevel;
     //
     

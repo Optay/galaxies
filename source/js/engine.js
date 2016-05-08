@@ -33,7 +33,17 @@ galaxies.engine.isGameOver = false;
 galaxies.engine.shielded = false;
 galaxies.engine.shieldTime = 0.0;
 galaxies.engine._timeDilation = 1.0;
+galaxies.engine._soundDilation = 1.0;
 galaxies.engine.slomoDuration = 0;
+
+Object.defineProperty(galaxies.engine, "soundDilation", {
+  get: function() {
+    return galaxies.engine._soundDilation;
+  },
+  set: function(value) {
+    galaxies.engine._soundDilation = value;
+  }
+});
 
 Object.defineProperty(galaxies.engine, "timeDilation", {
   get: function() {
@@ -43,6 +53,7 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
     var soundValue = 1 - (1 - value) * 0.4;
 
     galaxies.engine._timeDilation = value;
+    galaxies.engine.soundDilation = soundValue;
 
     galaxies.audio.positionedSounds.forEach(function (sound) {
       sound.source.playbackRate.value = soundValue;
