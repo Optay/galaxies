@@ -19,6 +19,8 @@ galaxies.Projectile = function (model, startAngle, directionOffset, indestructib
 };
 
 galaxies.Projectile.prototype.initialize = function (model, startAngle, directionOffset, indestructible, particles) {
+  this.reset();
+
   this.indestructible = !!indestructible;
 
   this.startAngle = startAngle;
@@ -36,8 +38,6 @@ galaxies.Projectile.prototype.initialize = function (model, startAngle, directio
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0).add(this.startPos);
 
   this.object.lookAt(direction);
-
-  this.reset();
 };
 
 galaxies.Projectile.prototype.reset = function () {
