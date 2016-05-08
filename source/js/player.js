@@ -325,10 +325,14 @@ this.galaxies.Player = function() {
     rootObject.add( cloneRotator );
     teleportInClone();
   }
-  var removeClone = function() {
+  var removeClone = function(spinOut) {
     if ( cloneRotator.parent === rootObject ) {
-      cloneAnimator.stop();
-      spinningOutClone = true;
+      if (spinOut) {
+        cloneAnimator.stop();
+        spinningOutClone = true;
+      } else {
+          teleportOutClone( function() { rootObject.remove(cloneRotator); } );
+      }
     }
   }
 
@@ -739,7 +743,7 @@ this.galaxies.Player = function() {
   
   var setPowerup = function( powerup ) {
     if ( powerup === '' ) { powerup = 'base'; }
-    removeClone();
+    removeClone(powerup === '');
     
     if ( powerup === 'clone' ) {
         cloneAIData.playedSound = false;
