@@ -339,7 +339,6 @@ galaxies.engine.initGame = function() {
   
   galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
-  THREE.SceneUtils.detach(galaxies.engine.sun, galaxies.engine.rootObject, galaxies.engine.scene);
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
 
