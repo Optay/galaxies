@@ -33,6 +33,7 @@ galaxies.engine.isGameOver = false;
 galaxies.engine.shielded = false;
 galaxies.engine.shieldTime = 0.0;
 galaxies.engine._timeDilation = 1.0;
+galaxies.engine.slomoDuration = 0;
 
 Object.defineProperty(galaxies.engine, "timeDilation", {
   get: function() {
@@ -485,6 +486,10 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 }
 
 galaxies.engine.nextLevel = function() {
+  if (galaxies.engine.slomoDuration > 0.5) {
+    galaxies.engine.slomoDuration = 0.5;
+  }
+
   galaxies.engine.levelNumber++;
   
   galaxies.engine.clearLevel();
@@ -1198,6 +1203,32 @@ galaxies.engine.update = function() {
       galaxies.engine.shieldBubble.material.uniforms.opacity.value = 0.8 + Math.cos(galaxies.engine.shieldTime * Math.PI) * 0.2;
     }
   }
+
+  if (galaxies.engine.slomoDuration > 0) {
+    if (galaxies.engine.slomoDuration <= delta) {
+      galaxies.engine.slomoDuration = 0;
+    } else {
+      galaxies.engine.slomoDuration -= delta;
+    }
+
+    if (galaxies.engine.slomoDuration > 0.5) {
+      if (galaxies.engine.timeDilation > 0.1) {
+        var tdChange = 1.8 * delta;
+
+        if (galaxies.engine.timeDilation <= 0.1 + tdChange) {
+          galaxies.engine.timeDilation = 0.1;
+        } else {
+          galaxies.engine.timeDilation -= tdChange;
+        }
+      }
+    } else {
+      galaxies.engine.timeDilation = 1.0 - 1.8 * galaxies.engine.slomoDuration;
+
+      if (galaxies.engine.slomoDuration === 0) {
+        galaxies.fx.hideTimeDilation();
+      }
+    }
+  }
   
   // update bg and sun
   var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
@@ -1404,6 +1435,10 @@ galaxies.engine.resumeGame = function() {
 
 galaxies.engine.gameOver = function( isWin ) {
   if ( typeof(isWin) !== 'boolean' ) { isWin = false; }
+
+  if (galaxies.engine.slomoDuration > 0.5) {
+    galaxies.engine.slomoDuration = 0.5;
+  }
   
   galaxies.engine.isGameOver = true;
   galaxies.engine.removeInputListeners();
@@ -1737,12 +1772,8 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   }
 
   if (newPowerup === "timeWarp") {
-    createjs.Tween.get(galaxies.engine)
-        .call(galaxies.fx.showTimeDilation)
-        .to({timeDilation: 0.1}, 500)
-        .wait(10000)
-        .call(galaxies.fx.hideTimeDilation)
-        .to({timeDilation: 1.0}, 500);
+    galaxies.engine.slomoDuration += 10;
+    galaxies.fx.showTimeDilation();
   } else if (newPowerup === "shield") {
     if (!galaxies.engine.shielded) {
       galaxies.fx.bringBubbleIn();
