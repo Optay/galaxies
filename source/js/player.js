@@ -181,6 +181,7 @@ this.galaxies.Player = function() {
   var TELEPORT_TIME_HALF_MS = TELEPORT_TIME_MS/2;
   var teleporting = false;
   var teleportingClone = false;
+  var spinningOutClone = false;
   
   var teleportMaterial = new THREE.SpriteMaterial({
     map: baseTeleportMap,
@@ -320,12 +321,14 @@ this.galaxies.Player = function() {
   
   
   var addClone = function() {
+    stopSpinningOutClone();
     rootObject.add( cloneRotator );
     teleportInClone();
   }
   var removeClone = function() {
     if ( cloneRotator.parent === rootObject ) {
-      teleportOutClone( function() { rootObject.remove(cloneRotator); } );
+      cloneAnimator.stop();
+      spinningOutClone = true;
     }
   }
 
@@ -532,7 +535,7 @@ this.galaxies.Player = function() {
     characterShadow.material.rotation = angle - Math.PI/60;
     activeAnimator.update( delta );
     
-    if ( cloneRotator.parent !== null ) {
+    if ( cloneRotator.parent !== null && !teleportingClone && !spinningOutClone ) {
       var cloneDefaultAngle = angle + Math.PI;
 
       cloneAnimator.update(delta);
@@ -560,6 +563,35 @@ this.galaxies.Player = function() {
       cloneTeleportAnimator.update( delta );
       cloneTeleportSprite.material.rotation = clone.material.rotation;
     }
+    if (spinningOutClone) {
+      var v3 = new THREE.Vector3(),
+          normCloneScreenPos;
+
+      galaxies.fx.spinOutClone(delta);
+
+      v3.setFromMatrixPosition(clone.matrixWorld);
+
+      normCloneScreenPos = galaxies.utils.getNormalizedScreenPosition(v3);
+
+      if (normCloneScreenPos.x < -0.1 || normCloneScreenPos.x > 1.1 ||
+          normCloneScreenPos.y < -0.1 || normCloneScreenPos.y > 1.1) {
+        stopSpinningOutClone();
+      }
+    }
+  };
+
+  var stopSpinningOutClone = function () {
+    if (!spinningOutClone) {
+        return;
+    }
+
+    spinningOutClone = false;
+
+    clone.rotation.set(0, 0, 0);
+    clone.material.rotation = cloneRotator.rotation.z;
+    clone.position.y = galaxies.engine.CHARACTER_POSITION;
+
+    rootObject.remove(cloneRotator);
   };
   
   
@@ -579,15 +611,13 @@ this.galaxies.Player = function() {
     }
 
     clone.rotation.set(0, 0, 0);
+    cloneRotator.rotation.set(0, 0, 0);
     clone.position.y = galaxies.engine.CHARACTER_POSITION;
   }
   
   
   
   var teleportOut = function() {
-    var angle = character.material.rotation,
-        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
-
     teleporting = true;
     
     character.add( teleportSprite );
@@ -612,9 +642,6 @@ this.galaxies.Player = function() {
   
   var teleportOutClone = function( callback ) {
     if ( cloneRotator.parent !== null ) {
-      var angle = clone.material.rotation,
-          scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
-
       teleportingClone = true;
       
       clone.add( cloneTeleportSprite );
@@ -656,9 +683,6 @@ this.galaxies.Player = function() {
   }
   
   var teleportIn = function( callback ) {
-    var angle = character.material.rotation,
-        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
-
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
     teleportSprite.material.opacity = 0;
@@ -688,9 +712,6 @@ this.galaxies.Player = function() {
   
   var teleportInClone = function() {
     teleportingClone = true;
-
-    var angle = clone.material.rotation,
-        scalar = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT / 7;
 
     clone.add( cloneTeleportSprite );
     cloneTeleportSprite.material.rotation = clone.material.rotation;

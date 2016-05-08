@@ -688,16 +688,13 @@ galaxies.fx = (function() {
     // lux flying away
     // planet.parent is used to test if planet exploded to prevent Lux from flying away from a won game.
     if (galaxies.engine.isGameOver && (galaxies.engine.planet.parent == null) ) {
-      var playerSprite = galaxies.engine.player.sprite,
-          cloneSprite = galaxies.engine.player.cloneSprite;
+      var playerSprite = galaxies.engine.player.sprite;
 
       playerSprite.position.y = playerSprite.position.y + CHARACTER_FLY_SPEED * delta;
       playerSprite.rotation.z = playerSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
       playerSprite.material.rotation = playerSprite.rotation.z;
 
-      cloneSprite.position.y = cloneSprite.position.y + CHARACTER_FLY_SPEED * delta;
-      cloneSprite.rotation.z = cloneSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
-      cloneSprite.material.rotation = cloneSprite.rotation.z;
+      spinOutClone(delta);
     }
     
     
@@ -709,6 +706,14 @@ galaxies.fx = (function() {
       glowbjects[i].material.uniforms.viewVector.value = toCamera;
     }
   }
+
+  var spinOutClone = function (delta) {
+    var cloneSprite = galaxies.engine.player.cloneSprite;
+
+    cloneSprite.position.y = cloneSprite.position.y + CHARACTER_FLY_SPEED * delta;
+    cloneSprite.rotation.z = cloneSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
+    cloneSprite.material.rotation = cloneSprite.rotation.z;
+  };
   
   var shakeCamera = function( magnitude, duration ) {
     // Make sure camera is reset before applying shake tween
@@ -867,6 +872,7 @@ galaxies.fx = (function() {
     getPurpleTrailEmitter: getPurpleTrailEmitter,
     getSmallFlameJet: getSmallFlameJet,
     popBubble: popBubble,
-    bringBubbleIn: bringBubbleIn
+    bringBubbleIn: bringBubbleIn,
+    spinOutClone: spinOutClone
   };
 })();
