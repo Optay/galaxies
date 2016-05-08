@@ -1456,6 +1456,8 @@ galaxies.engine.endGame = function() {
 
 galaxies.engine.resetGame = function() {
   galaxies.engine.isGameOver = false;
+
+  galaxies.audio.applyMuteState();
   
   galaxies.engine.clearLevel();
   
