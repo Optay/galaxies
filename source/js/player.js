@@ -309,6 +309,8 @@ this.galaxies.Player = function() {
     activeAnimator.play();
   }
   var animateHit = function() {
+    removeClone(true);
+
     if ( !createjs.Tween.hasActiveTweens( character.position ) ) {
       createjs.Tween.get( character.position )
         .to({y:galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT}, 250, createjs.Ease.quadOut)
@@ -326,6 +328,10 @@ this.galaxies.Player = function() {
     teleportInClone();
   }
   var removeClone = function(spinOut) {
+    if (spinningOutClone) {
+        return;
+    }
+
     if ( cloneRotator.parent === rootObject ) {
       if (spinOut) {
         cloneAnimator.stop();
@@ -743,11 +749,12 @@ this.galaxies.Player = function() {
   
   var setPowerup = function( powerup ) {
     if ( powerup === '' ) { powerup = 'base'; }
-    removeClone(powerup === '');
     
     if ( powerup === 'clone' ) {
-        cloneAIData.playedSound = false;
+      cloneAIData.playedSound = false;
       addClone();
+    } else {
+      removeClone();
     }
     
     character.material.map = characters[powerup].map;

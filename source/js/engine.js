@@ -1392,11 +1392,11 @@ galaxies.engine.hitPlayer = function() {
         heart.remove();
       });
 
-  galaxies.engine.setPowerup('');
-  
   // Hop player sprite to show its been hit
   galaxies.engine.player.animateHit();
-  
+
+  galaxies.engine.setPowerup('');
+
   galaxies.engine.isGracePeriod = true;
   galaxies.engine.player.sprite.material.opacity = 0.5;
   createjs.Tween.get( galaxies.engine.player ).wait(2000).call( galaxies.engine.endGracePeriod );
