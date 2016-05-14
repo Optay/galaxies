@@ -486,7 +486,7 @@ galaxies.fx = (function() {
         warpInfo = passes.warpInfo,
         screenSpaceCenter = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceOrigin),
         screenSpaceEdge = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceEdge),
-        screenAdjust = new THREE.Vector2(galaxies.engine.windowHalfY, galaxies.engine.windowHalfX).normalize();
+        screenAdjust = new THREE.Vector2(galaxies.engine.canvasHalfHeight, galaxies.engine.canvasHalfWidth).normalize();
 
     warpPass.uniforms["center"].value = screenSpaceCenter;
     warpPass.uniforms["maxRadius"].value = screenAdjust.multiplyScalar(screenSpaceEdge.sub(screenSpaceCenter).divide(screenAdjust).length());

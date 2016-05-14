@@ -18,8 +18,10 @@ galaxies.engine.invulnerable = false;
 
 galaxies.engine.gameInitialized = false;
 
-galaxies.engine.windowHalfX = 0;
-galaxies.engine.windowHalfY = 0;
+galaxies.engine.canvasWidth = 0;
+galaxies.engine.canvasHeight = 0;
+galaxies.engine.canvasHalfWidth = 0;
+galaxies.engine.canvasHalfHeight = 0;
 
 galaxies.engine.driftObject; // outer world container that rotates slowly to provide skybox motion
 galaxies.engine.rootObject; // inner object container that contains all game objects
@@ -170,16 +172,26 @@ galaxies.engine.inactiveNeutrals = [];
 
 
 
-galaxies.engine.onWindowResize = function() {
+galaxies.engine.ensureCanvasSize = function() {
+  var canvas = galaxies.engine.renderer.domElement,
+      size = galaxies.engine.renderer.getSize(),
+      width = canvas.clientWidth,
+      height = canvas.clientHeight;
 
-  galaxies.engine.windowHalfX = window.innerWidth / 2;
-  galaxies.engine.windowHalfY = window.innerHeight / 2;
+  if (size.width === width && size.height === height && width !== 0 && height !== 0) {
+    return;
+  }
 
-  galaxies.engine.camera.aspect = window.innerWidth / window.innerHeight;
+  galaxies.engine.canvasWidth = width;
+  galaxies.engine.canvasHeight = height;
+  galaxies.engine.canvasHalfWidth = width / 2;
+  galaxies.engine.canvasHalfHeight = height / 2;
+
+  galaxies.engine.camera.aspect = width / height;
   galaxies.engine.camera.updateProjectionMatrix();
 
-  galaxies.engine.renderer.setSize( window.innerWidth, window.innerHeight );
-  galaxies.engine.composer.setSize( window.innerWidth, window.innerHeight );
+  galaxies.engine.renderer.setSize( width, height );
+  galaxies.engine.composer.setSize( width, height );
 
   // Recalculate "constants"
   galaxies.engine.updateView();
@@ -189,9 +201,12 @@ galaxies.engine.onWindowResize = function() {
   }
 
   if (galaxies.passes.focus) {
-    galaxies.passes.focus.uniforms.screenWidth.value = window.innerWidth;
-    galaxies.passes.focus.uniforms.screenHeight.value = window.innerHeight;
+    galaxies.passes.focus.uniforms.screenWidth.value = width;
+    galaxies.passes.focus.uniforms.screenHeight.value = height;
   }
+
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
 }
 
 // Set view parameters
@@ -259,7 +274,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.rootObject = new THREE.Object3D();
   galaxies.engine.driftObject.add( galaxies.engine.rootObject );
   
-  galaxies.engine.camera = new THREE.PerspectiveCamera( galaxies.engine.CAMERA_VIEW_ANGLE, window.innerWidth / window.innerHeight, 0.3, 1100 );
+  galaxies.engine.camera = new THREE.PerspectiveCamera( galaxies.engine.CAMERA_VIEW_ANGLE, galaxies.engine.canvasWidth / galaxies.engine.canvasHeight, 0.3, 1100 );
   galaxies.engine.camera.position.set(0,0,galaxies.engine.CAMERA_Z);
   galaxies.engine.rootObject.add(galaxies.engine.camera);
   
@@ -309,7 +324,7 @@ galaxies.engine.initScene = function() {
   
   galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
-  galaxies.engine.renderer.setSize( window.innerWidth, window.innerHeight );
+  galaxies.engine.renderer.setSize( galaxies.engine.canvasWidth, galaxies.engine.canvasHeight );
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );
   
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextlost", galaxies.engine.handleContextLost, false);
@@ -324,9 +339,7 @@ galaxies.engine.initScene = function() {
 
   galaxies.engine.composer.addPass(galaxies.passes.renderPass);
   
-  window.addEventListener( 'resize', galaxies.engine.onWindowResize, false );
-  window.addEventListener( 'orientationchange', galaxies.engine.onWindowResize, false );
-  galaxies.engine.onWindowResize();
+  galaxies.engine.ensureCanvasSize();
 
   // Perhaps should be part of audio init...
   // configure listener (necessary for correct panner behavior when mixing for stereo)
@@ -784,8 +797,8 @@ galaxies.engine.onDocumentMouseUp = function( event ) {
 }
 
 galaxies.engine.onDocumentMouseMove = function(event) {
-  var mouseX = ( event.clientX - galaxies.engine.windowHalfX );
-  var mouseY = ( event.clientY - galaxies.engine.windowHalfY );
+  var mouseX = ( event.clientX - galaxies.engine.canvasHalfWidth );
+  var mouseY = ( event.clientY - galaxies.engine.canvasHalfHeight );
   
   galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
   
@@ -795,8 +808,8 @@ galaxies.engine.onDocumentTouchMove = function( event ) {
   
   var touches = event.changedTouches;
   for ( var i=0; i<touches.length; i++ ) {
-      var mouseX = touches[i].clientX - galaxies.engine.windowHalfX;
-      var mouseY = touches[i].clientY - galaxies.engine.windowHalfY;
+      var mouseX = touches[i].clientX - galaxies.engine.canvasHalfWidth;
+      var mouseY = touches[i].clientY - galaxies.engine.canvasHalfHeight;
       
       galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
       
@@ -1010,11 +1023,12 @@ galaxies.engine.shoot3 = function() {
 
 
 galaxies.engine.animate = function() {
+  galaxies.engine.ensureCanvasSize();
 
-  galaxies.engine.animationFrameRequest = requestAnimationFrame( galaxies.engine.animate );
   galaxies.engine.update();
 
-}
+  galaxies.engine.animationFrameRequest = requestAnimationFrame( galaxies.engine.animate );
+};
 
 
 // Game Loop

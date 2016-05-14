@@ -273,14 +273,14 @@ galaxies.utils.getScreenPosition = function (v3, margin) {
 
     v3.project(galaxies.engine.camera);
 
-    screenX = ( v3.x * galaxies.engine.windowHalfX ) + galaxies.engine.windowHalfX;
-    screenY = - ( v3.y * galaxies.engine.windowHalfY ) + galaxies.engine.windowHalfY;
+    screenX = ( v3.x * galaxies.engine.canvasHalfWidth ) + galaxies.engine.canvasHalfWidth;
+    screenY = - ( v3.y * galaxies.engine.canvasHalfHeight ) + galaxies.engine.canvasHalfHeight;
 
     if (typeof margin === "number") {
         screenX = Math.max( screenX, margin );
-        screenX = Math.min( screenX, window.innerWidth - margin );
+        screenX = Math.min( screenX, galaxies.engine.canvasWidth - margin );
         screenY = Math.max( screenY, margin );
-        screenY = Math.min( screenY, window.innerHeight - margin );
+        screenY = Math.min( screenY, galaxies.engine.canvasHeight - margin );
     }
 
     return new THREE.Vector2(screenX, screenY);

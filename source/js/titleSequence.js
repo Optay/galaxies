@@ -212,8 +212,9 @@ galaxies.TitleSequence = function() {
   }
 
   var animateTitle = function() {
-    titleFrameRequest = requestAnimationFrame( animateTitle );
+    galaxies.engine.ensureCanvasSize();
     updateTitle();
+    titleFrameRequest = requestAnimationFrame( animateTitle );
   };
   
   // Tick function
