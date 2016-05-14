@@ -4,10 +4,21 @@ galaxies.debug = {};
 
 // init debug controls
 window.addEventListener("load", function(event) {
-  var isDev = location.search.search(/[\?&]dev\b/g) !== -1;
+  var datgui = new dat.GUI(),
+      isDev = location.search.search(/[\?&]dev\b/g) !== -1;
   
   console.log("debug init");
-  
+
+  datgui.close();
+
+  galaxies.debug.datgui = datgui;
+
+  galaxies.debug.stats = new Stats();
+  galaxies.debug.stats.domElement.style.position = 'absolute';
+  galaxies.debug.stats.domElement.style.left = '0';
+  galaxies.debug.stats.domElement.style.top = '0';
+  document.body.appendChild(galaxies.debug.stats.domElement);
+
   var userValues = {
     pluto: function() { setLevel(1); },
     neptune: function() { setLevel(4); },
@@ -27,7 +38,7 @@ window.addEventListener("load", function(event) {
     addMiniUFO: function() {galaxies.engine.addMiniUFO();},
     invulnerable: isDev
   };
-  
+
   datgui.add(userValues, 'pluto' );
   datgui.add(userValues, 'neptune' );
   datgui.add(userValues, 'uranus' );
@@ -57,20 +68,8 @@ window.addEventListener("load", function(event) {
   }
 
   if (isDev) {
-    var datgui = new dat.GUI();
-
-    datgui.close();
-
     galaxies.engine.invulnerable = true;
     galaxies.engine.POWERUP_CHARGED = 100;
-
-    galaxies.debug.datgui = datgui;
-
-    galaxies.debug.stats = new Stats();
-    galaxies.debug.stats.domElement.style.position = 'absolute';
-    galaxies.debug.stats.domElement.style.left = '0';
-    galaxies.debug.stats.domElement.style.top = '0';
-    document.body.appendChild(galaxies.debug.stats.domElement);
   } else {
     galaxies.debug.stats.domElement.classList.add("hidden");
     galaxies.debug.datgui.domElement.classList.add("hidden");
