@@ -27,6 +27,7 @@ window.addEventListener("load", function(event) {
     clone: function() { galaxies.engine.setPowerup('clone'); },
     spread: function() { galaxies.engine.setPowerup('spread'); },
     golden: function() { galaxies.engine.setPowerup('golden'); },
+    addMiniUFO: function() {galaxies.engine.addMiniUFO();},
     invulnerable: isDev
   };
   
@@ -41,6 +42,7 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'clone' );
   datgui.add(userValues, 'spread' );
   datgui.add(userValues, 'golden' );
+  datgui.add(userValues, 'addMiniUFO' );
 
   galaxies.engine.invulnerable = isDev;
 

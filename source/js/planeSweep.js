@@ -16,7 +16,7 @@ galaxies.PlaneSweep.prototype = {
             return;
         }
 
-        var itemPos = (item === galaxies.engine.ufo ? item.rootPosition : item.object.position),
+        var itemPos = (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position),
             itemX = itemPos.x,
             itemY = itemPos.y,
             itemZ = itemPos.z,
@@ -64,7 +64,7 @@ galaxies.PlaneSweep.prototype = {
         if (item instanceof galaxies.Projectile) {
             return Math.min(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item === galaxies.engine.ufo ? item.rootPosition : item.object.position)[axis] - (item.hitThreshold || 0);
+            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] - (item.hitThreshold || 0);
         }
     },
 
@@ -72,7 +72,7 @@ galaxies.PlaneSweep.prototype = {
         if (item instanceof galaxies.Projectile) {
             return Math.max(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item === galaxies.engine.ufo ? item.rootPosition : item.object.position)[axis] + (item.hitThreshold || 0);
+            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] + (item.hitThreshold || 0);
         }
     },
 

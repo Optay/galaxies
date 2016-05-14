@@ -8,9 +8,9 @@ this.galaxies.Ufo = function() {
   
   this.object = new THREE.Object3D();
   this.rootPosition = galaxies.utils.rootPosition(this.object);
-  this.model = galaxies.resources.geometries['ufo'];
-  this.model.children[0].material = galaxies.resources.materials['ufo'];
-  this.model.children[1].material = galaxies.resources.materials['ufocanopy'];
+  this.model = galaxies.resources.geometries['ufo'].clone();
+  this.model.children[0].material = galaxies.resources.materials['ufo'].clone();
+  this.model.children[1].material = galaxies.resources.materials['ufocanopy'].clone();
   
   
   this.model.scale.set(0.6, 0.6, 0.6);
