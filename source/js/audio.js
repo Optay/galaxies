@@ -19,7 +19,7 @@ galaxies.audio.DISTANCE_ATTENUATION = 0.1;//0.05;
 galaxies.audio.DISTANCE_REF = 2;
 galaxies.audio.DISTANCE_ROLL = 1;
 galaxies.audio.DIRECTION_FOCUS = 1; // How much sounds spread to neighboring speakers: higher values produces sharper spatialization, lower values spread sound more evenly
-galaxies.audio.DOPPLER_FACTOR = 5; // Higher numbers result in less doppler shift.
+galaxies.audio.DOPPLER_FACTOR = 8; // Higher numbers result in less doppler shift.
 
 galaxies.audio.muteState = 'none'; // Designates which audio is muted: none, music, all
 
@@ -339,8 +339,7 @@ galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start )
   Object.defineProperty(this, "volume", { set:
     function (value) {
       //console.log("volume", value );
-      this._volume = value;
-      this.sound.preAmp.gain.value = this._volume;
+      this.sound.volume = value;
     }
   });
  
@@ -350,7 +349,7 @@ galaxies.audio.ObjectSound = function( source, object, baseVolume, loop, start )
     
     var deltaDistance = (this.lastDistance - this.sound.distance)/delta;
     this.sound.source.playbackRate.value = Math.max(galaxies.engine.soundDilation +
-        (deltaDistance/galaxies.audio.DOPPLER_FACTOR), 0);
+        (deltaDistance/galaxies.audio.DOPPLER_FACTOR), galaxies.engine.soundDilation * 0.6);
     this.lastDistance = this.sound.distance;
   }
 }

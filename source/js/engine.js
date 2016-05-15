@@ -1616,7 +1616,7 @@ galaxies.engine.clearLevel = function() {
   // Deactivate active obstacles and put them in the pool
   for( var i=0, len = galaxies.engine.obstacles.length; i<len; i++ ) {
     var obstacle = galaxies.engine.obstacles[i];
-    obstacle.deactivate();
+      obstacle.deactivate();
     galaxies.engine.obstaclePool[obstacle.type].push(obstacle);
   }
   galaxies.engine.obstacles = [];

@@ -568,7 +568,7 @@ galaxies.MiniUFO = function () {
     orient: false,
     spiral: 0.7,
     baseSpeed: 0.4,
-    hitSound: "metalhit",
+    hitSound: "ufohit",
     rubbleType: ''
   };
 
