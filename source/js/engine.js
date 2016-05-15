@@ -83,7 +83,8 @@ galaxies.engine.obstacleTypes = ['asteroid',
                                  'asteroidrad',
                                  'asteroidradchild',
                                  'asteroidmetal',
-                                 'comet'];//['asteroid', 'satellite', 'comet'];
+                                 'comet',
+                                 'miniUFO'];//['asteroid', 'satellite', 'comet'];
 
 // View, play parameters
 galaxies.engine.speedScale = 1;
@@ -155,10 +156,6 @@ for(var i=0, len = galaxies.engine.obstacleTypes.length; i<len; i++ ) {
 galaxies.engine.projectilePool = [];
 galaxies.engine.shotTimer = galaxies.engine.SHOOT_TIME;
 galaxies.engine.projectiles = [];
-
-// UFOs
-galaxies.engine.miniUFOPool = [];
-galaxies.engine.miniUFOs = [];
 
 // Laser Bullets
 galaxies.engine.laserBulletPool = [];
@@ -887,22 +884,6 @@ galaxies.engine.addUfo = function() {
   }
 }
 
-galaxies.engine.addMiniUFO = function () {
-  var miniUFO;
-
-  if (galaxies.engine.miniUFOPool.length > 0) {
-    miniUFO = galaxies.engine.miniUFOPool.pop();
-  } else {
-    miniUFO = new galaxies.miniUFO();
-  }
-
-  miniUFO.addToScene();
-
-  galaxies.engine.planeSweep.add(miniUFO);
-
-  galaxies.engine.miniUFOs.push(miniUFO);
-};
-
 galaxies.engine.shoot = function( indestructible ) {
   if ( typeof(indestructible) !== 'boolean' ) {
     indestructible = false;
@@ -1069,8 +1050,7 @@ galaxies.engine.update = function() {
   });
 
   var expiredProjectiles = [],
-      expiredLaserBullets = [],
-      expiredMiniUFOs = [];
+      expiredLaserBullets = [];
 
   galaxies.engine.projectiles.forEach(function (proj) {
     proj.update( delta );
@@ -1079,14 +1059,6 @@ galaxies.engine.update = function() {
 
     if ( proj.isExpired ) {
       expiredProjectiles.push( proj );
-    }
-  });
-
-  galaxies.engine.miniUFOs.forEach(function (miniUFO) {
-    miniUFO.update(scaledDelta);
-
-    if (miniUFO.state === "inactive") {
-      expiredMiniUFOs.push(miniUFO);
     }
   });
 
@@ -1134,20 +1106,6 @@ galaxies.engine.update = function() {
     galaxies.engine.projectilePool.push(proj);
   });
 
-  expiredMiniUFOs.forEach(function (miniUFO) {
-    var idx = galaxies.engine.miniUFOs.indexOf(miniUFO);
-
-    if (idx !== -1) {
-      galaxies.engine.miniUFOs.splice(idx, 1);
-    }
-
-    galaxies.engine.planeSweep.remove(miniUFO);
-
-    miniUFO.removeFromScene();
-
-    galaxies.engine.miniUFOPool.push(miniUFO);
-  });
-  
   expiredLaserBullets.forEach(function (laserBullet) {
     var idx = galaxies.engine.laserBullets.indexOf(laserBullet);
     
@@ -1222,7 +1180,7 @@ galaxies.engine.update = function() {
       var proj = projectiles[0],
           other = notProjectiles[0],
           projLine = proj.object.position.clone().sub(proj.lastPos),
-          isUFO = other === galaxies.engine.ufo || galaxies.engine.miniUFOs.indexOf(other) > -1,
+          isUFO = other === galaxies.engine.ufo,
           didHit = false,
           isRainbow = proj.indestructible,
           ufoPosition, otherLine, scalar, checkPoint;

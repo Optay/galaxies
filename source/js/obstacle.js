@@ -560,6 +560,116 @@ galaxies.ObstacleSpiky.prototype.hit = function( hitPosition, damage, multiply, 
   this.object.material.emissive.setHex(emissiveColor);
 };
 
+galaxies.MiniUFO = function () {
+  var props = {
+    type: "miniUFO",
+    hitThreshold: 0.4,
+    tumbling: false,
+    orient: false,
+    spiral: 0.7,
+    baseSpeed: 0.4,
+    hitSound: "metalhit",
+    rubbleType: ''
+  };
+
+  galaxies.Obstacle.call(this, props);
+
+  this.initParticles();
+};
+
+galaxies.MiniUFO.prototype = Object.create(galaxies.Obstacle.prototype);
+galaxies.MiniUFO.constructor = galaxies.MiniUFO;
+
+// TODO: galaxies.MiniUFO.prototype.hit
+
+galaxies.MiniUFO.prototype.initModel = function () {
+  this.object = galaxies.resources.geometries['ufo'].clone();
+  this.object.children[0].material = galaxies.resources.materials['ufo'].clone();
+  this.object.children[1].material = galaxies.resources.materials['ufocanopy'].clone();
+
+  this.object.scale.set(0.35, 0.35, 0.35);
+};
+
+galaxies.MiniUFO.prototype.initParticles = function () {
+  var texture = new THREE.Texture(galaxies.queue.getResult("starparticle"));
+
+  texture.needsUpdate = true;
+
+  this.laserChargeEmitter = new SPE.Emitter({
+    type: SPE.distributions.SPHERE,
+    particleCount: 50,
+    direction: -1,
+    duration: 0.4,
+    maxAge: {value: 0.6, spread: 0.4},
+    position: {radius: 0.1},
+    velocity: {value: new THREE.Vector3(2, 0, 0)},
+    drag: {value: 0.5},
+    color: {value: [new THREE.Color(0.8, 1, 0.8), new THREE.Color(0.3, 0.7, 0.3)]},
+    opacity: {value: [1, 0]},
+    size: {value: [0.5, 1]}
+  });
+
+  this.laserChargeGroup = new SPE.Group({
+    texture: {value: texture},
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    maxParticleCount: 100
+  });
+
+  this.laserChargeGroup.addEmitter(this.laserChargeEmitter);
+  this.laserChargeGroup.mesh.position.setY(-0.8);
+
+  this.laserChargeEmitter.disable();
+
+  this.object.add(this.laserChargeGroup.mesh);
+};
+
+galaxies.MiniUFO.prototype.reset = function () {
+  galaxies.Obstacle.prototype.reset.call(this);
+
+  this.timeToNextShot = 5;
+};
+
+galaxies.MiniUFO.prototype.update = function (delta) {
+  galaxies.Obstacle.prototype.update.call(this, delta);
+
+  //this.object.rotation.set(Math.PI, galaxies.engine.CONE_ANGLE * 3, -Math.PI/2);
+  this.object.rotation.set(0, Math.PI, 0);
+  this.object.rotateOnAxis(new THREE.Vector3(0, 0, -1), this.angle - Math.PI / 2);
+  this.object.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 6);
+
+  this.laserChargeGroup.tick(delta);
+
+  if (this.state === "falling") {
+    this.timeToNextShot -= delta;
+
+    if (this.timeToNextShot <= 0) {
+      if (this.timeToNextShot + delta > 0) {
+        this.laserChargeEmitter.enable();
+      }
+
+      if (this.timeToNextShot <= -1) {
+        var laserBullet = galaxies.engine.getLaserBullet(),
+            position = this.object.position.clone(),
+            direction = position.clone().multiplyScalar(-1).normalize();
+
+        position.add(direction.clone());
+
+        laserBullet.addToScene(position, direction);
+
+        new galaxies.audio.PositionedSound({
+          source: galaxies.audio.getSound('ufoshoot'),
+          position: this.object.position,
+          baseVolume: 1.5,
+          loop: false
+        });
+
+        this.timeToNextShot += 6;
+      }
+    }
+  }
+};
+
 
 
 
@@ -581,6 +691,9 @@ galaxies.Obstacle.create = function( type ) {
       break;
     case 'asteroidradchild':
       return new galaxies.ObstacleRadChild();
+      break;
+    case 'miniUFO':
+      return new galaxies.MiniUFO();
       break;
     case 'asteroid':
     default:

@@ -2,14 +2,14 @@
 
 this.galaxies = this.galaxies || {};
 
-this.galaxies.LaserBullet = function () {
+galaxies.LaserBullet = function () {
     this.state = "inactive";
     this.velocity = new THREE.Vector3();
 
     this.initModel();
 };
 
-this.galaxies.LaserBullet.prototype = {
+galaxies.LaserBullet.prototype = {
     addToScene: function (position, direction) {
         this.state = "active";
 
@@ -40,7 +40,7 @@ this.galaxies.LaserBullet.prototype = {
     setStartingPosition: function (position, direction) {
         var angle = Math.atan2(direction.y, direction.x);
 
-        this.velocity = direction.clone().normalize().multiplyScalar(2);
+        this.velocity = direction.clone().normalize().multiplyScalar(5);
         this.object.position.copy(position);
         this.object.rotation.z = angle;
         //this.object.rotation.set(-Math.sin(angle) * tilt, Math.cos(angle) * tilt, angle); // TODO?
@@ -74,10 +74,12 @@ this.galaxies.LaserBullet.prototype = {
                 if (flatLenSq <= radSq) {
                     var angle = Math.atan2(-this.object.position.x, this.object.position.y);
 
-                    if (Math.abs(angle - galaxies.engine.angle) < 0.35) {
+                    if (Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
                         this.state = "inactive";
                         galaxies.engine.hitPlayer();
                     }
+
+                    // TODO: hit clone and remove him
                 }
             }
         }
