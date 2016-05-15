@@ -18,6 +18,12 @@ galaxies.LaserBullet.prototype = {
         this.setStartingPosition(position, direction);
     },
 
+    impact: function () {
+        this.state = "inactive";
+
+        galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(1.5)));
+    },
+
     initModel: function () {
         var texture = new THREE.Texture(galaxies.queue.getResult("laserbeam")),
             geometry = new THREE.PlaneGeometry(1, 0.25),
@@ -64,7 +70,7 @@ galaxies.LaserBullet.prototype = {
             }
         } else {
             if (flatLenSq <= galaxies.engine.PLANET_RADIUS * galaxies.engine.PLANET_RADIUS) {
-                this.state = "inactive"
+                this.impact();
             } else {
                 var radSq = galaxies.engine.PLANET_RADIUS + 0.6;
 
@@ -74,7 +80,7 @@ galaxies.LaserBullet.prototype = {
                     var angle = Math.atan2(-this.object.position.x, this.object.position.y);
 
                     if (Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
-                        this.state = "inactive";
+                        this.impact();
 
                         galaxies.engine.hitPlayer();
                     }
@@ -83,7 +89,7 @@ galaxies.LaserBullet.prototype = {
                         var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
 
                         if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
-                            this.state = "inactive";
+                            this.impact();
 
                             galaxies.engine.setPowerup('');
                         }

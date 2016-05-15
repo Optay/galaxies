@@ -85,6 +85,9 @@ galaxies.fx = (function() {
   var bubblePopGroup;
   var bubbleInGroup;
 
+  // Laser hit
+  var laserHitGroup;
+
   // projectile hit particles
   var emitterSettings = {
     type: SPE.distributions.BOX,
@@ -436,6 +439,28 @@ galaxies.fx = (function() {
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
 
+    var laserHitSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 80,
+      duration: 0.1,
+      maxAge: {value: 0.2, spread: 0.1},
+      position: {radius: 0.1},
+      velocity: {value: new THREE.Vector3(6, 0, 0)},
+      color: {value: [new THREE.Color(0.8, 1, 0.8), new THREE.Color(0.3, 0.7, 0.3)]},
+      opacity: {value: [1, 0]},
+      size: {value: [2, 0.5]}
+    };
+
+    laserHitGroup = new SPE.Group({
+      texture: {value: starTexture},
+      maxParticleCount: 1200,
+      blending: THREE.AdditiveBlending
+    });
+
+    laserHitGroup.addPool(8, laserHitSettings, true);
+
+    galaxies.engine.rootObject.add(laserHitGroup.mesh);
+
     galaxies.passes.warpInfo = {
       worldSpaceOrigin: new THREE.Vector3(),
       worldSpaceEdge: new THREE.Vector3()
@@ -672,6 +697,7 @@ galaxies.fx = (function() {
     smokeGroup.tick(delta);
     bubblePopGroup.tick(delta);
     bubbleInGroup.tick(delta);
+    laserHitGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -851,6 +877,10 @@ galaxies.fx = (function() {
     bubbleInGroup.triggerPoolEmitter(1, new THREE.Vector3());
   };
 
+  var showLaserHit = function (position) {
+    laserHitGroup.triggerPoolEmitter(1, position);
+  };
+
   return {
     init: init,
     update: update,
@@ -873,6 +903,7 @@ galaxies.fx = (function() {
     getSmallFlameJet: getSmallFlameJet,
     popBubble: popBubble,
     bringBubbleIn: bringBubbleIn,
-    spinOutClone: spinOutClone
+    spinOutClone: spinOutClone,
+    showLaserHit: showLaserHit
   };
 })();
