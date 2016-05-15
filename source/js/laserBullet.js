@@ -43,7 +43,6 @@ galaxies.LaserBullet.prototype = {
         this.velocity = direction.clone().normalize().multiplyScalar(5);
         this.object.position.copy(position);
         this.object.rotation.z = angle;
-        //this.object.rotation.set(-Math.sin(angle) * tilt, Math.cos(angle) * tilt, angle); // TODO?
 
         galaxies.utils.conify(this.object);
     },
@@ -76,10 +75,19 @@ galaxies.LaserBullet.prototype = {
 
                     if (Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
                         this.state = "inactive";
+
                         galaxies.engine.hitPlayer();
                     }
 
-                    // TODO: hit clone and remove him
+                    if (galaxies.engine.currentPowerup === "clone") {
+                        var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
+
+                        if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
+                            this.state = "inactive";
+
+                            galaxies.engine.setPowerup('');
+                        }
+                    }
                 }
             }
         }

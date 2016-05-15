@@ -580,8 +580,6 @@ galaxies.MiniUFO = function () {
 galaxies.MiniUFO.prototype = Object.create(galaxies.Obstacle.prototype);
 galaxies.MiniUFO.constructor = galaxies.MiniUFO;
 
-// TODO: galaxies.MiniUFO.prototype.hit
-
 galaxies.MiniUFO.prototype.initModel = function () {
   this.object = galaxies.resources.geometries['ufo'].clone();
   this.object.children[0].material = galaxies.resources.materials['ufo'].clone();
