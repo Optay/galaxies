@@ -67,6 +67,8 @@ galaxies.LaserBullet.prototype = {
                 this.velocity.multiplyScalar(-1);
 
                 this.object.position.add(this.velocity.clone().multiplyScalar(delta));
+
+                galaxies.engine.hitShield(1);
             }
         } else {
             if (flatLenSq <= galaxies.engine.PLANET_RADIUS * galaxies.engine.PLANET_RADIUS) {

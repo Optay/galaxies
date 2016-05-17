@@ -14,7 +14,7 @@ galaxies.BaseTarget = function() {
   this.object = new THREE.Object3D();
   
   this.timer = 0;
-  this.lifetime = 10;
+  this.lifetime = 3.5;
   this.isActive = false;
 }
 
@@ -31,18 +31,10 @@ galaxies.BaseTarget.prototype.activate = function() {
  * Holds a powerup.
  * 
  */
-galaxies.Capsule = function( isHeart ) {
+galaxies.Capsule = function( powerupType ) {
   galaxies.BaseTarget.call(this);
-  
-  //isHeart = true; // test hearts
-  var map, scale = 1;
-  
-  if ( isHeart ) {
-    map = new THREE.Texture( galaxies.queue.getResult('heart') );
-    scale = 0.7;
-  } else {
-    map = new THREE.Texture(galaxies.queue.getResult('alienproicon'));
-  }
+
+  var map = new THREE.Texture(galaxies.queue.getResult('tripleicon'));
 
   map.minFilter = THREE.LinearFilter;
   map.needsUpdate = true;
@@ -55,7 +47,6 @@ galaxies.Capsule = function( isHeart ) {
   });
 
   this.model = new THREE.Sprite(mat);
-  this.model.scale.set(scale, scale, scale);
   
   this.object.add( this.model );
   galaxies.engine.rootObject.add( this.object );
@@ -67,7 +58,7 @@ galaxies.Capsule = function( isHeart ) {
   this.lifetime = 10;
   
   this.typeInterval = this.lifetime/galaxies.engine.powerups.length;
-  if ( isHeart ) {
+  if ( powerupType === "heart" ) {
     this.typeTime = Number.POSITIVE_INFINITY;
     this.lifetime /= 2;
     this.powerupIndex = -1;
@@ -75,7 +66,7 @@ galaxies.Capsule = function( isHeart ) {
     this.typeTime = this.typeInterval;
     this.powerupIndex = Math.round(Math.random()* (galaxies.engine.powerups.length - 1) );
   }
-  this.updatePowerup();
+  this.updatePowerup(powerupType);
   
   this.angle = 0;
   
@@ -132,16 +123,18 @@ galaxies.Capsule.prototype.appear = function() {
     .call( this.activate, null, this );
 }
 
-galaxies.Capsule.prototype.updatePowerup = function() {
-  if ( this.powerupIndex >= 0 ) {
+galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
+  /*if ( this.powerupIndex >= 0 ) {
     this.powerup = galaxies.engine.powerups[this.powerupIndex];
   } else {
     this.powerup = 'heart';
-  }
+  }*/
+
+  this.powerup = powerupType;
 
   var map;
 
-  switch (this.powerup) {
+  switch (powerupType) {
     case "clone":
       map = new THREE.Texture(galaxies.queue.getResult("alienproicon"));
       break;
@@ -153,6 +146,7 @@ galaxies.Capsule.prototype.updatePowerup = function() {
       break;
     case "heart":
       map = new THREE.Texture(galaxies.queue.getResult("heart"));
+      this.model.scale.set(0.7, 0.7, 0.7);
       break;
     case "timeWarp":
       map = new THREE.Texture(galaxies.queue.getResult("slomo"));
@@ -182,14 +176,14 @@ galaxies.Capsule.prototype.update = function( delta ) {
     return;
   }
   
-  if ( this.timer > this.typeTime ) {
+  /*if ( this.timer > this.typeTime ) {
     this.typeTime = this.typeTime + this.typeInterval;
     this.powerupIndex++;
     if ( this.powerupIndex >= galaxies.engine.powerups.length ) {
       this.powerupIndex = 0;
     }
     this.updatePowerup();
-  }
+  }*/
   
   this.orbitAngle = Math.sin( this.timer*this.orbitVelocity) * this.orbitRadius;
   

@@ -36,6 +36,9 @@ galaxies.generator = (function() {
       case 'ufo':
         galaxies.engine.addUfo();
         break;
+      case 'powerup':
+        galaxies.engine.addPowerup(currentLevel[0].powerup);
+        break;
       default:
         var obs = galaxies.engine.addObstacle( currentLevel[0].type );
         obs.setAngle(currentLevel[0].angle);
@@ -97,7 +100,8 @@ galaxies.generator = (function() {
       for (var obsI = 0; obsI<wave.quantity; obsI++ ) {
         var entry = {
           time: wave.time + timeStep * obsI,
-          type: types[obsI]
+          type: types[obsI],
+          powerup: wave.powerup
         };
         if ( wave.random ) {
           entry.angle = THREE.Math.randFloat(wave.startAngle, wave.endAngle) * Math.PI/180;
@@ -134,7 +138,6 @@ galaxies.generator = (function() {
     
     [ // Pluto 1-1
       //{ time: 0, type: 'ufo' }, // TEST
-      
       { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 12, type: 'asteroid', random: true },
       { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 3, type: 'miniUFO', random: true },
       { time: 18, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' },
@@ -149,6 +152,7 @@ galaxies.generator = (function() {
       { time: 3, duration: 0, startAngle: 0, endAngle: 360, quantity: 1, type: 'asteroidice', random: true },
       { time: 5, duration: 3, startAngle: 0, endAngle: 360, quantity: 2, type: 'asteroidice', random: true },
       { time: 9, duration: 6, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroidice', random: true },
+      { time: 18, duration: 0, quantity: 1, type: 'powerup', powerup: 'spread' },
       { time: 21, duration: 0, startAngle: 0, endAngle: -90, quantity: 5, type: 'asteroid' },
       { time: 24, startAngle: 0, endAngle: 360, type: 'star', random: true },
       { time: 26, duration: 6, startAngle: 0, endAngle: 360, quantity: 2, type: 'asteroid', random: true },
@@ -188,6 +192,7 @@ galaxies.generator = (function() {
       { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroid 80', 'asteroidrad 20'], random: true },
       { time: 12, duration: 5, startAngle: 180, endAngle: 180, quantity: 5, type: 'asteroid' }, // line
       { time: 17, duration: 5, startAngle: 0, endAngle: 0, quantity: 5, type: 'asteroid' }, // line
+      { time: 18, duration: 0, quantity: 1, type: 'powerup', powerup: 'clone' },
       { time: 20, startAngle: 0, endAngle: 360, type: 'star', random: true },
       { time: 20, type: 'ufo' },
       { time: 23, duration: 0, startAngle: 180, endAngle: 270, quantity: 5, type: 'asteroid' }, // arc
@@ -208,6 +213,7 @@ galaxies.generator = (function() {
     ],
     [ // Uranus 3-1
       { time: 0, duration: 8, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroidrad', random: true },
+      { time: 0, duration: 0, quantity: 1, type: 'powerup', powerup: 'shield' },
       { time: 8, duration: 8, startAngle: 0, endAngle: 360, quantity: 4, type: ['asteroidrad 90', 'asteroid 10'], random: true },
       { time: 12, startAngle: 0, endAngle: 360, type: 'star', random: true },
       { time: 12, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
@@ -220,6 +226,7 @@ galaxies.generator = (function() {
     [ // Uranus 3-2
       { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroidrad 20', 'asteroidice 50', 'asteroid 30'], random: true },
       { time: 3, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
+      { time: 8, duration: 0, quantity: 1, type: 'powerup', powerup: 'golden' },
       { time: 11, startAngle: 90, quantity: 1, type: 'comet' },
       { time: 11, duration: 5, startAngle: 180, endAngle: 180, quantity: 5, type: 'asteroid' }, // line
       { time: 11, type: 'ufo' },
@@ -270,6 +277,7 @@ galaxies.generator = (function() {
       { time: 17, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
       { time: 28, duration: 5, startAngle: 0, endAngle: 0, quantity: 5, type: 'asteroid' }, // line
       { time: 28, startAngle: -75, quantity: 1, type: 'comet' },
+      { time: 28, duration: 0, quantity: 1, type: 'powerup', powerup: 'timeWarp' },
       { time: 30, type: 'ufo' },
       { time: 38, duration: 0, startAngle: 0, endAngle: -90, quantity: 5, type: 'asteroid' }, // arc
       { time: 43, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroid 20', 'asteroidice 50', 'asteroidrad 30'], random: true },

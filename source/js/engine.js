@@ -33,6 +33,7 @@ galaxies.engine.SHIELD_RADIUS = 2.5;
 galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
 galaxies.engine.shielded = false;
+galaxies.engine.shieldStrength = 5;
 galaxies.engine.shieldTime = 0.0;
 galaxies.engine._timeDilation = 1.0;
 galaxies.engine._soundDilation = 1.0;
@@ -109,6 +110,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 3300;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
+galaxies.engine.shownPowerups = [];
 galaxies.engine.currentPowerup = 'boottime';
 galaxies.engine.shotCounter = 0;
 galaxies.engine.powerupMessagesShown = {};
@@ -1261,7 +1263,7 @@ galaxies.engine.update = function() {
   galaxies.fx.update(scaledDelta);
 
   if (galaxies.engine.shielded) {
-    galaxies.engine.shieldTime += scaledDelta;
+    galaxies.engine.shieldTime += scaledDelta * ((7 - galaxies.engine.shieldStrength) / 2);
 
     if (galaxies.engine.shieldTime < 1) {
       galaxies.engine.shieldBubble.material.uniforms.opacity.value = galaxies.engine.shieldTime * 0.6;
@@ -1411,9 +1413,7 @@ galaxies.engine.hitPlayer = function() {
   if ( galaxies.engine.isGracePeriod ) { return; }
 
   if ( galaxies.engine.shielded ) {
-    galaxies.engine.shielded = false;
-    galaxies.engine.planet.remove(galaxies.engine.shieldBubble);
-    galaxies.fx.popBubble();
+    galaxies.engine.hitShield(5);
     return;
   }
   
@@ -1457,6 +1457,20 @@ galaxies.engine.hitPlayer = function() {
   galaxies.engine.player.sprite.material.opacity = 0.5;
   createjs.Tween.get( galaxies.engine.player ).wait(2000).call( galaxies.engine.endGracePeriod );
 }
+
+galaxies.engine.hitShield = function (damage) {
+  if (!galaxies.engine.shielded) {
+    return;
+  }
+
+  galaxies.engine.shieldStrength -= damage;
+
+  if (galaxies.engine.shieldStrength <= 0) {
+    galaxies.engine.shielded = false;
+    galaxies.engine.planet.remove(galaxies.engine.shieldBubble);
+    galaxies.fx.popBubble();
+  }
+};
 
 galaxies.engine.endGracePeriod = function() {
   galaxies.engine.isGracePeriod = false;
@@ -1702,17 +1716,9 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   galaxies.engine.powerupCharge += value/galaxies.engine.POWERUP_CHARGED;
   //if ( true ) { // test powerups
   if ( galaxies.engine.powerupCharge >= 1 ) {
-    
-    if (galaxies.engine.powerupCapsule == null ) {
-    //if ( false ) { // disables all powerups
-      
-      galaxies.engine.powerupCharge = 0;
-      
-      galaxies.engine.powerupCount++;
-      var giveHeart = ( galaxies.engine.playerLife < galaxies.engine.MAX_PLAYER_LIFE ) && ( (galaxies.engine.powerupCount%4) === 0 );
-      galaxies.engine.powerupCapsule = new galaxies.Capsule( giveHeart );
-      
-    }
+    var giveHeart = ( galaxies.engine.playerLife < galaxies.engine.MAX_PLAYER_LIFE ) && ( (galaxies.engine.powerupCount%4) === 0 );
+
+    galaxies.engine.addPowerup(giveHeart ? "heart" : galaxies.engine.shownPowerups);
   }
   galaxies.ui.updatePowerupCharge( galaxies.engine.powerupCharge );
   
@@ -1767,6 +1773,31 @@ galaxies.start = function() {
   }
 }
 
+galaxies.engine.addPowerup = function (powerupType) {
+  if (!powerupType || powerupType.length === 0) {
+    return;
+  }
+
+  if (powerupType instanceof Array) {
+    powerupType = powerupType[Math.floor(Math.random() * powerupType.length)];
+  }
+
+  if (galaxies.engine.shownPowerups.indexOf(powerupType) === -1 && powerupType !== "heart") {
+    galaxies.engine.shownPowerups.push(powerupType);
+  }
+
+  if (galaxies.engine.powerupCapsule) {
+    galaxies.engine.powerupCapsule.updatePowerup(powerupType);
+
+    return;
+  }
+
+  galaxies.engine.powerupCharge = 0;
+
+  galaxies.engine.powerupCount++;
+
+  galaxies.engine.powerupCapsule = new galaxies.Capsule(powerupType);
+};
 
 galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   if ( !newPowerup ) { newPowerup = ''; }
@@ -1848,6 +1879,7 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
           .wait(500)
           .call(function () {
             galaxies.engine.shielded = true;
+            galaxies.engine.shieldStrength = 5;
             galaxies.engine.shieldTime = 0;
             galaxies.engine.planet.add(galaxies.engine.shieldBubble);
           });
