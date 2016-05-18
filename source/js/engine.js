@@ -843,6 +843,7 @@ galaxies.engine.getLaserBullet = function () {
   }
 
   galaxies.engine.laserBullets.push(laserBullet);
+  galaxies.engine.planeSweep.add(laserBullet);
 
   return laserBullet;
 };
@@ -1118,6 +1119,7 @@ galaxies.engine.update = function() {
     laserBullet.removeFromScene();
 
     galaxies.engine.laserBulletPool.push(laserBullet);
+    galaxies.engine.planeSweep.remove(laserBullet);
   });
 
   galaxies.engine.inactiveObstacles = [];
@@ -1141,7 +1143,11 @@ galaxies.engine.update = function() {
 
     if (numProjectiles === 0) {
       var obsA = notProjectiles[0],
-          obsB = notProjectiles[1];
+          obsB = notProjectiles[1],
+          aIsObstacle = galaxies.engine.obstacles.indexOf(obsA) > -1,
+          bIsObstacle = galaxies.engine.obstacles.indexOf(obsB) > -1,
+          aIsLaser = galaxies.engine.laserBullets.indexOf(obsA) > -1,
+          bIsLaser = galaxies.engine.laserBullets.indexOf(obsB) > -1;
 
       if (galaxies.engine.obstacles.indexOf(obsA) !== -1 && galaxies.engine.obstacles.indexOf(obsB) !== -1) {
         if (obsA instanceof galaxies.ObstacleComet || obsB instanceof galaxies.ObstacleComet) {
@@ -1176,6 +1182,15 @@ galaxies.engine.update = function() {
 
           obsB.angle = Math.atan2( obsB.object.position.y, obsB.object.position.x );
           obsB.radius = Math.sqrt( Math.pow( obsB.object.position.y, 2 ) + Math.pow( obsB.object.position.x, 2 ) );
+        }
+      } else if ((aIsLaser && bIsObstacle) || (aIsObstacle && bIsLaser)) {
+        var laser = aIsLaser ? obsA : obsB,
+            obstacle = aIsLaser ? obsB : obsA;
+
+        if (laser.isHittable &&
+            obsA.object.position.distanceToSquared(obsB.object.position) < obstacle.hitThreshold * obstacle.hitThreshold) {
+          laser.impact();
+          obstacle.hit(1);
         }
       }
     } else if (numProjectiles === 1) {
@@ -1714,6 +1729,7 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   // The exponent scales the values, so more valuable targets have higher values.
   //galaxies.engine.powerupCharge += Math.pow( value/100, 2 ) / galaxies.engine.POWERUP_CHARGED;
   galaxies.engine.powerupCharge += value/galaxies.engine.POWERUP_CHARGED;
+
   //if ( true ) { // test powerups
   if ( galaxies.engine.powerupCharge >= 1 ) {
     var giveHeart = ( galaxies.engine.playerLife < galaxies.engine.MAX_PLAYER_LIFE ) && ( (galaxies.engine.powerupCount%4) === 0 );
@@ -1774,6 +1790,8 @@ galaxies.start = function() {
 }
 
 galaxies.engine.addPowerup = function (powerupType) {
+  galaxies.engine.powerupCharge = 0;
+
   if (!powerupType || powerupType.length === 0) {
     return;
   }
@@ -1791,8 +1809,6 @@ galaxies.engine.addPowerup = function (powerupType) {
 
     return;
   }
-
-  galaxies.engine.powerupCharge = 0;
 
   galaxies.engine.powerupCount++;
 
@@ -1873,13 +1889,14 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     galaxies.fx.showTimeDilation();
   } else if (newPowerup === "shield") {
     if (!galaxies.engine.shielded) {
+      galaxies.engine.shieldStrength = 5;
+
       galaxies.fx.bringBubbleIn();
 
       createjs.Tween.get(galaxies.engine)
           .wait(500)
           .call(function () {
             galaxies.engine.shielded = true;
-            galaxies.engine.shieldStrength = 5;
             galaxies.engine.shieldTime = 0;
             galaxies.engine.planet.add(galaxies.engine.shieldBubble);
           });

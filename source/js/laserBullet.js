@@ -5,6 +5,7 @@ this.galaxies = this.galaxies || {};
 galaxies.LaserBullet = function () {
     this.state = "inactive";
     this.velocity = new THREE.Vector3();
+    this.isHittable = false;
 
     this.initModel();
 };
@@ -12,6 +13,7 @@ galaxies.LaserBullet = function () {
 galaxies.LaserBullet.prototype = {
     addToScene: function (position, direction) {
         this.state = "active";
+        this.isHittable = false;
 
         galaxies.engine.rootObject.add(this.object);
 
@@ -19,6 +21,10 @@ galaxies.LaserBullet.prototype = {
     },
 
     impact: function () {
+        if (this.state === "inactive") {
+            return;
+        }
+
         this.state = "inactive";
 
         galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(1.5)));
@@ -54,6 +60,10 @@ galaxies.LaserBullet.prototype = {
     },
 
     update: function (delta) {
+        if (this.state === "inactive") {
+            return;
+        }
+
         var flatLenSq;
 
         this.object.position.add(this.velocity.clone().multiplyScalar(delta));
@@ -63,8 +73,17 @@ galaxies.LaserBullet.prototype = {
         if (galaxies.engine.shielded) {
             var radius = galaxies.engine.SHIELD_RADIUS - 0.9; // Why this is, I'm not really sure
 
-            if (flatLenSq <= radius * radius) {
-                this.velocity.multiplyScalar(-1);
+            if (flatLenSq <= radius * radius && !this.isHittable) {
+                var normal = this.object.position.clone().normalize(),
+                    normVel;
+
+                this.isHittable = true;
+
+                this.velocity.reflect(normal);
+
+                normVel = this.velocity.clone().normalize();
+
+                this.object.rotation.z = Math.atan2(normVel.y, normVel.x);
 
                 this.object.position.add(this.velocity.clone().multiplyScalar(delta));
 
@@ -100,7 +119,7 @@ galaxies.LaserBullet.prototype = {
             }
         }
 
-        if (flatLenSq >= galaxies.engine.VISIBLE_RADIUS * galaxies.engine.VISIBLE_RADIUS) {
+        if (flatLenSq >= galaxies.engine.OBSTACLE_START_DISTANCE * galaxies.engine.OBSTACLE_START_DISTANCE) {
             this.state = "inactive";
         }
 

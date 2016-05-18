@@ -32,9 +32,12 @@ window.addEventListener("load", function(event) {
       galaxies.engine.clearLevel();
       galaxies.engine.initLevel();
     },
+    miniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
     clone: function() { galaxies.engine.setPowerup('clone'); },
     spread: function() { galaxies.engine.setPowerup('spread'); },
     golden: function() { galaxies.engine.setPowerup('golden'); },
+    shield: function() { galaxies.engine.setPowerup('shield'); },
+    timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
     addUFO: galaxies.engine.addUfo,
     invulnerable: isDev
   };
@@ -47,9 +50,12 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'mars' );
   datgui.add(userValues, 'earth' );
   datgui.add(userValues, 'round3' );
+  datgui.add(userValues, 'miniUFO' );
   datgui.add(userValues, 'clone' );
   datgui.add(userValues, 'spread' );
   datgui.add(userValues, 'golden' );
+  datgui.add(userValues, 'shield' );
+  datgui.add(userValues, 'timeWarp' );
   datgui.add(userValues, 'addUFO' );
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
@@ -69,7 +75,7 @@ window.addEventListener("load", function(event) {
 
   if (isDev) {
     galaxies.engine.invulnerable = true;
-    galaxies.engine.POWERUP_CHARGED = 100;
+    //galaxies.engine.POWERUP_CHARGED = 100;
   } else {
     galaxies.debug.stats.domElement.classList.add("hidden");
     galaxies.debug.datgui.domElement.classList.add("hidden");

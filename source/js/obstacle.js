@@ -649,9 +649,14 @@ galaxies.MiniUFO.prototype.update = function (delta) {
       if (this.timeToNextShot <= -1) {
         var laserBullet = galaxies.engine.getLaserBullet(),
             position = this.object.position.clone(),
+            destinationAngle = Math.random() * 2 * Math.PI,
+            destinationPoint = new THREE.Vector3(Math.cos(destinationAngle), Math.sin(destinationAngle), 0)
+                .multiplyScalar(galaxies.engine.PLANET_RADIUS * 0.9),
             direction = position.clone().multiplyScalar(-1).normalize();
 
         position.add(direction.clone());
+
+        direction = destinationPoint.sub(position).normalize();
 
         laserBullet.addToScene(position, direction);
 
