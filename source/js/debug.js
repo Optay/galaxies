@@ -27,6 +27,11 @@ window.addEventListener("load", function(event) {
     jupiter: function() { setLevel(13); },
     mars: function() { setLevel(16); },
     earth: function() { setLevel(19); },
+    round2: function () {
+      galaxies.engine.levelNumber += 2 - galaxies.engine.roundNumber;
+      galaxies.engine.clearLevel();
+      galaxies.engine.initLevel();
+    },
     round3: function() {
       galaxies.engine.levelNumber += 3 - galaxies.engine.roundNumber;
       galaxies.engine.clearLevel();
@@ -39,7 +44,7 @@ window.addEventListener("load", function(event) {
     shield: function() { galaxies.engine.setPowerup('shield'); },
     timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
     addUFO: galaxies.engine.addUfo,
-    invulnerable: isDev
+    invulnerable: false
   };
 
   datgui.add(userValues, 'pluto' );
@@ -49,6 +54,7 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'jupiter' );
   datgui.add(userValues, 'mars' );
   datgui.add(userValues, 'earth' );
+  datgui.add(userValues, 'round2' );
   datgui.add(userValues, 'round3' );
   datgui.add(userValues, 'miniUFO' );
   datgui.add(userValues, 'clone' );
@@ -74,7 +80,7 @@ window.addEventListener("load", function(event) {
   }
 
   if (isDev) {
-    galaxies.engine.invulnerable = true;
+    //galaxies.engine.invulnerable = true;
     //galaxies.engine.POWERUP_CHARGED = 100;
   } else {
     galaxies.debug.stats.domElement.classList.add("hidden");

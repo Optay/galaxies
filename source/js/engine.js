@@ -798,7 +798,7 @@ galaxies.engine.onDocumentMouseUp = function( event ) {
 galaxies.engine.onDocumentMouseMove = function(event) {
   var mouseX = ( event.clientX - galaxies.engine.canvasHalfWidth );
   var mouseY = ( event.clientY - galaxies.engine.canvasHalfHeight );
-  
+
   galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
   
 }
@@ -1603,6 +1603,9 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.powerupCharge = 0;
   galaxies.engine.powerupCount = 0;
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
+  galaxies.engine.shielded = false;
+  galaxies.engine.shownPowerups = [];
+  galaxies.engine.powerupMessagesShown = {};
   galaxies.engine.setPowerup();
   
   
@@ -1797,7 +1800,19 @@ galaxies.engine.addPowerup = function (powerupType) {
   }
 
   if (powerupType instanceof Array) {
+    if (galaxies.engine.shielded) {
+      var shieldIndex = powerupType.indexOf("shield");
+
+      if (shieldIndex > -1) {
+        powerupType.splice(shieldIndex, 1);
+      }
+    }
+
     powerupType = powerupType[Math.floor(Math.random() * powerupType.length)];
+  }
+
+  if (!powerupType) {
+    return;
   }
 
   if (galaxies.engine.shownPowerups.indexOf(powerupType) === -1 && powerupType !== "heart") {

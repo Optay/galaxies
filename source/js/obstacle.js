@@ -39,9 +39,6 @@ galaxies.Obstacle = function ( props ) {
     } else { console.log("Obstacle attempting to set unknown property.", propName); }
   }
   
-  // derived values
-  this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
-  
   this.passSound = null;
   if ( this.passSoundId !== '' ) {
     this.passSound = new galaxies.audio.SimpleSound({
@@ -96,6 +93,7 @@ galaxies.Obstacle.prototype.reset = function() {
   this.isActive = false;
   
   this.velocityRadial = 0;
+  this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
   this.velocityTangential = this.baseSpeed * this.spiral;
   
   this.tumbleAxis.set( Math.random()*2-1, Math.random()*2 -1, Math.random()*2 -1 );
@@ -174,7 +172,7 @@ galaxies.Obstacle.prototype.update = function( delta ) {
 
 galaxies.Obstacle.prototype.removePassSound = function() {
   if ( this.passSound !== null ) {
-    this.passSound.stop(0); // API does not require an argument, but Safari 8 does.
+    this.passSound.source.stop(0); // API does not require an argument, but Safari 8 does.
     this.passSound = null;
   }
 }
@@ -447,7 +445,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
     relativePosition.subVectors( obs.object.position, this.object.position );
     relativePosition.z = 0;
     if ( relativePosition.length() < range ) {
-      obs.hit( this.object.position, 1, 2 );
+      obs.hit( this.object.position, 2, 2 );
     }
   }
 
@@ -464,7 +462,7 @@ galaxies.ObstacleRad = function() {
   var props = {};
   props.type = 'asteroidrad';
   props.baseLife = 2;
-  props.baseSpeed = 0.3;
+  props.baseSpeed = 0.2;
   props.points = [50, 75, 150, 500];
   props.shakeAmount = 1.2;
   props.hitThreshold = 0.9;
@@ -521,7 +519,7 @@ galaxies.ObstacleSpiky = function () {
   props.spiral = 0.75;
   props.baseSpeed = 0.5;
   props.mass = 3;
-  props.baseLife = 5;
+  props.baseLife = 4;
   props.hitSound = 'metalhit';
   props.rubbleType = '';
   props.explodeSound = 'satellitesplode';
@@ -538,26 +536,33 @@ galaxies.ObstacleSpiky.prototype.initModel = function() {
 
 galaxies.ObstacleSpiky.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
   // parent object's hit
-  galaxies.Obstacle.prototype.hit.call( this, hitPosition, damage, multiply, forceDestroy );
+  galaxies.Obstacle.prototype.hit.call( this, hitPosition, 1, multiply, forceDestroy );
 
   var emissiveColor;
 
   switch (this.life) {
-    case 4:
+    case 3:
         emissiveColor = 0x00FF00;
       break;
-    case 3:
-        emissiveColor = 0xFFFF00;
-      break;
     case 2:
-        emissiveColor = 0xFFA000;
+        emissiveColor = 0xFFFF00;
       break;
     case 1:
         emissiveColor = 0xFF0000;
       break;
   }
 
+  this.baseSpeed *= 2;
+  this.maxVelocityRadial = this.baseSpeed * (1-this.spiral);
+  this.velocityTangential = this.baseSpeed * this.spiral;
+
   this.object.material.emissive.setHex(emissiveColor);
+};
+
+galaxies.ObstacleSpiky.prototype.reset = function () {
+  this.baseSpeed = 0.5;
+
+  galaxies.Obstacle.prototype.reset.call(this);
 };
 
 galaxies.MiniUFO = function () {

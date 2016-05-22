@@ -29,10 +29,22 @@ module.exports = function(grunt) {
         dest: '<%=dirs.dest %>/',
         expand: true,
         flatten: true
+      },
+      editor: {
+        src: '<%=dirs.src %>/html/edit/*.php',
+        dest: '<%=dirs.dest %>/edit/',
+        expand: true,
+        flatten: true
+      },
+      plainJS: {
+        src: '<%=dirs.src %>/js/plain/*.js',
+        dest: '<%=dirs.dest %>/js/',
+        expand: true,
+        flatten: true
       }
     },
     compass: {                  // Task
-      dev: {                    // Target
+      gameDev: {                // Target
         options: {              // Target options
           sassDir: '<%=dirs.src %>/css',
           cssDir: '<%=dirs.dest %>/css',
@@ -40,14 +52,31 @@ module.exports = function(grunt) {
           environment: 'development'
         }
       },
-      dist: {                   // Target
+      gameDist: {               // Target
         options: {              // Target options
           sassDir: '<%=dirs.src %>/css',
           cssDir: '<%=dirs.dest %>/css',
           specify: '<%=dirs.src %>/css/style.scss',
           environment: 'production'
         }
+      },
+      editDev: {
+        options: {
+          sassDir: '<%=dirs.src %>/css',
+          cssDir: '<%=dirs.dest %>/css',
+          specify: '<%=dirs.src %>/css/editor.scss',
+          environment: 'development'
+        }
+      },
+      editDist: {
+        options: {
+          sassDir: '<%=dirs.src %>/css',
+          cssDir: '<%=dirs.dest %>/css',
+          specify: '<%=dirs.src %>/css/editor.scss',
+          environment: 'production'
+        }
       }
+
     },
     uglify: {
       dist: {
@@ -61,9 +90,13 @@ module.exports = function(grunt) {
         files: ['<%=dirs.src %>/js/*.js', '<%=dirs.src %>/js/postprocessing/*.js'],
         tasks: ['concat:js']
       },
-      css: {
-        files: ['<%=dirs.src %>/css/*.scss'],
-        tasks: ['compass:dev']
+      gameCSS: {
+        files: ['<%=dirs.src %>/css/style.scss', '<%=dirs.src %>/css/buttons.scss', '<%=dirs.src %>/css/config.scss'],
+        tasks: ['compass:gameDev']
+      },
+      editCSS: {
+        files: ['<%=dirs.src %>/css/editor.scss'],
+        tasks: ['compass:editDev']
       },
       html: {
         files: ['<%=dirs.src %>/html/*.html'],
@@ -72,6 +105,14 @@ module.exports = function(grunt) {
       includes: {
         files: ['<%=dirs.src %>/includes/**/*'],
         tasks: ['copy:includes']
+      },
+      editor: {
+        files: ['<%=dirs.src %>/html/edit/*.php'],
+        tasks: ['copy:editor']
+      },
+      plainJS: {
+        files: ['<%=dirs.src %>/js/plain/*.js'],
+        tasks: ['copy:plainJS']
       }
     }
   });
@@ -82,5 +123,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   
-  grunt.registerTask('build', ['concat', 'copy', 'uglify', 'compass:dist'] );
+  grunt.registerTask('build', ['concat', 'copy', 'uglify', 'compass:gameDist', 'compass:editDist'] );
 }
