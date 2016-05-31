@@ -769,6 +769,10 @@ galaxies.ui = (function() {
     createjs.Tween.get(galaxies.engine)
         .to({timeDilation: 0}, 1000)
         .call(function () {
+          if (!forObject.object.parent) {
+            return;
+          }
+
           var pos = galaxies.utils.getObjScreenPosition(forObject.object),
               edgePos = forObject.object.localToWorld(new THREE.Vector3())
                   .add(new THREE.Vector3(forObject.hitThreshold * 0.75, 0, 0)),
