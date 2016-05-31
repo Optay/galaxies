@@ -95,50 +95,6 @@ body {
   transform: translateX(-50%) translateY(-50%);
 }
 
-.interact-message {
-  position: absolute;
-  z-index: 10;
-
-  color: $score-color;
-  font-family: 'HorizonBT-Regular';
-  font-size: 30px;
-  text-align: center;
-
-  -webkit-transform: translateX(-50%) translateY(-50%);
-  transform: translateX(-50%) translateY(-50%);
-}
-
-.interact-circle {
-  position: absolute;
-  display: inline-block;
-  width: 45px;
-  height: 45px;
-  color: $score-color;
-  border: 3px solid;
-  border-radius: 50%;
-
-  -webkit-transform: translateX(-50%) translateY(-50%);
-  transform: translateX(-50%) translateY(-50%);
-}
-
-.skip-tutorial {
-  background-image: url("../images/interface/button_continue.png");
-
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: auto;
-  height: auto;
-  z-index: 10;
-
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-
-  &:hover {
-    background-image: url("../images/interface/button_continue_rollover.png");
-  }
-}
-
 
 .speaker {
   border: 1px solid #fff;
@@ -422,6 +378,17 @@ body {
   left: 0;
 }
 
+.targeting-reticle {
+  background-image: url("../images/interface/reticle.png");
+  background-size: cover;
+
+  position: absolute;
+  width: 30px;
+  height: 30px;
+
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
 
 .life-display {
   position: absolute;
@@ -472,7 +439,51 @@ body {
   transition: transform 0.5s ease, left 1s ease, top 1s ease, opacity 1s ease;
 }
 
+.interact-message {
+  position: absolute;
+  z-index: 10;
 
+  color: $score-color;
+  font-family: 'HorizonBT-Regular';
+  font-size: 30px;
+  text-align: center;
+
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.interact-circle {
+  position: absolute;
+  display: inline-block;
+  width: 45px;
+  height: 45px;
+  color: $score-color;
+  border: 3px solid;
+  border-radius: 50%;
+
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.skip-tutorial {
+  background-image: url("../images/interface/button_continue.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 80px;
+  height: 112px;
+  z-index: 10;
+
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+
+  &:hover {
+    background-image: url("../images/interface/button_continue_rollover.png");
+  }
+}
 
 .game-logo {
   position: absolute;

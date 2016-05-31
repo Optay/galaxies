@@ -40,6 +40,7 @@ galaxies.ui = (function() {
   var collectStars = starDisplay.querySelectorAll(".collect-star");
   var scoreDisplay = inGameHolder.querySelector(".score-display-text");
   var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
+  var reticle = inGameHolder.querySelector(".targeting-reticle");
   
   // tutorial item
   var interactMessage = null;
@@ -241,6 +242,8 @@ galaxies.ui = (function() {
   
   var transitionToMenu = function() {
     console.log("Transition loading layout to main menu.");
+
+    hideReticle();
     
     // Start the music
     // This could be a singleton, but we're just going to instantiate one like this.
@@ -393,6 +396,8 @@ galaxies.ui = (function() {
   var showLevelResults = function (bonusScore, roundAccuracy) {
     levelResults.classList.remove("hidden");
 
+    hideReticle();
+
     setTimeout(function() {
       resultTitle.classList.add("level-done-title-on");
 
@@ -482,6 +487,8 @@ galaxies.ui = (function() {
       levelResults.classList.remove("fade");
       resultTitle.classList.remove("level-done-title-on");
 
+      showReticle();
+
       for (var i = 0; i < 3; ++i) {
         scoreStars[i].style.transform = "scale(0)";
       }
@@ -503,6 +510,8 @@ galaxies.ui = (function() {
     
     inGameHolder.classList.remove('hidden');
     showPauseButton();
+
+    showReticle();
     
     if ( galaxies.engine.gameInitialized ) {
       galaxies.engine.restartGame();
@@ -531,6 +540,8 @@ galaxies.ui = (function() {
   
   var onClickPause = function(e) {
     e.preventDefault();
+
+    hideReticle();
     
     pauseOverlay.classList.remove('hidden');
     window.getComputedStyle(pauseOverlay).top; // reflow
@@ -543,10 +554,12 @@ galaxies.ui = (function() {
     galaxies.engine.pauseGame();
   }
   var onClickResume = function(e) {
+    showReticle();
     hidePauseMenu();
     galaxies.engine.resumeGame();
   }
   var onClickRestart = function(e) {
+    showReticle();
     hidePauseMenu();
     hideGameOver();
     
@@ -592,6 +605,8 @@ galaxies.ui = (function() {
   
   var showGameOver = function( isWin, score, bonus, accuracy ) {
     gameOverHolder.classList.remove('hidden');
+
+    hideReticle();
     
     window.getComputedStyle(gameOverTitle).top; // reflow
     gameOverTitle.classList.add('game-over-title-on');
@@ -742,6 +757,7 @@ galaxies.ui = (function() {
   };
 
   var startTutorial = function () {
+    showReticle()
     skipTutorialButton.classList.remove("hidden");
   };
 
@@ -790,6 +806,19 @@ galaxies.ui = (function() {
     }
   };
 
+  var updateReticlePosition = function (event) {
+    reticle.style.left = event.clientX + "px";
+    reticle.style.top = event.clientY + "px";
+  };
+
+  var showReticle = function () {
+    reticle.classList.remove("hidden");
+  };
+
+  var hideReticle = function () {
+    reticle.classList.add("hidden");
+  };
+
   return {
     init: init,
     gameContainer: gameContainer,
@@ -817,7 +846,10 @@ galaxies.ui = (function() {
     startTutorial: startTutorial,
     endTutorial: endTutorial,
     showInteractionMessage: showInteractionMessage,
-    hideInteractionMessage: hideInteractionMessage
+    hideInteractionMessage: hideInteractionMessage,
+    updateReticlePosition: updateReticlePosition,
+    showReticle: showReticle,
+    hideReticle: hideReticle
   };
   
   

@@ -810,6 +810,7 @@ galaxies.engine.onDocumentMouseDown = function( event ) {
 	//event.preventDefault(); 
 
     galaxies.engine.isFiring = true;
+    galaxies.ui.updateReticlePosition(event);
 }
 galaxies.engine.onDocumentTouchStart = function( event ) {
     event.preventDefault();
@@ -821,6 +822,8 @@ galaxies.engine.onDocumentTouchStart = function( event ) {
 
 galaxies.engine.onDocumentMouseUp = function( event ) {
   galaxies.engine.isFiring = false;
+  
+  galaxies.ui.updateReticlePosition(event);
 }
 
 galaxies.engine.onDocumentMouseMove = function(event) {
@@ -828,7 +831,7 @@ galaxies.engine.onDocumentMouseMove = function(event) {
   var mouseY = ( event.clientY - galaxies.engine.canvasHalfHeight );
 
   galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
-  
+  galaxies.ui.updateReticlePosition(event);
 }
 galaxies.engine.onDocumentTouchMove = function( event ) {
   event.preventDefault();
@@ -839,7 +842,7 @@ galaxies.engine.onDocumentTouchMove = function( event ) {
       var mouseY = touches[i].clientY - galaxies.engine.canvasHalfHeight;
       
       galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
-      
+      galaxies.ui.updateReticlePosition(touches[i]);
   }
         
 }
@@ -1762,8 +1765,12 @@ galaxies.engine.addInputListeners = function() {
   document.addEventListener( 'touchend', galaxies.engine.onDocumentMouseUp, false );
   document.addEventListener( 'touchleave', galaxies.engine.onDocumentMouseUp, false );
   document.addEventListener( 'touchmove', galaxies.engine.onDocumentTouchMove, false );
+
+  galaxies.ui.showReticle();
 }
 galaxies.engine.removeInputListeners = function() {
+  galaxies.ui.hideReticle();
+
   document.removeEventListener( 'mousedown', galaxies.engine.onDocumentMouseDown, false );
   document.removeEventListener( 'mouseup', galaxies.engine.onDocumentMouseUp, false );
   document.removeEventListener( 'mousemove', galaxies.engine.onDocumentMouseMove, false );
