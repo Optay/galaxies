@@ -435,8 +435,10 @@ galaxies.engine.startGame = function() {
   // There can be only one!
   galaxies.engine.ufo = new galaxies.Ufo();
 
-  galaxies.engine.inTutorial = true;
-  
+  if (location.search.search(/[\?&]noTutorial\b/g) === -1) {
+    galaxies.engine.inTutorial = true;
+  }
+
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
   galaxies.engine.planetTransition();
