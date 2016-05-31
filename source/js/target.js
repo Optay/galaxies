@@ -184,9 +184,9 @@ galaxies.Capsule.prototype.update = function( delta ) {
     }
     this.updatePowerup();
   }*/
-  
+
   this.orbitAngle = Math.sin( this.timer*this.orbitVelocity) * this.orbitRadius;
-  
+
   this.object.position.set(
     Math.cos(this.angle + this.orbitAngle) * this.distance,
     Math.sin(this.angle + this.orbitAngle) * this.distance,

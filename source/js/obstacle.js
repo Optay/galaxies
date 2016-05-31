@@ -82,8 +82,9 @@ galaxies.Obstacle.prototype.reset = function() {
 
   this.angle = Math.random()*Math.PI*2;
   this.radius = galaxies.engine.OBSTACLE_START_DISTANCE;
+  this.previousRadius = this.radius;
   this.updatePosition();
-  
+
   this.object.lookAt( new THREE.Vector3() );
   
   this.life = this.baseLife;
@@ -117,7 +118,9 @@ galaxies.Obstacle.prototype.update = function( delta ) {
   // Graph it:
   // https://www.desmos.com/calculator
   var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
-  speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) ); 
+  speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) );
+
+  this.previousRadius = this.radius;
   
   this.angle += this.velocityTangential * delta/this.radius;
   this.radius += speedScale * this.velocityRadial * delta;

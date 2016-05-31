@@ -41,6 +41,10 @@ galaxies.ui = (function() {
   var scoreDisplay = inGameHolder.querySelector(".score-display-text");
   var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
   
+  // tutorial item
+  var interactMessage = null;
+  var interactCircle = null;
+  var skipTutorialButton = uiHolder.querySelector(".skip-tutorial");
   
   // pause menu
   var pauseOverlay = uiHolder.querySelector(".pause-overlay");
@@ -167,6 +171,9 @@ galaxies.ui = (function() {
     
     recommendSafari.addEventListener('mouseover', onOverButton);
     recommendEdge.addEventListener('mouseover', onOverButton);
+
+    skipTutorialButton.addEventListener('click', galaxies.engine.endTutorial);
+    skipTutorialButton.addEventListener('touchstart', galaxies.engine.endTutorial);
 
   
     logoAppear();
@@ -734,6 +741,46 @@ galaxies.ui = (function() {
     powerupCharge.innerHTML = value;
   };
 
+  var startTutorial = function () {
+    skipTutorialButton.classList.remove("hidden");
+  };
+
+  var endTutorial = function () {
+    skipTutorialButton.classList.add("hidden");
+  };
+
+  var showInteractionMessage = function (forObject, message) {
+    var pos = galaxies.utils.getObjScreenPosition(forObject);
+    
+    if (!interactMessage) {
+      interactMessage = document.createElement("div");
+      interactMessage.classList.add("interact-message");
+
+      interactCircle = document.createElement("div");
+      interactCircle.classList.add("interact-circle");
+
+      galaxies.engine.container.appendChild(interactMessage);
+      galaxies.engine.container.appendChild(interactCircle);
+    }
+
+    interactMessage.innerHTML = message;
+    interactMessage.style.left = pos.x + "px";
+    interactMessage.style.top = (pos.y + 40) + "px";
+
+    interactCircle.style.left = pos.x + "px";
+    interactCircle.style.top = pos.y + "px";
+  };
+
+  var hideInteractionMessage = function () {
+    if (interactMessage) {
+      galaxies.engine.container.removeChild(interactMessage);
+      galaxies.engine.container.removeChild(interactCircle);
+
+      interactMessage = null;
+      interactCircle = null;
+    }
+  };
+
   return {
     init: init,
     gameContainer: gameContainer,
@@ -757,7 +804,11 @@ galaxies.ui = (function() {
     animateCollection: animateCollection,
     updatePowerupCharge: updatePowerupCharge,
     setMixButtons: setMixButtons,
-    updateShotCount: updateShotCount
+    updateShotCount: updateShotCount,
+    startTutorial: startTutorial,
+    endTutorial: endTutorial,
+    showInteractionMessage: showInteractionMessage,
+    hideInteractionMessage: hideInteractionMessage
   };
   
   

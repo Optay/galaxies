@@ -17,14 +17,20 @@ galaxies.engine = galaxies.engine || {};
 galaxies.engine.invulnerable = false;
 
 galaxies.engine.gameInitialized = false;
+galaxies.engine.inTutorial = false;
+
+galaxies.engine.tutorialData = {
+  previousCapsuleOpacity: 0,
+  exitIn: 0
+};
 
 galaxies.engine.canvasWidth = 0;
 galaxies.engine.canvasHeight = 0;
 galaxies.engine.canvasHalfWidth = 0;
 galaxies.engine.canvasHalfHeight = 0;
 
-galaxies.engine.driftObject; // outer world container that rotates slowly to provide skybox motion
-galaxies.engine.rootObject; // inner object container that contains all game objects
+galaxies.engine.driftObject = null; // outer world container that rotates slowly to provide skybox motion
+galaxies.engine.rootObject = null; // inner object container that contains all game objects
 
 galaxies.engine.driftSpeed = 0.01;
 
@@ -219,7 +225,6 @@ galaxies.engine.updateView = function() {
   galaxies.Projectile.prototype.PROJECTILE_LIFE = (galaxies.engine.OBSTACLE_VISIBLE_RADIUS - galaxies.engine.PROJ_START_Y)/galaxies.Projectile.prototype.PROJECTILE_SPEED + 0.1;
   
   galaxies.engine.OBSTACLE_START_DISTANCE = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.1;//1.2;
-  
 }
 
 
@@ -426,6 +431,8 @@ galaxies.engine.fillPools = function () {
 galaxies.engine.startGame = function() {
   // There can be only one!
   galaxies.engine.ufo = new galaxies.Ufo();
+
+  galaxies.engine.inTutorial = true;
   
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
@@ -481,12 +488,14 @@ galaxies.engine.initLevel = function() {
   var planetLastSpeed = 1 + 1.5/(1+Math.exp(1-galaxies.engine.planetNumber/2)); // Speed on last level for this planet
   
   galaxies.engine.speedScale = THREE.Math.mapLinear(galaxies.engine.roundNumber, 1, 3, planetFirstSpeed, planetLastSpeed );
-  
+
   galaxies.generator.initLevel( galaxies.engine.levelNumber-1 );
   
   galaxies.ui.updateLevel( galaxies.engine.planetNumber, galaxies.engine.roundNumber );
-  
-  galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 1.5 );
+
+  if (!galaxies.engine.inTutorial) {
+    galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 1.5);
+  }
   
   galaxies.engine.updateCameraZ( galaxies.engine.roundNumber );
   
@@ -509,7 +518,12 @@ galaxies.engine.initLevel = function() {
 }
 
 galaxies.engine.updateCameraZ = function( roundNumber ) {
-  galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[ roundNumber-1 ];
+  if (galaxies.engine.inTutorial) {
+    galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[0];
+  } else {
+    galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[roundNumber - 1];
+  }
+
   galaxies.engine.updateView();
   
   createjs.Tween.removeTweens( galaxies.engine.camera.position );
@@ -626,6 +640,9 @@ galaxies.engine.updateBackgroundPlanet = function() {
   createjs.Tween.get( galaxies.engine.bgPlanet.scale )
     .to({x:targetScale, y:targetScale, z:targetScale}, 3000, createjs.Ease.quadOut);
 
+  if (galaxies.engine.inTutorial) {
+    galaxies.engine.bgPlanet.parent.remove(galaxies.engine.bgPlanet);
+  }
 }
 
 galaxies.engine.planetTransition = function() {
@@ -688,9 +705,13 @@ galaxies.engine.startPlanetMove = function() {
       galaxies.engine.updateCameraZ( 1 );
       
       galaxies.engine.updateScene();
-      
-      galaxies.ui.showTitle( galaxies.resources.levelTitles[ galaxies.engine.planetNumber-1 ], 4 );
-      console.log(galaxies.engine.planetNumber, galaxies.resources.levelTitles[ galaxies.engine.planetNumber-1 ] );
+
+      if (galaxies.engine.inTutorial) {
+        galaxies.ui.showTitle("TUTORIAL", 4);
+      } else {
+        galaxies.ui.showTitle(galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1], 4);
+        console.log(galaxies.engine.planetNumber, galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1]);
+      }
       
     }, null, this)
     .to({x:0, y:0, z:0}, transitionTimeMilliseconds/2, createjs.Ease.quadInOut);
@@ -737,6 +758,10 @@ galaxies.engine.planetMoveComplete = function() {
   });
 
   setTimeout(galaxies.engine.initLevel, 750);
+
+  if (galaxies.engine.inTutorial) {
+    galaxies.ui.startTutorial();
+  }
 }
 
 galaxies.engine.planetTransitionComplete = function() {
@@ -829,7 +854,7 @@ galaxies.engine.addObstacle = function( type ) {
   // Nothing in pool, make a new one.
   var obstacle = galaxies.Obstacle.create( type );
   galaxies.engine.obstacles.push( obstacle );
-  
+
   return obstacle;
 }
 
@@ -1255,6 +1280,12 @@ galaxies.engine.update = function() {
   
   if ( galaxies.engine.shotTimer>0) { galaxies.engine.shotTimer -= delta; }
   if ( galaxies.engine.isFiring ) {
+    if (galaxies.engine.inTutorial && galaxies.engine.timeDilation === 0) {
+      galaxies.engine.timeDilation = 1;
+
+      galaxies.ui.hideInteractionMessage();
+    }
+
     galaxies.engine.shootFunction();
   }
   //
@@ -1346,7 +1377,7 @@ galaxies.engine.update = function() {
   // TIME
   if ( !galaxies.engine.isGameOver && !galaxies.generator.isLevelComplete() ) {
     galaxies.generator.tick( scaledDelta );
-  } else {
+  } else if (!galaxies.engine.inTutorial) {
     galaxies.engine.levelComplete = true;
   }
   
@@ -1361,6 +1392,12 @@ galaxies.engine.update = function() {
   
   // AUDIO
   galaxies.audio.soundField.update(scaledDelta);
+
+
+  // TUTORIAL
+  if (galaxies.engine.inTutorial) {
+    galaxies.engine.updateTutorial(delta);
+  }
   
   
   galaxies.engine.composer.render();
@@ -1368,7 +1405,53 @@ galaxies.engine.update = function() {
   if (stats) {
     stats.end();
   }
-}
+};
+
+galaxies.engine.updateTutorial = function (delta) {
+  var triggerDistance = galaxies.engine.VISIBLE_RADIUS * 0.9;
+
+  galaxies.engine.obstacles.forEach(function (obstacle) {
+    if (obstacle.radius <= triggerDistance && obstacle.previousRadius > triggerDistance) {
+      galaxies.engine.timeDilation = 0;
+
+      galaxies.ui.showInteractionMessage(obstacle.object, (galaxies.utils.isMobile() ? "TAP" : "CLICK") + " HERE");
+    }
+  });
+
+  if (galaxies.engine.powerupCapsule) {
+    if (galaxies.engine.powerupCapsule.model.material.opacity === 1 &&
+        galaxies.engine.tutorialData.previousCapsuleOpacity < 1) {
+      galaxies.engine.timeDilation = 0;
+
+      galaxies.ui.showInteractionMessage(galaxies.engine.powerupCapsule.object, "COLLECT THESE");
+    }
+
+    galaxies.engine.tutorialData.previousCapsuleOpacity = galaxies.engine.powerupCapsule.model.material.opacity;
+  }
+
+  if (galaxies.engine.tutorialData.exitIn > 0) {
+    galaxies.engine.tutorialData.exitIn -= delta;
+
+    if (galaxies.engine.tutorialData.exitIn <= 0) {
+      galaxies.engine.endTutorial();
+    }
+  }
+};
+
+galaxies.engine.endTutorial = function () {
+  galaxies.engine.roundScore = 0;
+  galaxies.engine.inTutorial = false;
+  galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
+
+  galaxies.ui.updateLife(galaxies.engine.playerLife);
+
+  ++galaxies.engine.levelNumber;
+
+  galaxies.engine.clearLevel();
+  galaxies.engine.initRootRotation();
+  galaxies.engine.planetTransition();
+  galaxies.ui.endTutorial();
+};
 
 // Calculate the results of an elastic collision between two obstacles.
 galaxies.engine.collide = function( obsA, obsB ) {
@@ -1607,7 +1690,14 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.shownPowerups = [];
   galaxies.engine.powerupMessagesShown = {};
   galaxies.engine.setPowerup();
-  
+
+  if (galaxies.engine.inTutorial) {
+    --galaxies.engine.playerLife;
+
+    --galaxies.engine.levelNumber;
+    galaxies.engine.planetNumber = 0;
+    galaxies.engine.roundNumber = 0;
+  }
   
   // Reset star counter
   galaxies.engine.starsCollectedRound = 0;
@@ -1629,7 +1719,7 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[0];
   galaxies.engine.camera.position.setZ( galaxies.engine.CAMERA_Z );
   
-  galaxies.ui.updateLevel( 1, 1 );
+  galaxies.ui.updateLevel( galaxies.engine.planetNumber, galaxies.engine.roundNumber );
   galaxies.ui.updateLife( galaxies.engine.playerLife );
   galaxies.ui.updateScore( galaxies.engine.score );
   galaxies.ui.updatePowerupCharge( galaxies.engine.powerupCharge );
@@ -1723,10 +1813,12 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   divElem.style.opacity = 0;
   
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
-  
-  galaxies.engine.score += value * multiplier;
-  galaxies.engine.roundScore += value * multiplier;
-  galaxies.ui.updateScore( galaxies.engine.score );
+
+  if (!galaxies.engine.inTutorial) {
+    galaxies.engine.score += value * multiplier;
+    galaxies.engine.roundScore += value * multiplier;
+    galaxies.ui.updateScore(galaxies.engine.score);
+  }
   
   // The 100 is to reduce scores from 100, 250, 500 to 1, 2.5, 5
   // The exponent scales the values, so more valuable targets have higher values.
@@ -1842,6 +1934,12 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
             galaxies.ui.updateLife( galaxies.engine.playerLife );
           });
     }
+
+    if (galaxies.engine.inTutorial) {
+      galaxies.ui.showTitle("YOU ARE READY!", 2);
+      galaxies.engine.tutorialData.exitIn = 1.5;
+    }
+
     return;
   }
 

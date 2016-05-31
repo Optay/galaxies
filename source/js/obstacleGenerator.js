@@ -24,11 +24,11 @@ galaxies.generator = (function() {
   
   var tick = function( delta ) {
     levelTimer += delta;
-    
+
     galaxies.ui.updateTimer( levelTimer );
     
     while ( (currentLevel.length > 0) && (currentLevel[0].time < levelTimer ) ) {
-      
+
       switch ( currentLevel[0].type ) {
       case 'star':
         galaxies.engine.addStar( currentLevel[0].angle );
@@ -56,10 +56,21 @@ galaxies.generator = (function() {
   var parsePatterns = function(levelIndex) {
     var parsed = [],
         rawPatterns = galaxies.generator.rawPatterns;
-    
-    // loop through the patterns
-    levelIndex = levelIndex%rawPatterns.length;
-    var raw = rawPatterns[levelIndex];
+
+    var raw;
+
+    if (galaxies.engine.inTutorial) {
+      raw = [
+        { time: 0, duration: 0, startAngle: 45, endAngle: 45, quantity: 1, type: 'asteroid' },
+        { time: 6, duration: 0, startAngle: 180, endAngle: 180, quantity: 1, type: 'asteroid' },
+        { time: 15, duration: 0, startAngle: 225, endAngle: 225, quantity: 1, type: 'powerup', powerup: 'heart' }
+      ];
+    } else {
+      // loop through the patterns
+      levelIndex = levelIndex%rawPatterns.length;
+
+      raw = rawPatterns[levelIndex];
+    }
     
     for(var i=0, len=raw.length; i<len; i++ ) {
       var wave = raw[i];
