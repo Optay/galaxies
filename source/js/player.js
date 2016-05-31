@@ -336,6 +336,10 @@ this.galaxies.Player = function() {
       if (spinOut) {
         cloneAnimator.stop();
         spinningOutClone = true;
+
+        createjs.Tween.removeTweens(cloneShadow.material);
+        createjs.Tween.get(cloneShadow.material)
+            .to({opacity: 0}, 500);
       } else {
           teleportOutClone( function() { rootObject.remove(cloneRotator); } );
       }
