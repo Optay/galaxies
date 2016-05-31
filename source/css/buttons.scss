@@ -112,6 +112,28 @@
   background-image: url('../images/interface/button_play_large_rollover.png');
 }
 
+.skip-tutorial {
+  background-image: url("../images/interface/button_continue.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  cursor: pointer;
+
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 80px;
+  height: 112px;
+  z-index: 10;
+
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+
+  &:hover {
+    background-image: url("../images/interface/button_continue_rollover.png");
+  }
+}
+
 .bottomed {
   position: absolute;
   bottom: 0;
