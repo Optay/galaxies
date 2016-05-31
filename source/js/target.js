@@ -70,7 +70,7 @@ galaxies.Capsule = function( powerupType ) {
   
   this.angle = 0;
   
-  this.distance = galaxies.engine.VISIBLE_RADIUS * 0.97; // distance from origin of capsule position
+  this.distance = galaxies.engine.VISIBLE_RADIUS * (galaxies.engine.inTutorial ? 0.9 : 0.97); // distance from origin of capsule position
   this.orbitAngle = 0;
   this.orbitRadius = 0.2; // magnitude of oscillation
   this.orbitVelocity = 0.7; // speed of oscillation

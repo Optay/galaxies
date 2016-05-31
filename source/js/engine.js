@@ -62,19 +62,22 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
     var soundValue = 1 - (1 - value) * 0.4;
 
     galaxies.engine._timeDilation = value;
-    galaxies.engine.soundDilation = soundValue;
 
-    galaxies.audio.positionedSounds.forEach(function (sound) {
-      sound.source.playbackRate.value = soundValue;
-    });
+    if (!galaxies.engine.inTutorial) {
+      galaxies.engine.soundDilation = soundValue;
 
-    galaxies.engine.obstacles.forEach(function (obstacle) {
-      if (obstacle.passSound) {
-        obstacle.passSound.source.playbackRate.value = soundValue;
-      }
-    });
+      galaxies.audio.positionedSounds.forEach(function (sound) {
+        sound.source.playbackRate.value = soundValue;
+      });
 
-    galaxies.audio.soundField.source.playbackRate.value = soundValue;
+      galaxies.engine.obstacles.forEach(function (obstacle) {
+        if (obstacle.passSound) {
+          obstacle.passSound.source.playbackRate.value = soundValue;
+        }
+      });
+
+      galaxies.audio.soundField.source.playbackRate.value = soundValue;
+    }
   }
 });
 
@@ -707,7 +710,7 @@ galaxies.engine.startPlanetMove = function() {
       galaxies.engine.updateScene();
 
       if (galaxies.engine.inTutorial) {
-        galaxies.ui.showTitle("TUTORIAL", 4);
+        galaxies.ui.showTitle("HOW TO PLAY", 4);
       } else {
         galaxies.ui.showTitle(galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1], 4);
         console.log(galaxies.engine.planetNumber, galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1]);
@@ -1408,22 +1411,18 @@ galaxies.engine.update = function() {
 };
 
 galaxies.engine.updateTutorial = function (delta) {
-  var triggerDistance = galaxies.engine.VISIBLE_RADIUS * 0.9;
+  var triggerDistance = galaxies.engine.VISIBLE_RADIUS * 0.93;
 
   galaxies.engine.obstacles.forEach(function (obstacle) {
     if (obstacle.radius <= triggerDistance && obstacle.previousRadius > triggerDistance) {
-      galaxies.engine.timeDilation = 0;
-
-      galaxies.ui.showInteractionMessage(obstacle.object, (galaxies.utils.isMobile() ? "TAP" : "CLICK") + " HERE");
+      galaxies.ui.showInteractionMessage(obstacle, (galaxies.utils.isMobile() ? "TAP" : "CLICK") + " HERE");
     }
   });
 
   if (galaxies.engine.powerupCapsule) {
     if (galaxies.engine.powerupCapsule.model.material.opacity === 1 &&
         galaxies.engine.tutorialData.previousCapsuleOpacity < 1) {
-      galaxies.engine.timeDilation = 0;
-
-      galaxies.ui.showInteractionMessage(galaxies.engine.powerupCapsule.object, "COLLECT THESE");
+      galaxies.ui.showInteractionMessage(galaxies.engine.powerupCapsule, "COLLECT THESE");
     }
 
     galaxies.engine.tutorialData.previousCapsuleOpacity = galaxies.engine.powerupCapsule.model.material.opacity;

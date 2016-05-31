@@ -750,25 +750,34 @@ galaxies.ui = (function() {
   };
 
   var showInteractionMessage = function (forObject, message) {
-    var pos = galaxies.utils.getObjScreenPosition(forObject);
-    
-    if (!interactMessage) {
-      interactMessage = document.createElement("div");
-      interactMessage.classList.add("interact-message");
+    createjs.Tween.get(galaxies.engine)
+        .to({timeDilation: 0}, 1000)
+        .call(function () {
+          var pos = galaxies.utils.getObjScreenPosition(forObject.object),
+              edgePos = forObject.object.localToWorld(new THREE.Vector3())
+                  .add(new THREE.Vector3(forObject.hitThreshold * 0.75, 0, 0)),
+              pos2 = galaxies.utils.getScreenPosition(edgePos),
+              circleRadius = Math.abs(pos2.x - pos.x);
 
-      interactCircle = document.createElement("div");
-      interactCircle.classList.add("interact-circle");
+          if (!interactMessage) {
+            interactMessage = document.createElement("div");
+            interactMessage.classList.add("interact-message");
 
-      galaxies.engine.container.appendChild(interactMessage);
-      galaxies.engine.container.appendChild(interactCircle);
-    }
+            interactCircle = document.createElement("div");
+            interactCircle.classList.add("interact-circle");
 
-    interactMessage.innerHTML = message;
-    interactMessage.style.left = pos.x + "px";
-    interactMessage.style.top = (pos.y + 40) + "px";
+            galaxies.engine.container.appendChild(interactMessage);
+            galaxies.engine.container.appendChild(interactCircle);
+          }
 
-    interactCircle.style.left = pos.x + "px";
-    interactCircle.style.top = pos.y + "px";
+          interactMessage.innerHTML = message;
+          interactMessage.style.left = pos.x + "px";
+          interactMessage.style.top = (pos.y + circleRadius + 18) + "px";
+
+          interactCircle.style.left = pos.x + "px";
+          interactCircle.style.top = pos.y + "px";
+          interactCircle.style.width = interactCircle.style.height = (circleRadius * 2) + "px";
+        });
   };
 
   var hideInteractionMessage = function () {

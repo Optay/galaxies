@@ -111,10 +111,10 @@ body {
 .interact-circle {
   position: absolute;
   display: inline-block;
-  width: 35px;
-  height: 35px;
+  width: 45px;
+  height: 45px;
   color: $score-color;
-  border: 6px solid;
+  border: 3px solid;
   border-radius: 50%;
 
   -webkit-transform: translateX(-50%) translateY(-50%);
@@ -122,25 +122,20 @@ body {
 }
 
 .skip-tutorial {
+  background-image: url("../images/interface/button_continue.png");
+
   position: absolute;
-  top: 50%;
+  bottom: 0;
   left: 50%;
+  width: auto;
+  height: auto;
+  z-index: 10;
 
-  text-align: center;
-  color: #8ac0e8;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
 
-  -webkit-transform: translateX(-50%) translateY(-30%);
-  transform: translateX(-50%) translateY(-30%);
-
-  .button-circle {
-    display: inline-block;
-    border: 4px solid;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-
-    font-size: 30px;
-    font-family: 'HorizonBT-Regular';
+  &:hover {
+    background-image: url("../images/interface/button_continue_rollover.png");
   }
 }
 
