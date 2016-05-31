@@ -27,7 +27,7 @@ galaxies.LaserBullet.prototype = {
 
         this.state = "inactive";
 
-        galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(1.5)));
+        galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(2.5)));
     },
 
     initModel: function () {
