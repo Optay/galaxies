@@ -1640,7 +1640,9 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
   bonusScore = galaxies.engine.roundScore - rawScore;
 
-  galaxies.ui.updateScore(galaxies.engine.score);
+  setTimeout(function () {
+    galaxies.ui.updateScore(galaxies.engine.score);
+  }, 2000);
   
   if ( isWin ) {
     galaxies.ui.showGameOver( isWin, galaxies.engine.score, bonusScore, accuracy );
