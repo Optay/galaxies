@@ -129,6 +129,8 @@
   -webkit-transform: translateX(-50%);
   transform: translateX(-50%);
 
+  transition: opacity 0.5s;
+
   &:hover {
     background-image: url("../images/interface/button_continue_rollover.png");
   }

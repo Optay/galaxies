@@ -613,8 +613,8 @@ galaxies.ui = (function() {
     
     gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
     
-    showTitle( "SCORE " + galaxies.utils.addCommas(score) +
-               "<br>BONUS " + galaxies.utils.addCommas(bonus) +
+    showTitle( "BONUS " + galaxies.utils.addCommas(bonus) +
+               "<br>FINAL SCORE " + galaxies.utils.addCommas(score) +
                "<br>ACCURACY " + Math.round(accuracy * 100) + '%');
   }
   var hideGameOver = function() {
@@ -757,12 +757,21 @@ galaxies.ui = (function() {
   };
 
   var startTutorial = function () {
-    showReticle()
+    showReticle();
+
     skipTutorialButton.classList.remove("hidden");
+
+    setTimeout(function () {
+      skipTutorialButton.classList.remove("invisible");
+    }, 17);
   };
 
   var endTutorial = function () {
-    skipTutorialButton.classList.add("hidden");
+    skipTutorialButton.classList.add("invisible");
+
+    setTimeout(function () {
+      skipTutorialButton.classList.add("hidden");
+    }, 500);
   };
 
   var showInteractionMessage = function (forObject, message) {
