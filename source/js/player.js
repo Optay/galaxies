@@ -525,22 +525,22 @@ this.galaxies.Player = function() {
             cloneAIData.targetAngle = defaultAngle;
         } else {
             cloneAIData.targetAngle = defaultAngle + angleDiff;
-
-            angleDiff = Math.abs(cloneAIData.targetAngle - cloneAIData.angle);
-
-            if (angleDiff < 0.02) {
-                var projectile = fireCloneProjectile();
-
-                cloneAIData.shotTracking.push([projectile, cloneAIData.targetObject]);
-
-                cloneAIData.targetObject = null;
-            }
         }
     } else {
         cloneAIData.targetObject = targetUFO(defaultAngle, defaultLookVector, delta) ||
             targetBonus(defaultAngle, defaultLookVector) ||
             targetAsteroid(defaultAngle, defaultLookVector);
     }
+  };
+
+  var cloneAIPostUpdate = function() {
+      if (cloneAIData.targetObject && Math.abs(cloneAIData.targetAngle - cloneAIData.angle) < 0.02) {
+          var projectile = fireCloneProjectile();
+
+          cloneAIData.shotTracking.push([projectile, cloneAIData.targetObject]);
+
+          cloneAIData.targetObject = null;
+      }
   };
   
   var update = function( delta, angle ) {
@@ -568,6 +568,8 @@ this.galaxies.Player = function() {
       cloneRotator.rotation.set(0, 0, cloneAIData.angle);
       clone.material.rotation = cloneAIData.angle;
       cloneShadow.material.rotation = cloneAIData.angle - Math.PI/60;
+
+      cloneAIPostUpdate();
     }
     if ( teleporting ) {
       teleportAnimator.update( delta );
