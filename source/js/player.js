@@ -730,7 +730,7 @@ this.galaxies.Player = function() {
     teleportingClone = true;
 
     clone.add( cloneTeleportSprite );
-    cloneTeleportSprite.material.rotation = clone.material.rotation;
+    cloneTeleportSprite.material.rotation = clone.material.rotation = cloneRotator.rotation.z;
     cloneTeleportSprite.material.opacity = 0;
     cloneTeleportAnimator.play(-1); // negative loop count will loop indefinitely
 
