@@ -633,7 +633,7 @@ galaxies.MiniUFO.prototype.initParticles = function () {
 galaxies.MiniUFO.prototype.reset = function () {
   galaxies.Obstacle.prototype.reset.call(this);
 
-  this.timeToNextShot = 5;
+  this.timeToNextShot = 4;
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {
@@ -675,7 +675,7 @@ galaxies.MiniUFO.prototype.update = function (delta) {
           loop: false
         });
 
-        this.timeToNextShot += 6;
+        this.timeToNextShot += 4;
       }
     }
   }
