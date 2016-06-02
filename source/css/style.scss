@@ -443,9 +443,9 @@ body {
   position: absolute;
   z-index: 10;
 
-  color: $score-color;
-  font-family: 'HorizonBT-Regular';
-  font-size: 30px;
+  color: #EEEEEE;
+  font-family: 'Futura';
+  font-size: 20px;
   text-align: center;
 
   -webkit-transform: translateX(-50%) translateY(-50%);
@@ -457,7 +457,7 @@ body {
   display: inline-block;
   width: 45px;
   height: 45px;
-  color: $score-color;
+  color: #EEEEEE;
   border: 3px solid;
   border-radius: 50%;
 

@@ -629,7 +629,11 @@ galaxies.ui = (function() {
   }
   
   var updateLevel = function( newPlanetNumber, roundNumber ) {
-    levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
+    if (newPlanetNumber === 0 && roundNumber === 0) {
+      levelDisplay.innerHTML = "HOW TO PLAY";
+    } else {
+      levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
+    }
   }
   var updateScore = function( newScore ) {
     var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, '')) || newScore,

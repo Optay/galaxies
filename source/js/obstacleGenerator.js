@@ -62,8 +62,8 @@ galaxies.generator = (function() {
     if (galaxies.engine.inTutorial) {
       raw = [
         { time: 0, duration: 0, startAngle: 45, endAngle: 45, quantity: 1, type: 'asteroid' },
-        { time: 6, duration: 0, startAngle: 180, endAngle: 180, quantity: 1, type: 'asteroid' },
-        { time: 15, duration: 0, startAngle: 225, endAngle: 225, quantity: 1, type: 'powerup', powerup: 'heart' }
+        { time: 4, duration: 0, startAngle: 180, endAngle: 180, quantity: 1, type: 'asteroid' },
+        { time: 12, duration: 0, startAngle: 225, endAngle: 225, quantity: 1, type: 'powerup', powerup: 'heart' }
       ];
     } else {
       // loop through the patterns
