@@ -785,6 +785,8 @@ galaxies.ui = (function() {
           if (!forObject.object.parent || forObject.state === "inactive") {
             galaxies.engine.timeDilation = 1;
 
+            hideInteractionMessage();
+
             return;
           }
 

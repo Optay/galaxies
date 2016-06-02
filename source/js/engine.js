@@ -1287,7 +1287,7 @@ galaxies.engine.update = function() {
   
   if ( galaxies.engine.shotTimer>0) { galaxies.engine.shotTimer -= delta; }
   if ( galaxies.engine.isFiring ) {
-    if (galaxies.engine.inTutorial && galaxies.engine.timeDilation === 0) {
+    if (galaxies.engine.inTutorial && galaxies.engine.timeDilation < 0.1) {
       galaxies.engine.timeDilation = 1;
 
       galaxies.ui.hideInteractionMessage();
@@ -1526,28 +1526,6 @@ galaxies.engine.hitPlayer = function() {
     galaxies.engine.gameOver();
     return;
   }
-
-  var heart = galaxies.ui.createFloatingHeart(),
-      angle = galaxies.engine.angle,
-      distance = galaxies.engine.CHARACTER_POSITION + galaxies.engine.CHARACTER_HEIGHT * 0.7,
-      startPos = new THREE.Vector3(-Math.sin(angle) * distance, Math.cos(angle) * distance, 0),
-      startScreenPos;
-
-  startPos = galaxies.engine.rootObject.localToWorld(startPos);
-
-  startScreenPos = galaxies.utils.getScreenPosition(startPos, 0);
-
-  heart.style.left = startScreenPos.x - 14 + "px";
-  heart.style.top = startScreenPos.y - 14 + "px";
-  heart.style.opacity = 1;
-
-  createjs.Tween.get(heart.style)
-      .wait(17)
-      .set({top: startScreenPos.y - 100 + "px", opacity: 0})
-      .wait(1000)
-      .call(function () {
-        heart.remove();
-      });
 
   // Hop player sprite to show its been hit
   galaxies.engine.player.animateHit();
