@@ -778,7 +778,9 @@ galaxies.ui = (function() {
     createjs.Tween.get(galaxies.engine)
         .to({timeDilation: 0}, 1000)
         .call(function () {
-          if (!forObject.object.parent) {
+          if (!forObject.object.parent || forObject.state === "inactive") {
+            galaxies.engine.timeDilation = 1;
+
             return;
           }
 
@@ -825,10 +827,20 @@ galaxies.ui = (function() {
   };
 
   var showReticle = function () {
+    if (galaxies.utils.isMobile()) {
+      return;
+    }
+
     reticle.classList.remove("hidden");
+    reticle.style.left = "-50px";
+    reticle.style.top = "-50px";
   };
 
   var hideReticle = function () {
+    if (galaxies.utils.isMobile()) {
+      return;
+    }
+
     reticle.classList.add("hidden");
   };
 

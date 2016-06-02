@@ -481,8 +481,6 @@ galaxies.engine.restartGame = function() {
 }
 
 galaxies.engine.initLevel = function() {
-  galaxies.ui.showReticle();
-  
   galaxies.engine.levelTimer = 0;
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
@@ -538,8 +536,6 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 }
 
 galaxies.engine.nextLevel = function() {
-  galaxies.ui.hideReticle();
-
   if (galaxies.engine.slomoDuration > 0.5) {
     galaxies.engine.slomoDuration = 0.5;
   }
@@ -1629,7 +1625,6 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.engine.removeInputListeners();
   galaxies.engine.isFiring = false;
   galaxies.ui.hidePauseButton();
-  galaxies.ui.hideReticle();
 
   var accuracy = (galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound) || 0,
       rawScore = galaxies.engine.roundScore,
@@ -1744,8 +1739,6 @@ galaxies.engine.resetGame = function() {
   
 }
 galaxies.engine.clearLevel = function() {
-  galaxies.ui.hideReticle();
-  
   // Deactivate active obstacles and put them in the pool
   for( var i=0, len = galaxies.engine.obstacles.length; i<len; i++ ) {
     var obstacle = galaxies.engine.obstacles[i];

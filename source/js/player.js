@@ -632,6 +632,7 @@ this.galaxies.Player = function() {
   
   
   var teleportOut = function() {
+    galaxies.ui.hideReticle();
     teleporting = true;
     
     character.add( teleportSprite );
@@ -697,6 +698,7 @@ this.galaxies.Player = function() {
   }
   
   var teleportIn = function( callback ) {
+    galaxies.ui.showReticle();
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
     teleportSprite.material.opacity = 0;
@@ -772,6 +774,7 @@ this.galaxies.Player = function() {
   }
   
   var die = function() {
+    galaxies.ui.hideReticle();
     characterShadow.material.opacity = 0;
     cloneShadow.material.opacity = 0;
 
