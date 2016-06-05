@@ -27,7 +27,7 @@ galaxies.LaserBullet.prototype = {
 
         this.state = "inactive";
 
-        galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(7)));
+        galaxies.fx.showLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(1.5)));
     },
 
     initModel: function () {
@@ -52,7 +52,7 @@ galaxies.LaserBullet.prototype = {
     setStartingPosition: function (position, direction) {
         var angle = Math.atan2(direction.y, direction.x);
 
-        this.velocity = direction.clone().normalize().multiplyScalar(5);
+        this.velocity = direction.clone().normalize().multiplyScalar(16);
         this.object.position.copy(position);
         this.object.rotation.z = angle;
 
