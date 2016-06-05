@@ -114,6 +114,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'titleExtraLux', src: 'interface/title_luxamillion_planet.png' },
     { id: 'titleExtraTrunkford', src: 'interface/title_trunkford_in_ufo.png' },
     { id: 'heart', src: 'sprites/heart_life.png' },
+    { id: 'flatheart', src: 'sprites/flat_heart.png' },
     { id: 'star', src: 'sprites/star_collect.png' },
     { id: 'slomo', src: 'sprites/clock.png'},
     { id: 'shield', src: 'sprites/shield.png'},

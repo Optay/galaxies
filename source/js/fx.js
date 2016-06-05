@@ -47,6 +47,8 @@ galaxies.fx = (function() {
     this.lifetime = 1;
     galaxies.engine.rootObject.add( this.object );
   }
+
+  var heartSprite = null;
   
   // Simple array for pooling proj hit effect. We cannot use the particle
   // engine's pooling system because that works at the emitter level. We need
@@ -105,6 +107,16 @@ galaxies.fx = (function() {
   };
   
   var init = function() {
+    var heartTex = new THREE.Texture(galaxies.queue.getResult('flatheart'));
+
+    heartTex.needsUpdate = true;
+
+    var heartMat = new THREE.SpriteMaterial({
+          map: heartTex,
+          color: 0xffffff
+        });
+
+    heartSprite = new THREE.Sprite(heartMat);
     
     // Projectile hit particles
     var texture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
@@ -881,6 +893,30 @@ galaxies.fx = (function() {
     laserHitGroup.triggerPoolEmitter(1, position);
   };
 
+  var loseHeart = function (angle) {
+    var startLen = galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT * 0.6,
+        startPoint = new THREE.Vector3(-Math.sin(angle), Math.cos(angle), 0)
+            .multiplyScalar(startLen);
+
+    galaxies.engine.rootObject.add(heartSprite);
+
+    heartSprite.material.opacity = 1;
+    heartSprite.material.rotation = angle;
+    heartSprite.scale.set(0.8, 0.8, 0.8);
+    heartSprite.position.copy(startPoint);
+
+    startPoint.multiplyScalar((startLen + 2) / startLen);
+
+    createjs.Tween.get(heartSprite.position)
+        .to({x: startPoint.x, y: startPoint.y, z: startPoint.z}, 750);
+
+    createjs.Tween.get(heartSprite.material)
+        .to({opacity: 0}, 750)
+        .call(function () {
+          galaxies.engine.rootObject.remove(heartSprite);
+        });
+  };
+
   return {
     init: init,
     update: update,
@@ -904,6 +940,7 @@ galaxies.fx = (function() {
     popBubble: popBubble,
     bringBubbleIn: bringBubbleIn,
     spinOutClone: spinOutClone,
-    showLaserHit: showLaserHit
+    showLaserHit: showLaserHit,
+    loseHeart: loseHeart
   };
 })();
