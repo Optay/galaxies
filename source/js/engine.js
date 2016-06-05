@@ -1287,9 +1287,7 @@ galaxies.engine.update = function() {
   
   if ( galaxies.engine.shotTimer>0) { galaxies.engine.shotTimer -= delta; }
   if ( galaxies.engine.isFiring ) {
-    if (galaxies.engine.inTutorial && galaxies.engine.timeDilation < 0.1) {
-      galaxies.engine.timeDilation = 1;
-
+    if (galaxies.engine.inTutorial && galaxies.engine.timeDilation < 1) {
       galaxies.ui.hideInteractionMessage();
     }
 
@@ -1796,6 +1794,10 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   divElem.style.opacity = 0;
   
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
+
+  if (galaxies.engine.inTutorial && galaxies.engine.timeDilation < 1) {
+    galaxies.ui.hideInteractionMessage();
+  }
 
   if (!galaxies.engine.inTutorial) {
     galaxies.engine.score += value * multiplier;

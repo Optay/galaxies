@@ -818,6 +818,9 @@ galaxies.ui = (function() {
   };
 
   var hideInteractionMessage = function () {
+    createjs.Tween.get(galaxies.engine, {override: true})
+        .to({timeDilation: 1}, 100);
+
     if (interactMessage) {
       galaxies.engine.container.removeChild(interactMessage);
       galaxies.engine.container.removeChild(interactCircle);
