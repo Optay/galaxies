@@ -1795,11 +1795,15 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   
   window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
 
-  if (galaxies.engine.inTutorial && galaxies.engine.timeDilation < 1) {
-    galaxies.ui.hideInteractionMessage();
-  }
+  if (galaxies.engine.inTutorial) {
+    if (galaxies.engine.timeDilation < 1) {
+      galaxies.ui.hideInteractionMessage();
+    }
 
-  if (!galaxies.engine.inTutorial) {
+    if (galaxies.generator.isLevelComplete() && galaxies.engine.obstacles.length < 2) {
+      galaxies.engine.addPowerup("heart");
+    }
+  } else {
     galaxies.engine.score += value * multiplier;
     galaxies.engine.roundScore += value * multiplier;
     galaxies.ui.updateScore(galaxies.engine.score);
