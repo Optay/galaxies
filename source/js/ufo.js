@@ -284,7 +284,7 @@ this.galaxies.Ufo = function() {
         }, null, this );
         step++;
         stepTimer = 0;
-        stepTime = 2;
+        stepTime = 2.5;
       }
       
       break;
