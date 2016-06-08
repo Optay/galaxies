@@ -120,6 +120,13 @@ galaxies.Obstacle.prototype.update = function( delta ) {
   var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
   speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) );
 
+  var distanceToPlanet = this.radius - galaxies.engine.PLANET_DISTANCE,
+      charHeight = galaxies.engine.CHARACTER_HEIGHT * 0.1;
+
+  if (distanceToPlanet < charHeight) {
+    speedScale *= 4;
+  }
+
   this.previousRadius = this.radius;
   
   this.angle += this.velocityTangential * delta/this.radius;
@@ -136,13 +143,35 @@ galaxies.Obstacle.prototype.update = function( delta ) {
     // accelerate and cap at prescribed obstacle speed
     this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
     this.velocityRadial = Math.max( -this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial );
+
+    var outerCheck= galaxies.engine.PLANET_DISTANCE + this.hitThreshold * 0.8,
+        innerCheck = galaxies.engine.shielded ? galaxies.engine.SHIELD_RADIUS - 0.8 : galaxies.engine.PLANET_DISTANCE;
+
+    if (innerCheck > outerCheck) {
+      innerCheck = outerCheck;
+    }
     
-    if ( this.radius <= (galaxies.engine.shielded ? galaxies.engine.SHIELD_RADIUS - 0.8 : galaxies.engine.PLANET_DISTANCE) ) {
+    if ( this.radius <= outerCheck ) {
       // This order is very important as hitPlayer may trigger game over which
       // must override the obstacle's state.
-      this.splode( false );
-      galaxies.engine.hitPlayer();
-      break;
+
+      var angle = Math.atan2(-this.object.position.x, this.object.position.y);
+
+      if (this.radius <= innerCheck || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
+        this.splode(false);
+        galaxies.engine.hitPlayer();
+        break;
+      }
+
+      if (galaxies.engine.currentPowerup === "clone") {
+        var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
+
+        if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
+          this.splode(false);
+          galaxies.engine.setPowerup('');
+          break;
+        }
+      }
     }
     if ( this.radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
     
