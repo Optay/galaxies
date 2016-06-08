@@ -611,7 +611,7 @@ galaxies.MiniUFO = function () {
     spiral: 0.7,
     baseSpeed: 0.4,
     hitSound: "ufohit",
-    rubbleType: ''
+    rubbleType: "debris"
   };
 
   galaxies.Obstacle.call(this, props);
@@ -714,8 +714,6 @@ galaxies.MiniUFO.prototype.update = function (delta) {
     }
   }
 };
-
-
 
 
 /// Factory function for creating standard obstacles.

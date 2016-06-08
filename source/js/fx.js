@@ -611,6 +611,12 @@ galaxies.fx = (function() {
   }
   
   var showRubble = function( type, position, velocity ) {
+    if (type === "debris") {
+      showDebris(position, velocity);
+
+      return;
+    }
+
     if ( rubblePool[type] === undefined ) {
       return;
     }
