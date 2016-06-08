@@ -120,6 +120,7 @@ galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 3300;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
 galaxies.engine.shownPowerups = [];
+galaxies.engine.powerupCapsules = [];
 galaxies.engine.currentPowerup = 'boottime';
 galaxies.engine.shotCounter = 0;
 galaxies.engine.powerupMessagesShown = {};
@@ -1421,13 +1422,14 @@ galaxies.engine.updateTutorial = function (delta) {
     }
   });
 
-  if (galaxies.engine.powerupCapsule) {
-    if (galaxies.engine.powerupCapsule.model.material.opacity === 1 &&
-        galaxies.engine.tutorialData.previousCapsuleOpacity < 1) {
-      galaxies.ui.showInteractionMessage(galaxies.engine.powerupCapsule, "COLLECT THESE");
+  if (galaxies.engine.inTutorial && galaxies.engine.powerupCapsules.length > 0) {
+    var capsule = galaxies.engine.powerupCapsules[0];
+
+    if (capsule.model.material.opacity === 1 && galaxies.engine.tutorialData.previousCapsuleOpacity < 1) {
+      galaxies.ui.showInteractionMessage(capsule, "COLLECT THESE");
     }
 
-    galaxies.engine.tutorialData.previousCapsuleOpacity = galaxies.engine.powerupCapsule.model.material.opacity;
+    galaxies.engine.tutorialData.previousCapsuleOpacity = capsule.model.material.opacity;
   }
 
   if (galaxies.engine.tutorialData.exitIn > 0) {
@@ -1900,15 +1902,9 @@ galaxies.engine.addPowerup = function (powerupType) {
     galaxies.engine.shownPowerups.push(powerupType);
   }
 
-  if (galaxies.engine.powerupCapsule) {
-    galaxies.engine.powerupCapsule.updatePowerup(powerupType);
-
-    return;
-  }
-
   galaxies.engine.powerupCount++;
 
-  galaxies.engine.powerupCapsule = new galaxies.Capsule(powerupType);
+  galaxies.engine.powerupCapsules.push(new galaxies.Capsule(powerupType));
 };
 
 galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {

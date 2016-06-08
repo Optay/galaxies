@@ -106,7 +106,7 @@ galaxies.Capsule.prototype.clear = function() {
   console.log("clear capsule");
   galaxies.engine.inactiveNeutrals.push(this);
   galaxies.engine.rootObject.remove( this.object );
-  galaxies.engine.powerupCapsule = null;
+  galaxies.engine.powerupCapsules.splice(galaxies.engine.powerupCapsules.indexOf(this), 1);
 }
 
 galaxies.Capsule.prototype.appear = function() {
