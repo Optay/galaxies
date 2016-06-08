@@ -370,7 +370,7 @@ galaxies.ObstacleComet = function() {
   props.points = [100, 200, 375, 750];
   props.shakeAmount = 1.6;
   props.tumbling = false;
-  props.orient = true;
+  props.orient = false;
   props.rubbleType = '';
   props.passSoundId = 'cometloop';
   
@@ -417,16 +417,21 @@ galaxies.ObstacleComet.prototype.initModel = function() {
   this.object.add( core );
 }
 galaxies.ObstacleComet.prototype.update = function(delta) {
-  galaxies.Obstacle.prototype.update.call( this, delta );
+  var scaledDelta = delta * 2;
+
+  galaxies.Obstacle.prototype.update.call( this, scaledDelta );
   this.particleGroup.tick(delta);
 
   if (this.state === 'falling') {
-    this.velocityRadial += delta * this.age / 10;
+    this.object.lookAt(galaxies.engine.light.position.clone().normalize()
+        .multiplyScalar(galaxies.engine.VISIBLE_RADIUS * 100));
+
+    this.velocityRadial += scaledDelta * this.age / 10;
 
     this.radius = Math.max(this.radius, galaxies.engine.PLANET_RADIUS + this.hitThreshold + 0.1);
 
     if (this.age > 2 && this.radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
-      this.passSound.volume = Math.max(this.passSound.volume - delta, 0);
+      this.passSound.volume = Math.max(this.passSound.volume - scaledDelta, 0);
 
       if (this.passSound.volume === 0) {
         this.deactivate();
