@@ -40,7 +40,6 @@ galaxies.engine.isPaused = false;
 galaxies.engine.isGameOver = false;
 galaxies.engine.shielded = false;
 galaxies.engine.shieldStrength = 5;
-galaxies.engine.shieldTime = 0.0;
 galaxies.engine._timeDilation = 1.0;
 galaxies.engine._soundDilation = 1.0;
 galaxies.engine.slomoDuration = 0;
@@ -382,8 +381,6 @@ galaxies.engine.initGame = function() {
 
   galaxies.engine.planeSweep = new galaxies.PlaneSweep();
 
-  galaxies.engine.shieldBubble = new THREE.Mesh(new THREE.SphereGeometry(galaxies.engine.SHIELD_RADIUS, 72, 72), galaxies.resources.materials['shield']);
-
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -413,6 +410,8 @@ galaxies.engine.initGame = function() {
   galaxies.engine.addInputListeners();
 
   galaxies.fx.init( galaxies.engine.scene );
+
+  galaxies.engine.shieldBubble = galaxies.fx.getShield();
 
   galaxies.engine.fillPools();
 
@@ -1314,16 +1313,6 @@ galaxies.engine.update = function() {
   // update fx
   galaxies.fx.update(scaledDelta);
 
-  if (galaxies.engine.shielded) {
-    galaxies.engine.shieldTime += scaledDelta * ((7 - galaxies.engine.shieldStrength) / 2);
-
-    if (galaxies.engine.shieldTime < 1) {
-      galaxies.engine.shieldBubble.material.uniforms.opacity.value = galaxies.engine.shieldTime * 0.6;
-    } else {
-      galaxies.engine.shieldBubble.material.uniforms.opacity.value = 0.8 + Math.cos(galaxies.engine.shieldTime * Math.PI) * 0.2;
-    }
-  }
-
   if (galaxies.engine.slomoDuration > 0) {
     if (galaxies.engine.slomoDuration <= delta) {
       galaxies.engine.slomoDuration = 0;
@@ -1547,7 +1536,7 @@ galaxies.engine.hitShield = function (damage) {
 
   if (galaxies.engine.shieldStrength <= 0) {
     galaxies.engine.shielded = false;
-    galaxies.engine.planet.remove(galaxies.engine.shieldBubble);
+    galaxies.engine.shieldBubble.disable();
     galaxies.fx.popBubble();
   }
 };
@@ -1995,8 +1984,7 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
           .wait(500)
           .call(function () {
             galaxies.engine.shielded = true;
-            galaxies.engine.shieldTime = 0;
-            galaxies.engine.planet.add(galaxies.engine.shieldBubble);
+            galaxies.engine.shieldBubble.enable();
           });
     }
   } else {

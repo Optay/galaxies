@@ -88,6 +88,7 @@ galaxies.fx = (function() {
   var smokeGroup;
 
   // Bubble shield
+  var bubbleShieldGroup;
   var bubblePopGroup;
   var bubbleInGroup;
 
@@ -398,6 +399,25 @@ galaxies.fx = (function() {
     staricles['shield'] = new SPE.Emitter( baseSettings );
     staricles['shield'].disable();
     stariclesGroup.addEmitter( staricles['shield'] );
+
+    bubbleShieldGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 3000
+    });
+
+    var bubbleShieldSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 1500,
+      maxAge: {value: 0.8, spread: 0.4},
+      position: {radius: galaxies.engine.SHIELD_RADIUS, spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+      color: { value: new THREE.Color(0x0099FF) },
+      opacity: { value: [0, 1, 1, 1, 0] },
+      size: { value: 1.5, spread: 0.1 }
+    };
+
+    bubbleShieldGroup.addPool(1, bubbleShieldSettings, true);
+
+    galaxies.engine.planet.add(bubbleShieldGroup.mesh);
 
     bubblePopGroup = new SPE.Group({
       texture: { value: starTexture },
@@ -777,6 +797,7 @@ galaxies.fx = (function() {
     laserHitGroup.tick(delta);
     explosionGroup.tick(delta);
     cometGroup.tick(delta);
+    bubbleShieldGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -988,6 +1009,10 @@ galaxies.fx = (function() {
         });
   };
 
+  var getShield = function () {
+    return bubbleShieldGroup.getFromPool();
+  };
+
   return {
     init: init,
     update: update,
@@ -1013,6 +1038,7 @@ galaxies.fx = (function() {
     spinOutClone: spinOutClone,
     showLaserHit: showLaserHit,
     loseHeart: loseHeart,
-    getComet: getComet
+    getComet: getComet,
+    getShield: getShield
   };
 })();
