@@ -459,7 +459,8 @@ this.galaxies.Player = function() {
   };
 
   var targetAsteroid = function (defaultAngle, defaultLookVector) {
-      var visRadiusSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2),
+      var utils = galaxies.utils,
+          visRadiusSq = Math.pow(galaxies.engine.OBSTACLE_VISIBLE_RADIUS, 2),
           threatLevelSq = 0,
           validAsteroids = galaxies.engine.obstacles.filter(function (asteroid) {
               var flSqr = galaxies.utils.flatLengthSqr(asteroid.object.position);
@@ -473,10 +474,16 @@ this.galaxies.Player = function() {
               return true;
           }),
           checkRadiusSq = visRadiusSq * (0.4 + Math.min(Math.max(threatLevelSq * 0.6, 0), 0.6)),
-          asteroidsInRange = validAsteroids.filter(function (asteroid) {
-              return (Math.abs(galaxies.utils.flatAngleTo(asteroid.object.position, defaultLookVector)) < cloneAIData.maxWanderAngle) &&
-                  galaxies.utils.flatLengthSqr(asteroid.object.position) < checkRadiusSq;
-          });
+          asteroidsInRange, pos;
+
+      cloneAIData.maxWanderAngle = Math.PI * Math.min(0.6 + Math.sqrt(threatLevelSq) * 0.3, 1);
+
+      asteroidsInRange = validAsteroids.filter(function (asteroid) {
+          pos = asteroid.object.position;
+
+          return (Math.abs(utils.flatAngleTo(pos, defaultLookVector)) < cloneAIData.maxWanderAngle) &&
+              utils.flatLengthSqr(pos) < checkRadiusSq;
+      });
 
       if (asteroidsInRange.length > 0) {
           var closestAsteroid = null,
