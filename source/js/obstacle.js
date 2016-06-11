@@ -414,10 +414,6 @@ galaxies.ObstacleComet.prototype.initModel = function() {
   var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
   texture.needsUpdate = true;
 
-  this.particleEmitter = galaxies.fx.getComet();
-
-  this.particleEmitter.enable();
-
   // solid core (for when particles are thin at edge of screen )
   var mat = new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true, blending: THREE.AdditiveBlending } );
   this.object = new THREE.Sprite( mat );
@@ -428,6 +424,13 @@ galaxies.ObstacleComet.prototype.remove = function () {
 
   this.particleEmitter.disable();
   this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
+  this.particleEmitter = null;
+};
+galaxies.ObstacleComet.prototype.reset = function () {
+  galaxies.Obstacle.prototype.reset.call(this);
+
+  this.particleEmitter = galaxies.fx.getComet();
+  this.particleEmitter.enable();
 };
 galaxies.ObstacleComet.prototype.update = function(delta) {
   var scaledDelta = delta * 2,
@@ -437,8 +440,10 @@ galaxies.ObstacleComet.prototype.update = function(delta) {
 
   this.object.lookAt(prevPosition.sub(this.object.position).multiplyScalar(-1).add(this.object.position));
 
-  this.particleEmitter.position.value = this.object.position;
-  this.particleEmitter.rotation.value = this.object.rotation;
+  if (this.particleEmitter) {
+    this.particleEmitter.position.value = this.object.position;
+    this.particleEmitter.rotation.value = this.object.rotation;
+  }
 
   if (this.state === 'falling') {
     this.velocityRadial += scaledDelta * this.age / 10;

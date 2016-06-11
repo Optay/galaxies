@@ -222,7 +222,7 @@ galaxies.fx = (function() {
       transparent: true,
       alphaTest: 0,
       depthWrite: false,
-      maxParticleCount: 500
+      maxParticleCount: 1000
     });
 
     cometGroup.addPool(2, cometSettings, true);
