@@ -76,6 +76,8 @@ galaxies.fx = (function() {
   var FIREWORKS_DECELERATION = 15;
   var fireworksGroup;
   var sparkleGroup;
+
+  var explosionGroup;
   
   var stariclesGroup;
   var staricles = {}; // emitters
@@ -197,6 +199,27 @@ galaxies.fx = (function() {
     fireworksGroup.addPool( 3, fireworkSettings, true ); // 3
     
     galaxies.engine.rootObject.add ( fireworksGroup.mesh );
+
+    var explosionSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 200,
+      duration: 0.1,
+      maxAge: {value: 0.3, spread: 0.2},
+      position: {radius: 0.6},
+      velocity: {value: new THREE.Vector3(8)},
+      color: {value: [new THREE.Color(1, 1, 1), new THREE.Color(1, 1, 0), new THREE.Color(1, 0, 0), new THREE.Color(1, 0, 0)]},
+      opacity: {value: [1, 0]},
+      size: {value: [3, 1]}
+    };
+
+    explosionGroup = new SPE.Group({
+      texture: { value: starTexture },
+      maxParticleCount: 500
+    });
+
+    explosionGroup.addPool(1, explosionSettings, true);
+
+    galaxies.engine.rootObject.add(explosionGroup.mesh);
 
     var sparkleSettings = {
       type: SPE.distributions.SPHERE,
@@ -626,19 +649,26 @@ galaxies.fx = (function() {
   }
   
   var showDebris = function( position, velocity ) {
-    debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity );
+    explosionGroup.triggerPoolEmitter(1, position);
+
+    debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity, 2 );
   }
-  var showObjects = function( set, setSize, index, position, velocity ) {
-    var poolSize = set.length;
+  var showObjects = function( pool, setSize, index, position, velocity, velocityScalar ) {
+    var poolSize = pool.length;
+
+    if (typeof velocityScalar !== "number") {
+      velocityScalar = 1;
+    }
+
     for ( var i=0; i<setSize; i++ ) {
-      var rObject = set[index];
+      var rObject = pool[index];
       rObject.object.position.copy( position );
       rObject.object.position.add( new THREE.Vector3( THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5), THREE.Math.randFloatSpread(0.5) ) );
       galaxies.engine.rootObject.add( rObject.object );
       
       //console.log( rObject.velocity, rObject.object.position, position );
       rObject.velocity.subVectors( rObject.object.position, position );
-      rObject.velocity.normalize();
+      rObject.velocity.normalize().multiplyScalar(velocityScalar);
       rObject.velocity.add( velocity );
       
       rObject.reset();
@@ -716,6 +746,7 @@ galaxies.fx = (function() {
     bubblePopGroup.tick(delta);
     bubbleInGroup.tick(delta);
     laserHitGroup.tick(delta);
+    explosionGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
