@@ -4,6 +4,8 @@
 
 THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
 
+	THREE.Pass.call( this );
+
 	this.scene = scene;
 	this.camera = camera;
 
@@ -15,15 +17,16 @@ THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clear
 	this.oldClearColor = new THREE.Color();
 	this.oldClearAlpha = 1;
 
-	this.enabled = true;
 	this.clear = true;
 	this.needsSwap = false;
-	this.renderToScreen = false;
+
 };
 
-THREE.RenderPass.prototype = {
+THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
 
-	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+	constructor: THREE.RenderPass,
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
 		this.scene.overrideMaterial = this.overrideMaterial;
 
@@ -36,15 +39,7 @@ THREE.RenderPass.prototype = {
 
 		}
 
-		if (this.renderToScreen) {
-
-			renderer.render( this.scene, this.camera );
-
-		} else {
-
-			renderer.render( this.scene, this.camera, readBuffer, this.clear );
-
-		}
+		renderer.render( this.scene, this.camera, readBuffer, this.clear );
 
 		if ( this.clearColor ) {
 
@@ -56,4 +51,4 @@ THREE.RenderPass.prototype = {
 
 	}
 
-};
+} );

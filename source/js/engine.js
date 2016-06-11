@@ -330,6 +330,7 @@ galaxies.engine.initScene = function() {
   
   
   galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
+  galaxies.engine.renderer.autoClear = false;
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
   galaxies.engine.renderer.setSize( galaxies.engine.canvasWidth, galaxies.engine.canvasHeight );
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );
@@ -342,9 +343,17 @@ galaxies.engine.initScene = function() {
   galaxies.passes = galaxies.passes || {};
 
   galaxies.passes.renderPass = new THREE.RenderPass(galaxies.engine.scene, galaxies.engine.camera);
-  galaxies.passes.renderPass.renderToScreen = true;
 
   galaxies.engine.composer.addPass(galaxies.passes.renderPass);
+
+  //galaxies.passes.bloomPass = new THREE.BloomPass(0.6, 25, 4, 1024);
+
+  //galaxies.engine.composer.addPass(galaxies.passes.bloomPass);
+
+  galaxies.passes.copyPass = new THREE.ShaderPass(THREE.CopyShader);
+  galaxies.passes.copyPass.renderToScreen = true;
+
+  galaxies.engine.composer.addPass(galaxies.passes.copyPass);
   
   galaxies.engine.ensureCanvasSize();
 

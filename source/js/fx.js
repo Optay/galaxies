@@ -553,17 +553,17 @@ galaxies.fx = (function() {
     galaxies.passes.warpPass = new THREE.ShaderPass(galaxies.shaders.postProcess.warpBubble);
     galaxies.passes.warpPass.enabled = false;
 
-    galaxies.engine.composer.addPass(galaxies.passes.warpPass);
+    galaxies.engine.composer.insertPass(galaxies.passes.warpPass, galaxies.engine.composer.passes.length - 1);
 
     galaxies.passes.focus = new THREE.ShaderPass(THREE.FocusShader);
     galaxies.passes.focus.enabled = false;
 
-    galaxies.engine.composer.addPass(galaxies.passes.focus);
+    galaxies.engine.composer.insertPass(galaxies.passes.focus, galaxies.engine.composer.passes.length - 1);
 
     galaxies.passes.vignette = new THREE.ShaderPass(THREE.VignetteShader);
     galaxies.passes.vignette.enabled = false;
 
-    galaxies.engine.composer.addPass(galaxies.passes.vignette);
+    galaxies.engine.composer.insertPass(galaxies.passes.vignette, galaxies.engine.composer.passes.length - 1);
   } // init
   
   var showFireworks = function( position ) {
@@ -580,8 +580,6 @@ galaxies.fx = (function() {
 
     passes.warpPass.enabled = true;
     passes.warpPass.uniforms["progression"].value = 0.0;
-
-    updatePasses();
 
     warpInfo.worldSpaceOrigin = worldPosition;
     warpInfo.worldSpaceEdge = worldBubbleEdge;
@@ -603,8 +601,6 @@ galaxies.fx = (function() {
 
   var hideWarpBubble = function () {
     galaxies.passes.warpPass.enabled = false;
-
-    updatePasses();
   };
 
   var showTimeDilation = function () {
@@ -622,8 +618,6 @@ galaxies.fx = (function() {
     createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
         .set({value: 0})
         .to({value: 8.0}, 1000);
-
-    updatePasses();
   };
 
   var hideTimeDilation = function () {
@@ -631,34 +625,15 @@ galaxies.fx = (function() {
         .to({value: 0}, 1000)
         .call(function () {
           galaxies.passes.focus.enabled = false;
-          updatePasses();
         });
 
     createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
         .to({value: 0}, 1000)
         .call(function () {
           galaxies.passes.vignette.enabled = false;
-          updatePasses();
         });
   };
 
-  var updatePasses = function () {
-    var passes = galaxies.engine.composer.passes,
-        renderToScreenSet = false,
-        i;
-
-    for (i = passes.length - 1; i > -1; --i) {
-      if (passes[i].enabled) {
-        if (renderToScreenSet) {
-          passes[i].renderToScreen = false;
-        } else {
-          passes[i].renderToScreen = true;
-          renderToScreenSet = true;
-        }
-      }
-    }
-  };
-  
   var showStaricles = function( position, type ) {
     
     var emitter = staricles[type];
@@ -1023,7 +998,6 @@ galaxies.fx = (function() {
     hideWarpBubble: hideWarpBubble,
     showTimeDilation: showTimeDilation,
     hideTimeDilation: hideTimeDilation,
-    updatePasses: updatePasses,
     showRubble: showRubble,
     showPlanetSplode: showPlanetSplode,
     shakeCamera: shakeCamera,
