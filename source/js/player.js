@@ -560,8 +560,10 @@ this.galaxies.Player = function() {
       }
 
       if (cloneAIData.targetObject) {
-        var cloneAngleDelta = cloneAIData.targetAngle - cloneAIData.angle;
-        cloneAIData.angle += cloneAngleDelta * delta * 10;
+        var cloneAngleDelta = cloneAIData.targetAngle - cloneAIData.angle,
+            rotationalVelocity = Math.PI * delta * 2;
+
+        cloneAIData.angle += Math.min(rotationalVelocity, Math.abs(cloneAngleDelta)) * (cloneAngleDelta < 0 ? -1 : 1);
       }
 
       cloneAIData.angle = Math.min(Math.max(cloneAIData.angle, cloneDefaultAngle - cloneAIData.maxWanderAngle), cloneDefaultAngle + cloneAIData.maxWanderAngle);
