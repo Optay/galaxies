@@ -395,7 +395,7 @@ galaxies.ObstacleComet = function() {
   props.type = 'comet';
   props.baseLife = 1;
   props.baseSpeed = 1.5;//1.2;
-  props.spiral = 0.8;
+  props.spiral = 0.85;
   props.points = [100, 200, 375, 750];
   props.shakeAmount = 1.6;
   props.tumbling = false;
@@ -411,50 +411,36 @@ galaxies.ObstacleComet = function() {
 galaxies.ObstacleComet.prototype = Object.create( galaxies.Obstacle.prototype );
 galaxies.ObstacleComet.prototype.constructor = galaxies.ObstacleComet;
 galaxies.ObstacleComet.prototype.initModel = function() {
-  var emitterSettings = {
-    type: SPE.distributions.BOX,
-    particleCount: 160,
-    duration: null,
-    maxAge: { value: 1.5 },
-    position: { spread: new THREE.Vector3(0.6, 0.6, 0.6) },
-    velocity: { value: new THREE.Vector3(0, 0, -5), 
-                spread: new THREE.Vector3(0.2, 0.2, 2) },
-    color: { value: [new THREE.Color("rgb(6, 6, 20)"), new THREE.Color("rgb(255, 77, 0)") ] },
-    opacity: { value: [0.8, 0.1] },
-    size: { value: [6, 2],
-            spread: [4] }
-  };
-  
   var texture = new THREE.Texture( galaxies.queue.getResult('starparticle') );
   texture.needsUpdate = true;
-  this.particleGroup = new SPE.Group({
-    texture: { value: texture },
-    blending: THREE.AdditiveBlending,
-    transparent: true,
-    alphaTest: 0,
-    depthWrite: false,
-    maxParticleCount: 200
-  });
-  this.particleGroup.addEmitter( new SPE.Emitter( emitterSettings) );
-  
-  this.object = this.particleGroup.mesh;
-  this.object.up.set(0,0,1);
+
+  this.particleEmitter = galaxies.fx.getComet();
+
+  this.particleEmitter.enable();
 
   // solid core (for when particles are thin at edge of screen )
   var mat = new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true, blending: THREE.AdditiveBlending } );
-  var core = new THREE.Sprite( mat );
-  this.object.add( core );
+  this.object = new THREE.Sprite( mat );
+  this.object.up.set(0, 0, 1);
 }
+galaxies.ObstacleComet.prototype.remove = function () {
+  galaxies.Obstacle.prototype.remove.call(this);
+
+  this.particleEmitter.disable();
+  this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
+};
 galaxies.ObstacleComet.prototype.update = function(delta) {
-  var scaledDelta = delta * 2;
+  var scaledDelta = delta * 2,
+      prevPosition = this.object.position.clone();
 
   galaxies.Obstacle.prototype.update.call( this, scaledDelta );
-  this.particleGroup.tick(delta);
+
+  this.object.lookAt(prevPosition.sub(this.object.position).multiplyScalar(-1).add(this.object.position));
+
+  this.particleEmitter.position.value = this.object.position;
+  this.particleEmitter.rotation.value = this.object.rotation;
 
   if (this.state === 'falling') {
-    this.object.lookAt(galaxies.engine.light.position.clone().normalize()
-        .multiplyScalar(galaxies.engine.VISIBLE_RADIUS * 100));
-
     this.velocityRadial += scaledDelta * this.age / 10;
 
     this.radius = Math.max(this.radius, galaxies.engine.PLANET_RADIUS + this.hitThreshold + 0.1);

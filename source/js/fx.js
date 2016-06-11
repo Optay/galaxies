@@ -77,6 +77,8 @@ galaxies.fx = (function() {
   var fireworksGroup;
   var sparkleGroup;
 
+  var cometGroup;
+
   var explosionGroup;
   
   var stariclesGroup;
@@ -199,6 +201,33 @@ galaxies.fx = (function() {
     fireworksGroup.addPool( 3, fireworkSettings, true ); // 3
     
     galaxies.engine.rootObject.add ( fireworksGroup.mesh );
+
+    var cometSettings = {
+      type: SPE.distributions.BOX,
+      particleCount: 160,
+      duration: null,
+      maxAge: { value: 1.5 },
+      position: { spread: new THREE.Vector3(0.6, 0.6, 0.6) },
+      velocity: { value: new THREE.Vector3(0, 0, -5),
+        spread: new THREE.Vector3(0.2, 0.2, 2) },
+      color: { value: [new THREE.Color("rgb(6, 6, 20)"), new THREE.Color("rgb(255, 77, 0)") ] },
+      opacity: { value: [0.8, 0.1] },
+      size: { value: [6, 2],
+        spread: [4] }
+    };
+
+    cometGroup = new SPE.Group({
+      texture: { value: starTexture },
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      alphaTest: 0,
+      depthWrite: false,
+      maxParticleCount: 500
+    });
+
+    cometGroup.addPool(2, cometSettings, true);
+
+    galaxies.engine.rootObject.add(cometGroup.mesh);
 
     var explosionSettings = {
       type: SPE.distributions.SPHERE,
@@ -747,6 +776,7 @@ galaxies.fx = (function() {
     bubbleInGroup.tick(delta);
     laserHitGroup.tick(delta);
     explosionGroup.tick(delta);
+    cometGroup.tick(delta);
 
     for ( var i=0; i<planetParticleGroups.length; i++ ) {
       planetParticleGroups[i].tick(delta);
@@ -918,6 +948,10 @@ galaxies.fx = (function() {
     return [smallFlameJetGroup, smokeGroup.getFromPool()];
   };
 
+  var getComet = function () {
+    return cometGroup.getFromPool();
+  };
+
   var popBubble = function () {
     bubblePopGroup.triggerPoolEmitter(1, new THREE.Vector3());
   };
@@ -978,6 +1012,7 @@ galaxies.fx = (function() {
     bringBubbleIn: bringBubbleIn,
     spinOutClone: spinOutClone,
     showLaserHit: showLaserHit,
-    loseHeart: loseHeart
+    loseHeart: loseHeart,
+    getComet: getComet
   };
 })();

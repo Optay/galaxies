@@ -89,7 +89,7 @@ galaxies.Projectile.prototype.attachParticles = function (particles) {
   }, this);
 
   this.particleEmitters.forEach(function (emitter) {
-    emitter.position.valueOf = this.startPos;
+    emitter.position.value = this.startPos;
   }, this);
 
   this.particleGroups.forEach(function (group) {
