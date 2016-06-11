@@ -422,9 +422,11 @@ galaxies.ObstacleComet.prototype.initModel = function() {
 galaxies.ObstacleComet.prototype.remove = function () {
   galaxies.Obstacle.prototype.remove.call(this);
 
-  this.particleEmitter.disable();
-  this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
-  this.particleEmitter = null;
+  if (this.particleEmitter) {
+    this.particleEmitter.disable();
+    this.particleEmitter.group.releaseIntoPool(this.particleEmitter);
+    this.particleEmitter = null;
+  }
 };
 galaxies.ObstacleComet.prototype.reset = function () {
   galaxies.Obstacle.prototype.reset.call(this);
