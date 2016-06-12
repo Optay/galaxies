@@ -48,9 +48,9 @@ galaxies.Obstacle = function ( props ) {
       loop: true
     });
   }
-  
-  
-  
+
+
+
   this.initModel();
   this.reset();
 
@@ -105,7 +105,7 @@ galaxies.Obstacle.prototype.reset = function() {
   if ( this.passSound !== null ) {
     this.passSound.volume = 0;
   }
-  
+
   galaxies.engine.rootObject.add( this.object );
 
   galaxies.engine.planeSweep.add(this);
@@ -203,13 +203,6 @@ galaxies.Obstacle.prototype.update = function( delta ) {
   
 } 
 
-galaxies.Obstacle.prototype.removePassSound = function() {
-  if ( this.passSound !== null ) {
-    this.passSound.source.stop(0); // API does not require an argument, but Safari 8 does.
-    this.passSound = null;
-  }
-}
-
 // Reverse course, no more interactions, the day is won
 galaxies.Obstacle.prototype.retreat = function() {
   this.isActive = false;
@@ -220,7 +213,9 @@ galaxies.Obstacle.prototype.retreat = function() {
   this.tumbling = true;
   
   // silence!
-  this.removePassSound();
+  if ( this.passSound !== null ) {
+    this.passSound.volume = 0;
+  }
   
 }
 
@@ -340,7 +335,7 @@ galaxies.Obstacle.prototype.remove = function() {
 
 // Clear this object, so it will be garbage collected.
 galaxies.Obstacle.prototype.destruct = function() {
-  this.removePassSound();
+  if ( this.passSound !== null ) { this.passSound.volume = 0; }
   this.remove();
 }
 
