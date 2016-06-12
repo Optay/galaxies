@@ -19,6 +19,7 @@ galaxies.Obstacle = function ( props ) {
   this.tumbling = true;
   this.orient = false;
   this.tumbleAxis = new THREE.Vector3();
+  this.updateTumbleAxisOnHit = false;
   this.baseTumbleSpeed = 1.5;
   this.spiral = 0;
   this.baseSpeed = 0.2;
@@ -239,6 +240,11 @@ galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, force
   var hitVector = this.object.position.clone();
   hitVector.sub( hitPosition );
   var hitDistance = hitVector.length();
+
+  if (this.updateTumbleAxisOnHit) {
+    this.tumbleAxis.set(-hitVector.y, hitVector.x, 0).normalize();
+    this.tumbleSpeed = 8;
+  }
   
   var angleDiff = this.angle - Math.atan2( hitPosition.y, hitPosition.x );
   angleDiff = galaxies.utils.mod( (angleDiff+Math.PI), (2*Math.PI)) - Math.PI; // Convert to minimum angle -Pi to Pi
@@ -545,6 +551,7 @@ galaxies.ObstacleSpiky = function () {
   props.hitThreshold = 0.6;
   props.points = [100, 150, 300, 800];
   props.shakeAmount = 1.4;
+  props.updateTumbleAxisOnHit = true;
   props.baseTumbleSpeed = 0.8;
   props.spiral = 0.75;
   props.baseSpeed = 0.5;
@@ -593,6 +600,12 @@ galaxies.ObstacleSpiky.prototype.reset = function () {
   this.baseSpeed = 0.5;
 
   galaxies.Obstacle.prototype.reset.call(this);
+};
+
+galaxies.ObstacleSpiky.prototype.splode = function () {
+  galaxies.Obstacle.prototype.splode.call(this);
+
+  galaxies.fx.showBlueExplosion(this.object.position);
 };
 
 galaxies.MiniUFO = function () {

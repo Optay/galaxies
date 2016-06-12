@@ -80,6 +80,7 @@ galaxies.fx = (function() {
   var cometGroup;
 
   var explosionGroup;
+  var blueExplosionGroup;
   
   var stariclesGroup;
   var staricles = {}; // emitters
@@ -250,6 +251,27 @@ galaxies.fx = (function() {
     explosionGroup.addPool(1, explosionSettings, true);
 
     galaxies.engine.rootObject.add(explosionGroup.mesh);
+
+    var blueExplosionSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 200,
+      duration: 0.2,
+      maxAge: {value: 0.3, spread: 0.2},
+      position: {radius: 0.6},
+      velocity: {value: new THREE.Vector3(8)},
+      color: {value: [new THREE.Color(0, 0, 1), new THREE.Color(0, 1, 1), new THREE.Color(1, 1, 1)]},
+      opacity: {value: [1, 0]},
+      size: {value: [2, 0.5]}
+    };
+
+    blueExplosionGroup = new SPE.Group({
+      texture: {value: starTexture},
+      maxParticleCount: 1000
+    });
+
+    blueExplosionGroup.addPool(3, blueExplosionSettings, true);
+
+    galaxies.engine.rootObject.add(blueExplosionGroup.mesh);
 
     var sparkleSettings = {
       type: SPE.distributions.SPHERE,
@@ -771,6 +793,7 @@ galaxies.fx = (function() {
     bubbleInGroup.tick(delta);
     laserHitGroup.tick(delta);
     explosionGroup.tick(delta);
+    blueExplosionGroup.tick(delta);
     cometGroup.tick(delta);
     bubbleShieldGroup.tick(delta);
 
@@ -988,6 +1011,10 @@ galaxies.fx = (function() {
     return bubbleShieldGroup.getFromPool();
   };
 
+  var showBlueExplosion = function (position) {
+    blueExplosionGroup.triggerPoolEmitter(1, position);
+  };
+
   return {
     init: init,
     update: update,
@@ -1013,6 +1040,7 @@ galaxies.fx = (function() {
     showLaserHit: showLaserHit,
     loseHeart: loseHeart,
     getComet: getComet,
-    getShield: getShield
+    getShield: getShield,
+    showBlueExplosion: showBlueExplosion
   };
 })();
