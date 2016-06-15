@@ -231,48 +231,6 @@ galaxies.fx = (function() {
 
     galaxies.engine.rootObject.add(cometGroup.mesh);
 
-    var explosionSettings = {
-      type: SPE.distributions.SPHERE,
-      particleCount: 200,
-      duration: 0.1,
-      maxAge: {value: 0.3, spread: 0.2},
-      position: {radius: 0.6},
-      velocity: {value: new THREE.Vector3(8)},
-      color: {value: [new THREE.Color(1, 1, 1), new THREE.Color(1, 1, 0), new THREE.Color(1, 0, 0), new THREE.Color(1, 0, 0)]},
-      opacity: {value: [1, 0]},
-      size: {value: [3, 1]}
-    };
-
-    explosionGroup = new SPE.Group({
-      texture: { value: starTexture },
-      maxParticleCount: 500
-    });
-
-    explosionGroup.addPool(1, explosionSettings, true);
-
-    galaxies.engine.rootObject.add(explosionGroup.mesh);
-
-    var blueExplosionSettings = {
-      type: SPE.distributions.SPHERE,
-      particleCount: 200,
-      duration: 0.2,
-      maxAge: {value: 0.3, spread: 0.2},
-      position: {radius: 0.6},
-      velocity: {value: new THREE.Vector3(8)},
-      color: {value: [new THREE.Color(0, 0, 1), new THREE.Color(0, 1, 1), new THREE.Color(1, 1, 1)]},
-      opacity: {value: [1, 0]},
-      size: {value: [2, 0.5]}
-    };
-
-    blueExplosionGroup = new SPE.Group({
-      texture: {value: starTexture},
-      maxParticleCount: 1000
-    });
-
-    blueExplosionGroup.addPool(3, blueExplosionSettings, true);
-
-    galaxies.engine.rootObject.add(blueExplosionGroup.mesh);
-
     var sparkleSettings = {
       type: SPE.distributions.SPHERE,
       particleCount: 300,
@@ -544,6 +502,39 @@ galaxies.fx = (function() {
     smokeGroup.addPool(12, smokeSettings, true);
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
+
+    var explosionSettings = {
+      type: SPE.distributions.SPHERE,
+      particleCount: 200,
+      duration: 0.1,
+      maxAge: {value: 0.6, spread: 0.4},
+      position: {radius: 0.6, spread: 0.4},
+      velocity: {value: new THREE.Vector3(3), spread: new THREE.Vector3(1)},
+      color: {value: [new THREE.Color(1, 1, 1), new THREE.Color(1, 1, 0), new THREE.Color(1, 0, 0), new THREE.Color(0.2, 0.2, 0.2), new THREE.Color(0.2, 0.2, 0.2), new THREE.Color(0.2, 0.2, 0.2)]},
+      opacity: {value: [0, 1, 1, 0.2], spread: 0.4},
+      size: {value: [0, 3], spread: 0.6},
+      angle: {spread: 2 * Math.PI}
+    };
+
+    explosionGroup = new SPE.Group({
+      texture: { value: smokeTexture },
+      maxParticleCount: 1000
+    });
+
+    explosionGroup.addPool(3, explosionSettings, true);
+
+    galaxies.engine.rootObject.add(explosionGroup.mesh);
+
+    explosionSettings.color.value = [new THREE.Color(0, 0, 1), new THREE.Color(0, 1, 1), new THREE.Color(1, 1, 1)];
+
+    blueExplosionGroup = new SPE.Group({
+      texture: {value: smokeTexture},
+      maxParticleCount: 1000
+    });
+
+    blueExplosionGroup.addPool(3, explosionSettings, true);
+
+    galaxies.engine.rootObject.add(blueExplosionGroup.mesh);
 
     var laserHitSettings = {
       type: SPE.distributions.SPHERE,
