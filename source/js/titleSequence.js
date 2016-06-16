@@ -170,6 +170,8 @@ galaxies.TitleSequence = function() {
 
   
   var activate = function() {
+    galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.bloom);
+
     galaxies.engine.rootObject.add( titleRoot );
     
     galaxies.engine.startTimers();
@@ -195,6 +197,8 @@ galaxies.TitleSequence = function() {
   
   
   var deactivate = function() {
+    galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.bloom);
+
     galaxies.engine.rootObject.remove( titleRoot );
     
     if ( titleFrameRequest != null ) {
@@ -208,7 +212,6 @@ galaxies.TitleSequence = function() {
     createjs.Tween.removeTweens( titlePivot.rotation );
     createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
     createjs.Tween.removeTweens( whooshObject.position );
-
   }
 
   var animateTitle = function() {

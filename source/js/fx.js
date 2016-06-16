@@ -563,8 +563,6 @@ galaxies.fx = (function() {
       worldSpaceEdge: new THREE.Vector3()
     };
 
-    galaxies.passes.indexes = {};
-
     galaxies.engine.shadersPool.addShader("WarpBubblePass");
     galaxies.engine.shadersPool.addShader("ZoomBlurPass");
     galaxies.engine.shadersPool.addShader("VignettePass");

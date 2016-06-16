@@ -341,6 +341,9 @@ galaxies.engine.initScene = function() {
   galaxies.engine.composerStack = new WAGNER.Stack(galaxies.engine.shadersPool);
 
   galaxies.passes = galaxies.passes || {};
+  galaxies.passes.indexes = galaxies.passes.indexes || {};
+
+  galaxies.passes.indexes.bloom = galaxies.engine.composerStack.addPass("BloomPass", false, {});
 
   galaxies.engine.ensureCanvasSize();
 

@@ -391,6 +391,14 @@ WAGNER.MultiPassBloomPass.prototype.run = function( c ) {
 	
 };
 
+WAGNER.BloomPass = function () {
+	WAGNER.Pass.call(this);
+
+	this.loadShader('bloom-fs.glsl');
+};
+
+WAGNER.BloomPass.prototype = Object.create(WAGNER.Pass.prototype);
+
 WAGNER.CGAPass = function() {
 
 	WAGNER.Pass.call( this );
