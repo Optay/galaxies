@@ -37,10 +37,10 @@ module.exports = function(grunt) {
         flatten: true
       },
       plainJS: {
-        src: '<%=dirs.src %>/js/plain/*.js',
+        cwd: '<%=dirs.src %>/js/plain',
+        src: '**/*',
         dest: '<%=dirs.dest %>/js/',
-        expand: true,
-        flatten: true
+        expand: true
       }
     },
     compass: {                  // Task
@@ -111,7 +111,7 @@ module.exports = function(grunt) {
         tasks: ['copy:editor']
       },
       plainJS: {
-        files: ['<%=dirs.src %>/js/plain/*.js'],
+        files: ['<%=dirs.src %>/js/plain/*'],
         tasks: ['copy:plainJS']
       }
     }

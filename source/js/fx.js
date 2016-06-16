@@ -563,20 +563,17 @@ galaxies.fx = (function() {
       worldSpaceEdge: new THREE.Vector3()
     };
 
-    galaxies.passes.warpPass = new THREE.ShaderPass(galaxies.shaders.postProcess.warpBubble);
-    galaxies.passes.warpPass.enabled = false;
+    galaxies.passes.indexes = {};
 
-    galaxies.engine.composer.insertPass(galaxies.passes.warpPass, galaxies.engine.composer.passes.length - 1);
+    galaxies.engine.shadersPool.addShader("WarpBubblePass");
+    galaxies.engine.shadersPool.addShader("ZoomBlurPass");
+    galaxies.engine.shadersPool.addShader("VignettePass");
 
-    galaxies.passes.focus = new THREE.ShaderPass(THREE.FocusShader);
-    galaxies.passes.focus.enabled = false;
+    galaxies.passes.indexes.warpBubble = galaxies.engine.composerStack.addPass("WarpBubblePass", false, {progression: 0});
 
-    galaxies.engine.composer.insertPass(galaxies.passes.focus, galaxies.engine.composer.passes.length - 1);
+    galaxies.passes.indexes.focus = galaxies.engine.composerStack.addPass("ZoomBlurPass", false, {strength: 0});
 
-    galaxies.passes.vignette = new THREE.ShaderPass(THREE.VignetteShader);
-    galaxies.passes.vignette.enabled = false;
-
-    galaxies.engine.composer.insertPass(galaxies.passes.vignette, galaxies.engine.composer.passes.length - 1);
+    galaxies.passes.indexes.vignette = galaxies.engine.composerStack.addPass("VignettePass", false, {amount: 0});
   } // init
   
   var showFireworks = function( position ) {
@@ -591,8 +588,11 @@ galaxies.fx = (function() {
     var passes = galaxies.passes,
         warpInfo = passes.warpInfo;
 
-    passes.warpPass.enabled = true;
-    passes.warpPass.uniforms["progression"].value = 0.0;
+    galaxies.engine.composerStack.enablePass(passes.indexes.warpBubble);
+
+    passes.warpBubble = galaxies.engine.composerStack.passItems[passes.indexes.warpBubble].pass;
+
+    passes.warpBubble.params.progression = 0.0;
 
     warpInfo.worldSpaceOrigin = worldPosition;
     warpInfo.worldSpaceEdge = worldBubbleEdge;
@@ -600,50 +600,58 @@ galaxies.fx = (function() {
     updateWarpBubble();
   };
 
+  var updateFocus = function () {
+    galaxies.passes.focus.params.center.set(galaxies.engine.canvasHalfWidth, galaxies.engine.canvasHalfHeight);
+  };
+
   var updateWarpBubble = function () {
     var passes = galaxies.passes,
-        warpPass = passes.warpPass,
+        warpBubble = passes.warpBubble,
         warpInfo = passes.warpInfo,
         screenSpaceCenter = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceOrigin),
         screenSpaceEdge = galaxies.utils.getNormalizedScreenPosition(warpInfo.worldSpaceEdge),
         screenAdjust = new THREE.Vector2(galaxies.engine.canvasHalfHeight, galaxies.engine.canvasHalfWidth).normalize();
 
-    warpPass.uniforms["center"].value = screenSpaceCenter;
-    warpPass.uniforms["maxRadius"].value = screenAdjust.multiplyScalar(screenSpaceEdge.sub(screenSpaceCenter).divide(screenAdjust).length());
+    warpBubble.params.center = screenSpaceCenter;
+    warpBubble.params.maxRadius = screenAdjust.multiplyScalar(screenSpaceEdge.sub(screenSpaceCenter).divide(screenAdjust).length());
   };
 
   var hideWarpBubble = function () {
-    galaxies.passes.warpPass.enabled = false;
+    galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.warpBubble);
+    galaxies.passes.warpBubble = null;
   };
 
   var showTimeDilation = function () {
-    galaxies.passes.focus.enabled = true;
-    galaxies.passes.focus.uniforms.sampleDistance.value = 0;
+    galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.focus);
+    galaxies.passes.focus = galaxies.engine.composerStack.passItems[galaxies.passes.indexes.focus].pass;
 
-    createjs.Tween.get(galaxies.passes.focus.uniforms.sampleDistance)
-        .set({value: 0})
-        .to({value: 0.4}, 1000);
+    galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.vignette);
+    galaxies.passes.vignette = galaxies.engine.composerStack.passItems[galaxies.passes.indexes.vignette].pass;
 
-    galaxies.passes.vignette.enabled = true;
-    galaxies.passes.vignette.uniforms.offset.value = 0.2;
-    galaxies.passes.vignette.uniforms.darkness.value = 0.0;
+    galaxies.fx.updateFocus();
 
-    createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
-        .set({value: 0})
-        .to({value: 8.0}, 1000);
+    createjs.Tween.get(galaxies.passes.focus.params)
+        .set({strength: 0})
+        .to({strength: 0.05}, 1000);
+
+    createjs.Tween.get(galaxies.passes.vignette.params)
+        .set({amount: 0})
+        .to({amount: 0.75}, 1000);
   };
 
   var hideTimeDilation = function () {
-    createjs.Tween.get(galaxies.passes.focus.uniforms.sampleDistance)
-        .to({value: 0}, 1000)
+    createjs.Tween.get(galaxies.passes.focus.params)
+        .to({strength: 0}, 1000)
         .call(function () {
-          galaxies.passes.focus.enabled = false;
+          galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.focus);
+          galaxies.passes.focus = null;
         });
 
-    createjs.Tween.get(galaxies.passes.vignette.uniforms.darkness)
-        .to({value: 0}, 1000)
+    createjs.Tween.get(galaxies.passes.vignette.params)
+        .to({amount: 0}, 1000)
         .call(function () {
-          galaxies.passes.vignette.enabled = false;
+          galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.vignette);
+          galaxies.passes.vignette = null;
         });
   };
 
@@ -792,10 +800,10 @@ galaxies.fx = (function() {
       planetParticleGroups[i].tick(delta);
     }
 
-    if (galaxies.passes.warpPass.enabled) {
-      galaxies.passes.warpPass.uniforms["progression"].value += delta * 2;
+    if (galaxies.passes.warpBubble) {
+      galaxies.passes.warpBubble.params.progression += delta * 2;
 
-      if (galaxies.passes.warpPass.uniforms["progression"].value >= 1) {
+      if (galaxies.passes.warpBubble.params.progression >= 1) {
         hideWarpBubble();
       }
     }
@@ -1013,6 +1021,7 @@ galaxies.fx = (function() {
     showFireworks: showFireworks,
     showWarpBubble: showWarpBubble,
     updateWarpBubble: updateWarpBubble,
+    updateFocus: updateFocus,
     hideWarpBubble: hideWarpBubble,
     showTimeDilation: showTimeDilation,
     hideTimeDilation: hideTimeDilation,

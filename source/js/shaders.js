@@ -6,7 +6,7 @@ galaxies.shaders = {
     postProcess: {
         warpBubble: {
             uniforms: {
-                "tDiffuse":    { type: "t",  value: null },
+                "tInput":    { type: "t",  value: null },
                 "center":      { type: "v2", value: new THREE.Vector2(0.5, 0.6) },
                 "maxRadius":   { type: "v2", value: new THREE.Vector2(0.09, 0.16) },
                 "warpFactor":  { type: "f",  value: 2.0 },
@@ -27,7 +27,7 @@ galaxies.shaders = {
                 "uniform float progression;",
                 "uniform float lifeSpan;",
 
-                "uniform sampler2D tDiffuse;",
+                "uniform sampler2D tInput;",
 
                 "varying vec2 vUv;",
 
@@ -41,7 +41,7 @@ galaxies.shaders = {
                 "  float outerEdge = length(outer);",
 
                 "  if (dist > outerEdge) {",
-                "    gl_FragColor = texture2D(tDiffuse, vUv);",
+                "    gl_FragColor = texture2D(tInput, vUv);",
                 "    return;",
                 "  }",
 
@@ -49,7 +49,7 @@ galaxies.shaders = {
 
                 "  vec2 wUv = center + diff * uvWarp;",
 
-                "  gl_FragColor = texture2D(tDiffuse, wUv);",
+                "  gl_FragColor = texture2D(tInput, wUv);",
                 "}"
             ].join('\n')
         }

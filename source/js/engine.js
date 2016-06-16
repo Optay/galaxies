@@ -204,13 +204,12 @@ galaxies.engine.ensureCanvasSize = function() {
   // Recalculate "constants"
   galaxies.engine.updateView();
 
-  if (galaxies.passes.warpPass && galaxies.passes.warpPass.enabled) {
+  if (galaxies.passes.warpBubble) {
     galaxies.fx.updateWarpBubble();
   }
 
   if (galaxies.passes.focus) {
-    galaxies.passes.focus.uniforms.screenWidth.value = width;
-    galaxies.passes.focus.uniforms.screenHeight.value = height;
+    galaxies.fx.updateFocus();
   }
 
   canvas.style.width = "100%";
@@ -330,7 +329,6 @@ galaxies.engine.initScene = function() {
   
   
   galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
-  galaxies.engine.renderer.autoClear = false;
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
   galaxies.engine.renderer.setSize( galaxies.engine.canvasWidth, galaxies.engine.canvasHeight );
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );
@@ -338,23 +336,12 @@ galaxies.engine.initScene = function() {
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextlost", galaxies.engine.handleContextLost, false);
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);
 
-  galaxies.engine.composer = new THREE.EffectComposer(galaxies.engine.renderer);
+  galaxies.engine.composer = new WAGNER.Composer(galaxies.engine.renderer);
+  galaxies.engine.shadersPool = new WAGNER.ShadersPool();
+  galaxies.engine.composerStack = new WAGNER.Stack(galaxies.engine.shadersPool);
 
   galaxies.passes = galaxies.passes || {};
 
-  galaxies.passes.renderPass = new THREE.RenderPass(galaxies.engine.scene, galaxies.engine.camera);
-
-  galaxies.engine.composer.addPass(galaxies.passes.renderPass);
-
-  //galaxies.passes.bloomPass = new THREE.BloomPass(0.6, 25, 4, 1024);
-
-  //galaxies.engine.composer.addPass(galaxies.passes.bloomPass);
-
-  galaxies.passes.copyPass = new THREE.ShaderPass(THREE.CopyShader);
-  galaxies.passes.copyPass.renderToScreen = true;
-
-  galaxies.engine.composer.addPass(galaxies.passes.copyPass);
-  
   galaxies.engine.ensureCanvasSize();
 
   // Perhaps should be part of audio init...
@@ -409,7 +396,7 @@ galaxies.engine.initGame = function() {
     galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[i].texture;
 
     //galaxies.engine.renderer.render(galaxies.engine.scene, galaxies.engine.camera);
-    galaxies.engine.composer.render();
+    galaxies.engine.render();
   }
 
   galaxies.engine.rootObject.remove(galaxies.engine.bgPlanet);
@@ -1057,6 +1044,15 @@ galaxies.engine.animate = function() {
 
 
 // Game Loop
+galaxies.engine.render = function () {
+  galaxies.engine.composer.reset();
+  galaxies.engine.composer.render(galaxies.engine.scene, galaxies.engine.camera);
+
+  galaxies.engine.composer.passStack(galaxies.engine.composerStack);
+
+  galaxies.engine.composer.toScreen();
+};
+
 galaxies.engine.update = function() {
   var delta = galaxies.engine.clock.getDelta(),
       stats = galaxies.debug.stats,
@@ -1404,7 +1400,7 @@ galaxies.engine.update = function() {
   }
   
   
-  galaxies.engine.composer.render();
+  galaxies.engine.render();
 
   if (stats) {
     stats.end();
