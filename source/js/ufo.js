@@ -39,6 +39,7 @@ this.galaxies.Ufo = function() {
   
   this.state = 'inactive'; // values for state: idle, in, orbit, out, inactive
   var stepTimer = 0;
+  var prevStepTimer = 0;
   var stepTime = 0;
   var transitionTime = 0;
   
@@ -191,6 +192,7 @@ this.galaxies.Ufo = function() {
       return;
     }
 
+    prevStepTimer = stepTimer;
     stepTimer += delta;
     
     switch ( this.state ) {
@@ -233,6 +235,10 @@ this.galaxies.Ufo = function() {
       break;
     case 'in':
       angle = inTween( stepTimer );
+
+      if (stepTimer >= 1.5 && prevStepTimer < 1.5) {
+        galaxies.fx.shakeCamera(1, 1.5);
+      }
       
       if ( stepTimer >= stepTime ) {
         this.state = 'orbit';
@@ -293,6 +299,10 @@ this.galaxies.Ufo = function() {
         
       if (this.spinOut) {
         this.waggler.rotation.z -= delta * 3 * Math.PI; // 90 RPM
+      } else {
+        if (stepTimer >= 1 && prevStepTimer < 1) {
+          galaxies.fx.shakeCamera(1, 1.5);
+        }
       }
       
       if ( stepTimer >= stepTime ) {
