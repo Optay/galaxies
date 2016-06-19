@@ -612,7 +612,8 @@ galaxies.MiniUFO = function () {
     spiral: 0.7,
     baseSpeed: 0.4,
     hitSound: "ufohit",
-    rubbleType: "debris"
+    rubbleType: "debris",
+    shakeAmount: 1.5
   };
 
   galaxies.Obstacle.call(this, props);

@@ -52,7 +52,7 @@ galaxies.LaserBullet.prototype = {
     setStartingPosition: function (position, direction) {
         var angle = Math.atan2(direction.y, direction.x);
 
-        this.velocity = direction.clone().normalize().multiplyScalar(16);
+        this.velocity = direction.clone().normalize().multiplyScalar(25);
         this.object.position.copy(position);
         this.object.rotation.z = angle;
 
