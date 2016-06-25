@@ -670,6 +670,7 @@ galaxies.MiniUFO.prototype.reset = function () {
   galaxies.Obstacle.prototype.reset.call(this);
 
   this.timeToNextShot = 4;
+  this.angleOffset = Math.PI / 2;
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {
@@ -677,7 +678,7 @@ galaxies.MiniUFO.prototype.update = function (delta) {
 
   //this.object.rotation.set(Math.PI, galaxies.engine.CONE_ANGLE * 3, -Math.PI/2);
   this.object.rotation.set(0, Math.PI, 0);
-  this.object.rotateOnAxis(new THREE.Vector3(0, 0, -1), this.angle - Math.PI / 2);
+  this.object.rotateOnAxis(new THREE.Vector3(0, 0, -1), this.angle - this.angleOffset);
   this.object.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 6);
 
   this.laserChargeGroup.tick(delta);
@@ -714,7 +715,25 @@ galaxies.MiniUFO.prototype.update = function (delta) {
         this.timeToNextShot += 4;
       }
     }
+
+    if (this.radius < galaxies.engine.PLANET_DISTANCE + galaxies.engine.CHARACTER_HEIGHT * 0.15) {
+      this.state = "retreating";
+      this.maxVelocityRadial *= 3;
+    }
   }
+
+  if (this.state === "retreating") {
+    this.angleOffset = Math.min(this.angleOffset + delta * Math.PI / 6, Math.PI * 0.95);
+    this.velocityRadial = Math.min(this.velocityRadial + 2 * (this.angleOffset - 1) * delta,
+        this.maxVelocityRadial * galaxies.engine.speedScale);
+
+    this.radius += this.velocityRadial * delta;
+
+    if (this.radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
+      this.deactivate();
+    }
+  }
+
 };
 
 
