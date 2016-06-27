@@ -55,7 +55,7 @@ galaxies.fx = (function() {
   // to set the orientation of each emitter, so we must work at the group level.
   var projHitPool = [];
   var projHitIndex = 0;
-  var projHitPoolSize = 3;
+  var projHitPoolSize = 6;
   var poofGradients = {};
   var explosionPoofPool = [];
   var explosionPoofIndex = 0;
@@ -754,7 +754,7 @@ galaxies.fx = (function() {
       case "golden":
         var poof = explosionPoofPool[explosionPoofIndex];
 
-        if (++explosionPoofIndex >= explosionPoofPool.length) {
+        if (++explosionPoofIndex >= projHitPoolSize) {
           explosionPoofIndex = 0;
         }
 
