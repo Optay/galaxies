@@ -888,9 +888,9 @@ galaxies.engine.getProjectile = function (startAngle, directionOffset, indestruc
   if (galaxies.engine.projectilePool.length > 0) {
     proj = galaxies.engine.projectilePool.pop();
 
-    proj.initialize(projMesh, startAngle, directionOffset, indestructible, particles);
+    proj.initialize(galaxies.engine.currentPowerup, projMesh, startAngle, directionOffset, indestructible, particles);
   } else {
-    proj = new galaxies.Projectile(projMesh, startAngle, directionOffset, indestructible, particles);
+    proj = new galaxies.Projectile(galaxies.engine.currentPowerup, projMesh, startAngle, directionOffset, indestructible, particles);
   }
 
   galaxies.engine.projectiles.push(proj);

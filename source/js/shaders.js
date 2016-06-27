@@ -82,6 +82,34 @@ galaxies.shaders = {
                 "  gl_FragColor = vec4(color, angleSin * opacity);",
                 "}"
             ].join('\n')
+        },
+        remapToGradient: {
+            uniforms: {
+                "tDiffuse":     { type: "t", value: null },
+                "offsetRepeat": { type: "v4", value: new THREE.Vector4(0, 0, 1, 1) },
+                "tGradient":    { type: "t", value: null }
+            },
+            vertexShader: [
+                "uniform vec4 offsetRepeat;",
+                "varying vec2 vUv;",
+
+                "void main() {",
+                "  vUv = uv * offsetRepeat.zw + offsetRepeat.xy;",
+                "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+                "}"
+            ].join('\n'),
+            fragmentShader: [
+                "uniform sampler2D tDiffuse;",
+                "uniform sampler2D tGradient;",
+
+                "varying vec2 vUv;",
+
+                "void main() {",
+                "  vec4 srcColor = texture2D(tDiffuse, vUv);",
+                "  float scalar = 0.21 * srcColor.r + 0.72 * srcColor.g + 0.07 * srcColor.b;",
+                "  gl_FragColor = vec4(texture2D(tGradient, vec2(scalar, scalar)).rgb, srcColor.a);",
+                "}"
+            ].join('\n')
         }
     }
 };

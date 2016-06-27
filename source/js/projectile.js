@@ -7,7 +7,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.Projectile = function (model, startAngle, directionOffset, indestructible, particles) {
+galaxies.Projectile = function (type, model, startAngle, directionOffset, indestructible, particles) {
   this.angularSpeed = 10;
   this.object = new THREE.Object3D();
   this.object.up.set(0,0,1);
@@ -15,12 +15,13 @@ galaxies.Projectile = function (model, startAngle, directionOffset, indestructib
   this.particleEmitters = [];
   this.particleGroups = [];
 
-  this.initialize(model, startAngle, directionOffset, indestructible, particles);
+  this.initialize(type, model, startAngle, directionOffset, indestructible, particles);
 };
 
-galaxies.Projectile.prototype.initialize = function (model, startAngle, directionOffset, indestructible, particles) {
+galaxies.Projectile.prototype.initialize = function (type, model, startAngle, directionOffset, indestructible, particles) {
   this.reset();
 
+  this.type = type;
   this.indestructible = !!indestructible;
 
   this.startAngle = startAngle;
@@ -136,7 +137,7 @@ galaxies.Projectile.prototype.updatePosition = function (newAngle) {
 };
 
 galaxies.Projectile.prototype.hit = function () {
-  galaxies.fx.showHit(this.object.position);
+  galaxies.fx.showHit(this.object.position, this.type);
 
   if (galaxies.utils.inShotGroup(this)) {
     ++galaxies.engine.projectilesHitRound;

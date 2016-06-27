@@ -134,8 +134,11 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'smoke', src: 'effects/smokeparticle.png' },
     { id: 'lensFlare', src: 'effects/lensflare3.png' },
     { id: 'sun', src: 'environment/sun_on_black.jpg' },
-    { id: 'charactershadow', src: 'sprites/character_shadow.png' }
-
+    { id: 'charactershadow', src: 'sprites/character_shadow.png' },
+    { id: 'explosionpoof', src: 'sprites/powerup_explosion_bw.png' },
+    { id: 'clonegradient', src: 'gradients/clone.png' },
+    { id: 'goldengradient', src: 'gradients/golden.png' },
+    { id: 'spreadgradient', src: 'gradients/spread.png' }
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;

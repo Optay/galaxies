@@ -64,6 +64,10 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
     this.updateFrame( frameIndex );
     playing = false;
   }
+
+  this.isPlaying = function () {
+    return playing;
+  };
   
   this.updateFrame(0);
 

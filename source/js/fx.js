@@ -56,6 +56,9 @@ galaxies.fx = (function() {
   var projHitPool = [];
   var projHitIndex = 0;
   var projHitPoolSize = 3;
+  var poofGradients = {};
+  var explosionPoofPool = [];
+  var explosionPoofIndex = 0;
   
   // Rubble objects for asteroid destruction
   var rubblePool = {};
@@ -127,6 +130,9 @@ galaxies.fx = (function() {
     // Projectile hit particles
     var texture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     texture.needsUpdate = true;
+
+    var remapToGradient = galaxies.shaders.materials.remapToGradient;
+
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
         texture: { value: texture },
@@ -138,8 +144,84 @@ galaxies.fx = (function() {
       galaxies.engine.rootObject.add( particleGroup.mesh );
       
       particleGroup.addPool( 1, emitterSettings, false );
+
+      var tex = new THREE.Texture(galaxies.queue.getResult('explosionpoof')),
+          spriteSheet, spriteMat, sprite;
+
+      tex.needsUpdate = true;
+
+      spriteSheet = new galaxies.SpriteSheet(tex, [
+        [0, 0, 256, 256],
+        [0, 256, 256, 256],
+        [0, 512, 256, 256],
+        [0, 768, 256, 256],
+        [0, 1024, 256, 256],
+        [0, 1280, 256, 256],
+        [0, 1536, 256, 256],
+        [0, 1792, 256, 256],
+        [0, 2048, 256, 256],
+        [0, 2304, 256, 256],
+        [0, 2560, 256, 256],
+        [0, 2816, 256, 256],
+        [0, 3072, 256, 256],
+        [0, 3328, 256, 256],
+        [0, 3584, 256, 256],
+        [0, 4096, 256, 256],
+        [0, 4352, 256, 256],
+        [0, 4608, 256, 256],
+        [0, 4864, 256, 256],
+        [0, 5120, 256, 256],
+        [0, 5376, 256, 256],
+        [0, 5632, 256, 256],
+        [0, 5888, 256, 256],
+        [0, 6144, 256, 256],
+        [0, 6400, 256, 256],
+        [0, 6656, 256, 256],
+        [0, 6912, 256, 256],
+        [0, 7168, 256, 256],
+        [0, 7424, 256, 256],
+        [0, 7680, 256, 256],
+        [0, 7936, 256, 256],
+        [0, 7936, 256, 256]
+      ], 30);
+
+      spriteMat = new THREE.ShaderMaterial({
+        uniforms: remapToGradient.uniforms,
+        vertexShader: remapToGradient.vertexShader,
+        fragmentShader: remapToGradient.fragmentShader,
+        shading: THREE.FlatShading,
+        depthWrite: false,
+        depthTest: false,
+        transparent: true
+      });
+
+      spriteMat.uniforms.tDiffuse.value = tex;
+
+      sprite = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), spriteMat);
+      sprite.up.set(new THREE.Vector3(0, 0, 1));
+
+      explosionPoofPool.push({
+        texture: tex,
+        spriteSheet: spriteSheet,
+        material: spriteMat,
+        sprite: sprite,
+        rotation: 0
+      });
+
+      sprite.visible = false;
+
+      galaxies.engine.rootObject.add(sprite);
     }
-    
+
+    poofGradients.spread = new THREE.Texture(galaxies.queue.getResult('spreadgradient'));
+    poofGradients.spread.needsUpdate = true;
+
+    poofGradients.clone = new THREE.Texture(galaxies.queue.getResult('clonegradient'));
+    poofGradients.clone.needsUpdate = true;
+
+    poofGradients.golden = new THREE.Texture(galaxies.queue.getResult('goldengradient'));
+    poofGradients.golden.needsUpdate = true;
+
     // Rubble objects
     // plain
     rubblePool['plain'] = [];
@@ -665,16 +747,34 @@ galaxies.fx = (function() {
     emitter.enable();
   }
   
-  var showHit = function( position ) {
-    var particleGroup = projHitPool[ projHitIndex ];
-    projHitIndex ++;
-    if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
-    
-    particleGroup.mesh.position.copy( position );
-    particleGroup.mesh.lookAt( galaxies.engine.rootObject.position );
-    particleGroup.triggerPoolEmitter(1);
+  var showHit = function( position, type ) {
+    switch (type) {
+      case "spread":
+      case "clone":
+      case "golden":
+        var poof = explosionPoofPool[explosionPoofIndex];
 
-  }
+        if (++explosionPoofIndex >= explosionPoofPool.length) {
+          explosionPoofIndex = 0;
+        }
+
+        poof.spriteSheet.play();
+        poof.material.uniforms.tGradient.value = poofGradients[type];
+        poof.sprite.visible = true;
+        poof.sprite.position.copy(position);
+        poof.rotation = galaxies.utils.flatAngle(position) + Math.PI;
+        break;
+      default:
+        var particleGroup = projHitPool[ projHitIndex ];
+        projHitIndex ++;
+        if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
+
+        particleGroup.mesh.position.copy( position );
+        particleGroup.mesh.lookAt( galaxies.engine.rootObject.position );
+        particleGroup.triggerPoolEmitter(1);
+        break;
+    }
+  };
   
   var showRubble = function( type, position, velocity ) {
     if (type === "debris") {
@@ -805,6 +905,23 @@ galaxies.fx = (function() {
         hideWarpBubble();
       }
     }
+
+    var cameraScenePos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
+
+    explosionPoofPool.forEach(function (poof) {
+      if (poof.sprite.visible) {
+        var tex = poof.texture;
+
+        poof.spriteSheet.update(delta);
+        poof.sprite.lookAt(cameraScenePos);
+        poof.sprite.rotation.z = poof.rotation;
+        poof.material.uniforms.offsetRepeat.value.set(tex.offset.x, tex.offset.y, tex.repeat.x, tex.repeat.y);
+
+        if (!poof.spriteSheet.isPlaying()) {
+          poof.sprite.visible = false;
+        }
+      }
+    });
     
     // lux flying away
     // planet.parent is used to test if planet exploded to prevent Lux from flying away from a won game.
