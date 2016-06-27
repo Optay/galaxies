@@ -5,12 +5,14 @@ this.galaxies = this.galaxies || {};
 galaxies.shaders = {
     postProcess: {
         warpBubble: {
-            uniforms: {
-                "tInput":    { type: "t",  value: null },
-                "center":      { type: "v2", value: new THREE.Vector2(0.5, 0.6) },
-                "maxRadius":   { type: "v2", value: new THREE.Vector2(0.09, 0.16) },
-                "warpFactor":  { type: "f",  value: 2.0 },
-                "progression": { type: "f",  value: 0.0 }
+            getUniforms: function () {
+                return {
+                    "tInput":      { type: "t",  value: null },
+                    "center":      { type: "v2", value: new THREE.Vector2(0.5, 0.6) },
+                    "maxRadius":   { type: "v2", value: new THREE.Vector2(0.09, 0.16) },
+                    "warpFactor":  { type: "f",  value: 2.0 },
+                    "progression": { type: "f",  value: 0.0 }
+                };
             },
             vertexShader: [
                 "varying vec2 vUv;",
@@ -56,9 +58,11 @@ galaxies.shaders = {
     },
     materials: {
         shield: {
-            uniforms: {
-                "color":   { type: "c", value: new THREE.Color(0x0099FF) },
-                "opacity": { type: "f", value: 1 }
+            getUniforms: function () {
+                return {
+                    "color":   { type: "c", value: new THREE.Color(0x0099FF) },
+                    "opacity": { type: "f", value: 1 }
+                };
             },
             vertexShader: [
                 "varying float angleSin;",
@@ -84,10 +88,12 @@ galaxies.shaders = {
             ].join('\n')
         },
         remapToGradient: {
-            uniforms: {
-                "tDiffuse":     { type: "t", value: null },
-                "offsetRepeat": { type: "v4", value: new THREE.Vector4(0, 0, 1, 1) },
-                "tGradient":    { type: "t", value: null }
+            getUniforms: function () {
+                return {
+                    "tDiffuse":     { type: "t", value: null },
+                    "offsetRepeat": { type: "v4", value: new THREE.Vector4(0, 0, 1, 1) },
+                    "tGradient":    { type: "t", value: null }
+                };
             },
             vertexShader: [
                 "uniform vec4 offsetRepeat;",

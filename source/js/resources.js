@@ -188,7 +188,7 @@ galaxies.Resources = function() {
   
 
   this.materials['shield'] = new THREE.ShaderMaterial({
-      uniforms: galaxies.shaders.materials.shield.uniforms,
+      uniforms: galaxies.shaders.materials.shield.getUniforms(),
       vertexShader: galaxies.shaders.materials.shield.vertexShader,
       fragmentShader: galaxies.shaders.materials.shield.fragmentShader,
       transparent: true,

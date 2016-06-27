@@ -186,7 +186,7 @@ galaxies.fx = (function() {
       ], 30);
 
       spriteMat = new THREE.ShaderMaterial({
-        uniforms: remapToGradient.uniforms,
+        uniforms: remapToGradient.getUniforms(),
         vertexShader: remapToGradient.vertexShader,
         fragmentShader: remapToGradient.fragmentShader,
         shading: THREE.FlatShading,
