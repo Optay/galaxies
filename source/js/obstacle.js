@@ -616,6 +616,8 @@ galaxies.MiniUFO = function () {
     shakeAmount: 1.5
   };
 
+  this.onLaserHit = this.onLaserHit.bind(this);
+
   galaxies.Obstacle.call(this, props);
 
   this.initParticles();
@@ -666,11 +668,21 @@ galaxies.MiniUFO.prototype.initParticles = function () {
   this.object.add(this.laserChargeGroup.mesh);
 };
 
+galaxies.MiniUFO.prototype.onLaserHit = function (didHitPlayer) {
+  ++this.shotsFired;
+
+  if (didHitPlayer) {
+    ++this.shotsHit;
+  }
+};
+
 galaxies.MiniUFO.prototype.reset = function () {
   galaxies.Obstacle.prototype.reset.call(this);
 
   this.timeToNextShot = 4;
   this.angleOffset = Math.PI / 2;
+  this.shotsFired = 0;
+  this.shotsHit = 0;
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {
@@ -705,6 +717,8 @@ galaxies.MiniUFO.prototype.update = function (delta) {
 
         laserBullet.addToScene(position, direction);
 
+        laserBullet.addImpactCallback(this.onLaserHit);
+
         new galaxies.audio.PositionedSound({
           source: galaxies.audio.getSound('ufoshoot'),
           position: this.object.position,
@@ -716,7 +730,8 @@ galaxies.MiniUFO.prototype.update = function (delta) {
       }
     }
 
-    if (this.radius < galaxies.engine.PLANET_DISTANCE + galaxies.engine.CHARACTER_HEIGHT * 0.15) {
+    if (this.radius < galaxies.engine.PLANET_DISTANCE + galaxies.engine.CHARACTER_HEIGHT * 0.15 ||
+        this.shotsFired > 1 || this.shotsHit > 0) {
       this.state = "retreating";
       this.maxVelocityRadial *= 3;
     }

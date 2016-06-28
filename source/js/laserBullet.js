@@ -6,11 +6,16 @@ galaxies.LaserBullet = function () {
     this.state = "inactive";
     this.velocity = new THREE.Vector3();
     this.isHittable = false;
+    this.impactCallbacks = [];
 
     this.initModel();
 };
 
 galaxies.LaserBullet.prototype = {
+    addImpactCallback: function (callback) {
+        this.impactCallbacks.push(callback);
+    },
+
     addToScene: function (position, direction) {
         this.state = "active";
         this.isHittable = false;
@@ -20,10 +25,16 @@ galaxies.LaserBullet.prototype = {
         this.setStartingPosition(position, direction);
     },
 
-    impact: function () {
+    impact: function (didHitPlayer) {
         if (this.state === "inactive") {
             return;
         }
+
+        this.impactCallbacks.forEach(function (callback) {
+            if (typeof callback === "function") {
+                callback(didHitPlayer);
+            }
+        });
 
         this.state = "inactive";
 
@@ -47,6 +58,8 @@ galaxies.LaserBullet.prototype = {
 
     removeFromScene: function () {
         galaxies.engine.rootObject.remove(this.object);
+
+        this.impactCallbacks = [];
     },
 
     setStartingPosition: function (position, direction) {
@@ -91,7 +104,7 @@ galaxies.LaserBullet.prototype = {
             }
         } else {
             if (flatLenSq <= galaxies.engine.PLANET_RADIUS * galaxies.engine.PLANET_RADIUS) {
-                this.impact();
+                this.impact(false);
             } else {
                 var radSq = galaxies.engine.PLANET_RADIUS + 0.6;
 
@@ -101,7 +114,7 @@ galaxies.LaserBullet.prototype = {
                     var angle = Math.atan2(-this.object.position.x, this.object.position.y);
 
                     if (Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
-                        this.impact();
+                        this.impact(true);
 
                         galaxies.engine.hitPlayer();
                     }
@@ -110,7 +123,7 @@ galaxies.LaserBullet.prototype = {
                         var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
 
                         if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
-                            this.impact();
+                            this.impact(true);
 
                             galaxies.engine.setPowerup('');
                         }
