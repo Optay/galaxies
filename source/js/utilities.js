@@ -292,7 +292,24 @@ galaxies.utils.getNormalizedScreenPosition = function (v3) {
     return new THREE.Vector2(0.5 + v3.x * 0.5, 0.5 + v3.y * 0.5);
 };
 
+galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames) {
+    var frames = [],
+        xPos = startPoint.x,
+        yPos = startPoint.y;
 
+    for (var i = 0; i < numFrames; ++i) {
+        frames.push([xPos, yPos, frameSize.x, frameSize.y]);
+
+        xPos += frameSize.x;
+
+        if (xPos >= texSize.x) {
+            xPos = 0;
+            yPos += frameSize.y;
+        }
+    }
+
+    return frames;
+};
 
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.

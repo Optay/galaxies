@@ -56,10 +56,11 @@ galaxies.fx = (function() {
   var projHitPool = [];
   var projHitIndex = 0;
   var projHitPoolSize = 6;
-  var poofGradients = {};
   var explosionPoofPool = [];
   var explosionPoofIndex = 0;
-  
+
+  var gradients = {};
+
   // Rubble objects for asteroid destruction
   var rubblePool = {};
   var rubbleIndex = {};
@@ -87,6 +88,10 @@ galaxies.fx = (function() {
   
   var stariclesGroup;
   var staricles = {}; // emitters
+  var collectEffectPool = [];
+  var collectEffectPoolSize = 3;
+  var collectEffectIndex = 0;
+
   var rainbowJetGroup;
   var purpleTrailGroup;
   var smokeGroup;
@@ -114,6 +119,39 @@ galaxies.fx = (function() {
     maxAge: { value: 0.25, spread: 0 },
     duration: 0.05
   };
+
+  var createGradatedSprite = function (texName, spritePhysicalSize, frames) {
+    var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
+        remapToGradient = galaxies.shaders.materials.remapToGradient,
+        sheet = new galaxies.SpriteSheet(tex, frames, 30),
+        mat = new THREE.ShaderMaterial({
+          uniforms: remapToGradient.getUniforms(),
+          vertexShader: remapToGradient.vertexShader,
+          fragmentShader: remapToGradient.fragmentShader,
+          shading: THREE.FlatShading,
+          depthWrite: false,
+          depthTest: false,
+          transparent: true
+        }),
+        sprite;
+
+    tex.needsUpdate = true;
+
+    mat.uniforms.tDiffuse.value = tex;
+
+    sprite = new THREE.Mesh(new THREE.PlaneGeometry(spritePhysicalSize.x, spritePhysicalSize.y), mat);
+    sprite.up.set(0, 0, 1);
+    sprite.visible = false;
+    galaxies.engine.rootObject.add(sprite);
+
+    return {
+      texture: tex,
+      spriteSheet: sheet,
+      material: mat,
+      sprite: sprite,
+      rotation: 0
+    };
+  };
   
   var init = function() {
     var heartTex = new THREE.Texture(galaxies.queue.getResult('flatheart'));
@@ -131,7 +169,8 @@ galaxies.fx = (function() {
     var texture = new THREE.Texture( galaxies.queue.getResult('sparkle') );
     texture.needsUpdate = true;
 
-    var remapToGradient = galaxies.shaders.materials.remapToGradient;
+    var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
+            new THREE.Vector2(256, 8192), 20);
 
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
@@ -145,82 +184,33 @@ galaxies.fx = (function() {
       
       particleGroup.addPool( 1, emitterSettings, false );
 
-      var tex = new THREE.Texture(galaxies.queue.getResult('explosionpoof')),
-          spriteSheet, spriteMat, sprite;
-
-      tex.needsUpdate = true;
-
-      spriteSheet = new galaxies.SpriteSheet(tex, [
-        [0, 0, 256, 256],
-        [0, 256, 256, 256],
-        [0, 512, 256, 256],
-        [0, 768, 256, 256],
-        [0, 1024, 256, 256],
-        [0, 1280, 256, 256],
-        [0, 1536, 256, 256],
-        [0, 1792, 256, 256],
-        [0, 2048, 256, 256],
-        [0, 2304, 256, 256],
-        [0, 2560, 256, 256],
-        [0, 2816, 256, 256],
-        [0, 3072, 256, 256],
-        [0, 3328, 256, 256],
-        [0, 3584, 256, 256],
-        [0, 4096, 256, 256],
-        [0, 4352, 256, 256],
-        [0, 4608, 256, 256],
-        [0, 4864, 256, 256],
-        [0, 5120, 256, 256],
-        [0, 5376, 256, 256],
-        [0, 5632, 256, 256],
-        [0, 5888, 256, 256],
-        [0, 6144, 256, 256],
-        [0, 6400, 256, 256],
-        [0, 6656, 256, 256],
-        [0, 6912, 256, 256],
-        [0, 7168, 256, 256],
-        [0, 7424, 256, 256],
-        [0, 7680, 256, 256],
-        [0, 7936, 256, 256],
-        [0, 7936, 256, 256]
-      ], 30);
-
-      spriteMat = new THREE.ShaderMaterial({
-        uniforms: remapToGradient.getUniforms(),
-        vertexShader: remapToGradient.vertexShader,
-        fragmentShader: remapToGradient.fragmentShader,
-        shading: THREE.FlatShading,
-        depthWrite: false,
-        depthTest: false,
-        transparent: true
-      });
-
-      spriteMat.uniforms.tDiffuse.value = tex;
-
-      sprite = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), spriteMat);
-      sprite.up.set(new THREE.Vector3(0, 0, 1));
-
-      explosionPoofPool.push({
-        texture: tex,
-        spriteSheet: spriteSheet,
-        material: spriteMat,
-        sprite: sprite,
-        rotation: 0
-      });
-
-      sprite.visible = false;
-
-      galaxies.engine.rootObject.add(sprite);
+      explosionPoofPool.push(createGradatedSprite('explosionpoof', new THREE.Vector2(2.5, 2.5), frames));
     }
 
-    poofGradients.spread = new THREE.Texture(galaxies.queue.getResult('spreadgradient'));
-    poofGradients.spread.needsUpdate = true;
+    gradients.spread = new THREE.Texture(galaxies.queue.getResult('spreadgradient'));
+    gradients.spread.needsUpdate = true;
 
-    poofGradients.clone = new THREE.Texture(galaxies.queue.getResult('clonegradient'));
-    poofGradients.clone.needsUpdate = true;
+    gradients.clone = new THREE.Texture(galaxies.queue.getResult('clonegradient'));
+    gradients.clone.needsUpdate = true;
 
-    poofGradients.golden = new THREE.Texture(galaxies.queue.getResult('goldengradient'));
-    poofGradients.golden.needsUpdate = true;
+    gradients.golden = new THREE.Texture(galaxies.queue.getResult('goldengradient'));
+    gradients.golden.needsUpdate = true;
+
+    frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
+        new THREE.Vector2(4096, 4096), 57);
+
+    for (i = 0; i < collectEffectPoolSize; ++i) {
+      collectEffectPool.push(createGradatedSprite('powerupcollecteffect', new THREE.Vector2(2.5, 2.5), frames));
+    }
+
+    gradients.heart = new THREE.Texture(galaxies.queue.getResult('heartgradient'));
+    gradients.heart.needsUpdate = true;
+
+    gradients.star = new THREE.Texture(galaxies.queue.getResult('stargradient'));
+    gradients.star.needsUpdate = true;
+
+    gradients.shield = new THREE.Texture(galaxies.queue.getResult('shieldgradient'));
+    gradients.shield.needsUpdate = true;
 
     // Rubble objects
     // plain
@@ -736,16 +726,29 @@ galaxies.fx = (function() {
   };
 
   var showStaricles = function( position, type ) {
-    
-    var emitter = staricles[type];
+    var emitter = staricles[type],
+        grad = gradients[type],
+        effect = collectEffectPool[collectEffectIndex];
+
+    if (++collectEffectIndex >= collectEffectPoolSize) {
+      collectEffectIndex = 0;
+    }
+
     if ( !emitter ) { emitter = staricles['star']; }
+    if ( !grad ) { grad = gradients['star']; }
 
     emitter.position.value = emitter.position.value.copy( position );
     emitter.rotation.center = emitter.rotation.center.copy( position );
     emitter.updateFlags.rotationCenter = true;
 
     emitter.enable();
-  }
+
+    effect.spriteSheet.play();
+    effect.material.uniforms.tGradient.value = grad;
+    effect.sprite.visible = true;
+    effect.sprite.position.copy(position);
+    effect.rotation = galaxies.utils.flatAngle(position);
+  };
   
   var showHit = function( position, type ) {
     switch (type) {
@@ -759,7 +762,7 @@ galaxies.fx = (function() {
         }
 
         poof.spriteSheet.play();
-        poof.material.uniforms.tGradient.value = poofGradients[type];
+        poof.material.uniforms.tGradient.value = gradients[type];
         poof.sprite.visible = true;
         poof.sprite.position.copy(position);
         poof.rotation = galaxies.utils.flatAngle(position) + Math.PI;
@@ -865,8 +868,22 @@ galaxies.fx = (function() {
     
   }
   
+  var updateSprite = function (spriteData, cameraRootPos, delta) {
+    var tex = spriteData.texture;
+    
+    if (!spriteData.sprite.visible) {
+      return;
+    }
 
-  
+    spriteData.spriteSheet.update(delta);
+    spriteData.sprite.lookAt(cameraRootPos);
+    spriteData.sprite.rotation.z = spriteData.rotation;
+    spriteData.material.uniforms.offsetRepeat.value.set(tex.offset.x, tex.offset.y, tex.repeat.x, tex.repeat.y);
+
+    if (!spriteData.spriteSheet.isPlaying()) {
+      spriteData.sprite.visible = false;
+    }
+  };
   
   var update = function( delta ) {
     for ( var i=0; i<projHitPoolSize; i++ ) {
@@ -906,21 +923,14 @@ galaxies.fx = (function() {
       }
     }
 
-    var cameraScenePos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
+    var cameraRootPos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
 
     explosionPoofPool.forEach(function (poof) {
-      if (poof.sprite.visible) {
-        var tex = poof.texture;
-
-        poof.spriteSheet.update(delta);
-        poof.sprite.lookAt(cameraScenePos);
-        poof.sprite.rotation.z = poof.rotation;
-        poof.material.uniforms.offsetRepeat.value.set(tex.offset.x, tex.offset.y, tex.repeat.x, tex.repeat.y);
-
-        if (!poof.spriteSheet.isPlaying()) {
-          poof.sprite.visible = false;
-        }
-      }
+      updateSprite(poof, cameraRootPos, delta);
+    });
+    
+    collectEffectPool.forEach(function (effect) {
+      updateSprite(effect, cameraRootPos, delta);
     });
     
     // lux flying away
