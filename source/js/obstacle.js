@@ -685,6 +685,12 @@ galaxies.MiniUFO.prototype.reset = function () {
   this.shotsHit = 0;
 };
 
+galaxies.MiniUFO.prototype.splode = function( spawn ) {
+  galaxies.Obstacle.prototype.splode.call(this, spawn);
+
+  galaxies.fx.explode(this.object.position);
+};
+
 galaxies.MiniUFO.prototype.update = function (delta) {
   galaxies.Obstacle.prototype.update.call(this, delta);
 

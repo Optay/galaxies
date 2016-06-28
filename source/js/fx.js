@@ -72,6 +72,10 @@ galaxies.fx = (function() {
   var debrisIndex = 0;
   var debrisSetSize = 8;
   var debrisPoolSize = 16;
+
+  var fireExplosionPool = [];
+  var fireExplosionIndex = 0;
+  var fireExplosionPoolSize = 8;
   
   var planetRubbleHolder;
   var planetParticleGroups = [];
@@ -211,6 +215,36 @@ galaxies.fx = (function() {
 
     gradients.shield = new THREE.Texture(galaxies.queue.getResult('shieldgradient'));
     gradients.shield.needsUpdate = true;
+
+    frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
+        new THREE.Vector2(4096, 4096), 53);
+
+    for (i = 0; i < fireExplosionPoolSize; ++i) {
+      var explosionTex = new THREE.Texture(galaxies.queue.getResult('toonexplosion')),
+          explosionSheet = new galaxies.SpriteSheet(explosionTex, frames, 30),
+          explosionMat = new THREE.SpriteMaterial({
+            map: explosionTex,
+            rotation: 0,
+            shading: THREE.FlatShading,
+            depthTest: false,
+            depthWrite: false,
+            transparent: true
+          }),
+          explosionSprite = new THREE.Sprite(explosionMat);
+
+      explosionTex.needsUpdate = true;
+
+      galaxies.engine.rootObject.add(explosionSprite);
+
+      explosionSprite.scale.set(3, 3, 3);
+
+      fireExplosionPool.push({
+        texture: explosionTex,
+        spriteSheet: explosionSheet,
+        material: explosionMat,
+        sprite: explosionSprite
+      });
+    }
 
     galaxies.engine.render();
 
@@ -797,7 +831,8 @@ galaxies.fx = (function() {
   }
   
   var showDebris = function( position, velocity ) {
-    explosionGroup.triggerPoolEmitter(1, position);
+    //explosionGroup.triggerPoolEmitter(1, position);
+    explode(position);
 
     debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity, 2 );
   }
@@ -933,6 +968,18 @@ galaxies.fx = (function() {
     
     collectEffectPool.forEach(function (effect) {
       updateSprite(effect, cameraRootPos, delta);
+    });
+
+    fireExplosionPool.forEach(function (toonExplosion) {
+      if (!toonExplosion.sprite.visible) {
+        return;
+      }
+
+      toonExplosion.spriteSheet.update(delta);
+
+      if (!toonExplosion.spriteSheet.isPlaying()) {
+        toonExplosion.sprite.visible = false;
+      }
     });
     
     // lux flying away
@@ -1141,6 +1188,20 @@ galaxies.fx = (function() {
     blueExplosionGroup.triggerPoolEmitter(1, position);
   };
 
+  var explode = function (position) {
+    var toonExplosion = fireExplosionPool[fireExplosionIndex];
+
+    if (++fireExplosionIndex >= fireExplosionPoolSize) {
+      fireExplosionIndex = 0;
+    }
+
+    toonExplosion.spriteSheet.play();
+
+    toonExplosion.sprite.visible = true;
+    toonExplosion.sprite.position.copy(position);
+    toonExplosion.material.rotation = galaxies.utils.flatAngle(position) + Math.PI;
+  };
+
   return {
     init: init,
     update: update,
@@ -1168,6 +1229,7 @@ galaxies.fx = (function() {
     loseHeart: loseHeart,
     getComet: getComet,
     getShield: getShield,
-    showBlueExplosion: showBlueExplosion
+    showBlueExplosion: showBlueExplosion,
+    explode: explode
   };
 })();
