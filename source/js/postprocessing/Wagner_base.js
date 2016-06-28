@@ -997,3 +997,22 @@ WAGNER.WarpBubblePass.prototype.run = function (c) {
 
 	c.pass(this.shader);
 };
+
+WAGNER.ColorAddPass = function () {
+	WAGNER.Pass.call(this);
+
+	this.shader = WAGNER.processShader(galaxies.shaders.postProcess.colorAdd.vertexShader,
+		galaxies.shaders.postProcess.colorAdd.fragmentShader);
+
+	this.params.amount = 0.5;
+	this.params.color = new THREE.Color(0xFFAA00);
+};
+
+WAGNER.ColorAddPass.prototype = Object.create(WAGNER.Pass.prototype);
+
+WAGNER.ColorAddPass.prototype.run = function (c) {
+	this.shader.uniforms.amount.value = this.params.amount;
+	this.shader.uniforms.color.value = this.params.color;
+
+	c.pass(this.shader);
+};

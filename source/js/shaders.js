@@ -54,6 +54,35 @@ galaxies.shaders = {
                 "  gl_FragColor = texture2D(tInput, wUv);",
                 "}"
             ].join('\n')
+        },
+        colorAdd: {
+            getUniforms: function () {
+                return {
+                    "tInput": { type: "t",  value: null },
+                    "color":  { type: "c", value: new THREE.Color("black") },
+                    "amount": { type: "f", value: 0.5 }
+                };
+            },
+            vertexShader: [
+                "varying vec2 vUv;",
+
+                "void main() {",
+                "  vUv = uv;",
+                "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+                "}"
+            ].join('\n'),
+            fragmentShader: [
+                "uniform sampler2D tInput;",
+                "uniform vec3 color;",
+                "uniform float amount;",
+
+                "varying vec2 vUv;",
+
+                "void main() {",
+                "  vec4 srcColor = texture2D(tInput, vUv);",
+                "  gl_FragColor = vec4(color * amount + srcColor.rgb, srcColor.a);",
+                "}"
+            ].join('\n')
         }
     },
     materials: {

@@ -75,10 +75,11 @@ galaxies.fx = (function() {
 
   var fireExplosionPool = [];
   var fireExplosionIndex = 0;
-  var fireExplosionPoolSize = 8;
+  var fireExplosionPoolSize = 4;
   
   var planetRubbleHolder;
   var planetParticleGroups = [];
+  var planetExplosion = null;
   
   // Firework particle group for exploding comets
   var FIREWORKS_DECELERATION = 15;
@@ -245,6 +246,35 @@ galaxies.fx = (function() {
         sprite: explosionSprite
       });
     }
+
+    frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
+        new THREE.Vector2(2048, 4096), 25);
+
+    var planetExplodeTex = new THREE.Texture(galaxies.queue.getResult('planetexplosion')),
+        planetExplodeSheet = new galaxies.SpriteSheet(planetExplodeTex, frames, 30),
+        planetExplodeMat = new THREE.SpriteMaterial({
+          map: planetExplodeTex,
+          rotation: 0,
+          shading: THREE.FlatShading,
+          depthTest: false,
+          depthWrite: false,
+          transparent: true
+        }),
+        planetExplodeSprite = new THREE.Sprite(planetExplodeMat);
+
+    planetExplodeTex.needsUpdate = true;
+
+    galaxies.engine.rootObject.add(planetExplodeSprite);
+
+    planetExplodeSprite.scale.set(16, 16, 16);
+    planetExplodeSprite.position.set(0, 0, galaxies.engine.PLANET_RADIUS + 5);
+
+    planetExplosion = {
+      texture: planetExplodeTex,
+      spriteSheet: planetExplodeSheet,
+      material: planetExplodeMat,
+      sprite: planetExplodeSprite
+    };
 
     galaxies.engine.render();
 
@@ -674,12 +704,15 @@ galaxies.fx = (function() {
     galaxies.engine.shadersPool.addShader("WarpBubblePass");
     galaxies.engine.shadersPool.addShader("ZoomBlurPass");
     galaxies.engine.shadersPool.addShader("VignettePass");
+    galaxies.engine.shadersPool.addShader("ColorAddPass");
 
     galaxies.passes.indexes.warpBubble = galaxies.engine.composerStack.addPass("WarpBubblePass", false, {progression: 0});
 
     galaxies.passes.indexes.focus = galaxies.engine.composerStack.addPass("ZoomBlurPass", false, {strength: 0});
 
     galaxies.passes.indexes.vignette = galaxies.engine.composerStack.addPass("VignettePass", false, {amount: 0});
+
+    galaxies.passes.indexes.colorAdd = galaxies.engine.composerStack.addPass("ColorAddPass", false, {amount: 0});
   } // init
   
   var showFireworks = function( position ) {
@@ -891,6 +924,26 @@ galaxies.fx = (function() {
       emitter.enable();
       
     }
+
+    planetExplosion.sprite.visible = true;
+    planetExplosion.spriteSheet.play();
+
+    var passes = galaxies.passes;
+
+    galaxies.engine.composerStack.enablePass(passes.indexes.colorAdd);
+
+    passes.colorAdd = galaxies.engine.composerStack.passItems[passes.indexes.colorAdd].pass;
+
+    passes.colorAdd.params.amount = 0.0;
+
+    createjs.Tween.get(passes.colorAdd.params)
+        .to({amount: 0.4}, 250)
+        .to({amount: 0.0}, 750)
+        .call(function () {
+          galaxies.engine.composerStack.disablePass(passes.indexes.colorAdd);
+
+          passes.colorAdd = null;
+        });
     
     // pose lux
     galaxies.engine.player.die();
@@ -981,6 +1034,14 @@ galaxies.fx = (function() {
         toonExplosion.sprite.visible = false;
       }
     });
+
+    if (planetExplosion.sprite.visible) {
+      planetExplosion.spriteSheet.update(delta);
+
+      if (!planetExplosion.spriteSheet.isPlaying()) {
+        planetExplosion.sprite.visible = false;
+      }
+    }
     
     // lux flying away
     // planet.parent is used to test if planet exploded to prevent Lux from flying away from a won game.

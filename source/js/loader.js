@@ -143,7 +143,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'shieldgradient', src: 'gradients/shield.png' },
     { id: 'spreadgradient', src: 'gradients/spread.png' },
     { id: 'stargradient', src: 'gradients/star.png' },
-    { id: 'toonexplosion', src: 'sprites/game_fire_explosion.png' }
+    { id: 'toonexplosion', src: 'sprites/game_fire_explosion.png' },
+    { id: 'planetexplosion', src: 'sprites/game_over_explosion.png' }
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;
