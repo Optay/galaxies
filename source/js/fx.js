@@ -141,7 +141,7 @@ galaxies.fx = (function() {
 
     sprite = new THREE.Mesh(new THREE.PlaneGeometry(spritePhysicalSize.x, spritePhysicalSize.y), mat);
     sprite.up.set(0, 0, 1);
-    sprite.visible = false;
+
     galaxies.engine.rootObject.add(sprite);
 
     return {
@@ -211,6 +211,8 @@ galaxies.fx = (function() {
 
     gradients.shield = new THREE.Texture(galaxies.queue.getResult('shieldgradient'));
     gradients.shield.needsUpdate = true;
+
+    galaxies.engine.render();
 
     // Rubble objects
     // plain
