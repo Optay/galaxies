@@ -221,31 +221,14 @@ galaxies.fx = (function() {
         new THREE.Vector2(4096, 4096), 53);
 
     for (i = 0; i < fireExplosionPoolSize; ++i) {
-      var explosionTex = new THREE.Texture(galaxies.queue.getResult('toonexplosion')),
-          explosionSheet = new galaxies.SpriteSheet(explosionTex, frames, 30),
-          explosionMat = new THREE.SpriteMaterial({
-            map: explosionTex,
-            rotation: 0,
-            shading: THREE.FlatShading,
-            depthTest: false,
-            depthWrite: false,
-            transparent: true
-          }),
-          explosionSprite = new THREE.Sprite(explosionMat);
-
-      explosionTex.needsUpdate = true;
-
-      galaxies.engine.rootObject.add(explosionSprite);
-
-      explosionSprite.scale.set(3, 3, 3);
-
-      fireExplosionPool.push({
-        texture: explosionTex,
-        spriteSheet: explosionSheet,
-        material: explosionMat,
-        sprite: explosionSprite
-      });
+      fireExplosionPool.push(createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames));
     }
+
+    gradients.fire = new THREE.Texture(galaxies.queue.getResult('firegradient'));
+    gradients.fire.needsUpdate = true;
+
+    gradients.blueFire = new THREE.Texture(galaxies.queue.getResult('bluefiregradient'));
+    gradients.blueFire.needsUpdate = true;
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(2048, 4096), 25);
@@ -1024,15 +1007,7 @@ galaxies.fx = (function() {
     });
 
     fireExplosionPool.forEach(function (toonExplosion) {
-      if (!toonExplosion.sprite.visible) {
-        return;
-      }
-
-      toonExplosion.spriteSheet.update(delta);
-
-      if (!toonExplosion.spriteSheet.isPlaying()) {
-        toonExplosion.sprite.visible = false;
-      }
+      updateSprite(toonExplosion, cameraRootPos, delta);
     });
 
     if (planetExplosion.sprite.visible) {
@@ -1246,21 +1221,27 @@ galaxies.fx = (function() {
   };
 
   var showBlueExplosion = function (position) {
-    blueExplosionGroup.triggerPoolEmitter(1, position);
+    //blueExplosionGroup.triggerPoolEmitter(1, position);
+    explode(position, "blueFire");
   };
 
-  var explode = function (position) {
-    var toonExplosion = fireExplosionPool[fireExplosionIndex];
+  var explode = function (position, style) {
+    var toonExplosion = fireExplosionPool[fireExplosionIndex],
+        grad = gradients[style];
 
     if (++fireExplosionIndex >= fireExplosionPoolSize) {
       fireExplosionIndex = 0;
     }
+    
+    if (!grad) {
+      grad = gradients.fire;
+    }
 
     toonExplosion.spriteSheet.play();
-
+    toonExplosion.material.uniforms.tGradient.value = grad;
     toonExplosion.sprite.visible = true;
     toonExplosion.sprite.position.copy(position);
-    toonExplosion.material.rotation = galaxies.utils.flatAngle(position) + Math.PI;
+    toonExplosion.rotation = galaxies.utils.flatAngle(position) + Math.PI;
   };
 
   return {
