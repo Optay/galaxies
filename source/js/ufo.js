@@ -378,7 +378,7 @@ this.galaxies.Ufo = function() {
       this.leave();
 
       galaxies.engine.showCombo( this.points, 1, this.object );
-      galaxies.fx.explode(this.object.position);
+      galaxies.fx.explode(this.rootPosition);
     } else {
       // waggle
       this.waggler.rotation.z = Math.PI/4;
