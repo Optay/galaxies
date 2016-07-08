@@ -44,7 +44,8 @@ window.addEventListener("load", function(event) {
     shield: function() { galaxies.engine.setPowerup('shield'); },
     timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
     addUFO: galaxies.engine.addUfo,
-    invulnerable: false
+    invulnerable: false,
+    bossMode: false
   };
 
   datgui.add(userValues, 'pluto' );
@@ -66,11 +67,18 @@ window.addEventListener("load", function(event) {
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
   invulnerableController.onChange( setInvulnerable );
+
+  var bossModeController = datgui.add(userValues, 'bossMode');
+  bossModeController.onChange( setBossMode );
   
   function setInvulnerable( newValue ) {
     galaxies.engine.invulnerable = newValue;
   }
-  
+
+  function setBossMode( newValue ) {
+    galaxies.engine.bossMode = newValue;
+  }
+
   function setLevel( newLevel ) {
     galaxies.engine.levelNumber = newLevel;
     

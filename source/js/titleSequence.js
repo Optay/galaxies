@@ -170,7 +170,7 @@ galaxies.TitleSequence = function() {
 
   
   var activate = function() {
-    galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.bloom);
+    //galaxies.engine.composerStack.disablePass(galaxies.passes.indexes.bloom);
 
     galaxies.engine.rootObject.add( titleRoot );
     
@@ -197,7 +197,7 @@ galaxies.TitleSequence = function() {
   
   
   var deactivate = function() {
-    galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.bloom);
+    //galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.bloom);
 
     galaxies.engine.rootObject.remove( titleRoot );
     

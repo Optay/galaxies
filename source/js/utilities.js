@@ -311,6 +311,20 @@ galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, 
     return frames;
 };
 
+galaxies.utils.makeSprite = function (texName, transparent, depthTest, depthWrite) {
+    var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
+        mat = new THREE.SpriteMaterial({
+            map: tex,
+            transparent: typeof transparent === "boolean" ? transparent  : false,
+            depthTest: typeof depthTest === "boolean" ? depthTest  : true,
+            depthWrite: typeof depthWrite === "boolean" ? depthWrite  : true
+        });
+
+    tex.needsUpdate = true;
+
+    return new THREE.Sprite(mat);
+};
+
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
 // May not be needed in latest version of SPE, but needs to be checked before it can be removed.

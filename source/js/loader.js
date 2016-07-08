@@ -146,7 +146,19 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'firegradient', src: 'gradients/fire.png' },
     { id: 'bluefiregradient', src: 'gradients/blueFire.png' },
     { id: 'toonexplosion', src: 'sprites/game_fire_explosion.png' },
-    { id: 'planetexplosion', src: 'sprites/game_over_explosion.png' }
+    { id: 'planetexplosion', src: 'sprites/game_over_explosion.png' },
+    { id: 'bosstop', src: 'sprites/boss_1_top_no_eyes.png' },
+    { id: 'bossbottom', src: 'sprites/boss_2_bottom.png' },
+    { id: 'bossmiddle', src: 'sprites/boss_3_middle.png' },
+    { id: 'bosseye1', src: 'sprites/boss_eye_1.png' },
+    { id: 'bosseye2', src: 'sprites/boss_eye_2.png' },
+    { id: 'bosseye3', src: 'sprites/boss_eye_3.png' },
+    { id: 'bosseye4', src: 'sprites/boss_eye_4.png' },
+    { id: 'bosseyeball', src: 'sprites/boss_eyeball.png' },
+    { id: 'bosseyelid1', src: 'sprites/boss_eyelid_1.png' },
+    { id: 'bosseyelid2', src: 'sprites/boss_eyelid_2.png' },
+    { id: 'bosseyelid3', src: 'sprites/boss_eyelid_3.png' },
+    { id: 'bosseyelid4', src: 'sprites/boss_eyelid_4.png' }
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;
