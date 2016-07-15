@@ -49,6 +49,7 @@ galaxies.Projectile.prototype.reset = function () {
   this.alreadyCollidedWith = [];
   this.lastPos = new THREE.Vector3();
   this.lifeTimer = 0;
+  this.inScene = false;
 };
 
 galaxies.Projectile.prototype.setModel = function (model) {
@@ -106,6 +107,8 @@ galaxies.Projectile.prototype.addToScene = function () {
   galaxies.engine.rootObject.add(this.object);
   galaxies.engine.planeSweep.add(this);
 
+  this.inScene = true;
+
   this.particleEmitters.forEach(function (emitter) {
     emitter.enable();
   });
@@ -114,7 +117,7 @@ galaxies.Projectile.prototype.addToScene = function () {
 galaxies.Projectile.prototype.updatePosition = function (newAngle) {
   var newStart = new THREE.Vector3(-Math.sin(newAngle), Math.cos(newAngle), 0);
   newStart.multiplyScalar(galaxies.engine.PROJ_START_Y);
-
+  
   var lookAngle = newAngle + this.lookOffset;
   var distanceFromOldStart = galaxies.utils.flatLength(this.object.position.clone().sub(this.startPos));
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0);
@@ -158,6 +161,8 @@ galaxies.Projectile.prototype.destroy = function () {
 galaxies.Projectile.prototype.remove = function () {
   galaxies.utils.removeConnectedShotGroup(this);
 
+  this.inScene = false;
+
   if (this.object.parent != null) {
     this.object.parent.remove(this.object);
   }
@@ -181,6 +186,10 @@ galaxies.Projectile.prototype.remove = function () {
 };
 
 galaxies.Projectile.prototype.update = function (delta) {
+  if (!this.inScene || this.isExpired) {
+    return;
+  }
+
   this.lastPos.copy(this.object.position);
 
   if (galaxies.utils.flatLengthSqr(this.lastPos) < Math.pow(galaxies.engine.PROJ_START_Y + 1, 2)) {
@@ -205,7 +214,7 @@ galaxies.Projectile.prototype.update = function (delta) {
   }
 };
 
-galaxies.Projectile.prototype.PROJECTILE_SPEED = 3.0; // 3.0 in original
+galaxies.Projectile.prototype.PROJECTILE_SPEED = 0; // Set by initial call to window resize
 galaxies.Projectile.prototype.PROJECTILE_LIFE = 0; // This will be set by initial call to window resize
 
 

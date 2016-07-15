@@ -61,7 +61,10 @@ galaxies.audio.sounds = {
   'starcollect': ['starcollect'],
   'powerupcollect': ['powerupcollect'],
   'aliengrowl': ['aliengrowl'],
-  'tripleraquet': ['tripleraquet']
+  'tripleraquet': ['tripleraquet'],
+  'monsterouch': ['monsterouch1'],
+  'monsterroar': ['monsterroar1'],
+  'unleashthebeast': ['unleashthebeast']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.

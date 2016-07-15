@@ -121,8 +121,10 @@ galaxies.Obstacle.prototype.update = function( delta ) {
   var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
   speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) );
 
+  speedScale *= 7.5 * galaxies.engine.CONE_SLOPE;
+
   var distanceToPlanet = this.radius - galaxies.engine.PLANET_DISTANCE,
-      charHeight = galaxies.engine.CHARACTER_HEIGHT * 0.1;
+      charHeight = galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.CONE_SLOPE * 0.3);
 
   if (distanceToPlanet < charHeight) {
     speedScale *= 4;
@@ -145,20 +147,15 @@ galaxies.Obstacle.prototype.update = function( delta ) {
     this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
     this.velocityRadial = Math.max( -this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial );
 
-    var outerCheck= galaxies.engine.PLANET_DISTANCE + this.hitThreshold * 0.8,
-        innerCheck = galaxies.engine.shielded ? galaxies.engine.SHIELD_RADIUS - 0.8 : galaxies.engine.PLANET_DISTANCE;
+    var innerDist = galaxies.engine.shielded ? (galaxies.engine.SHIELD_RADIUS - galaxies.engine.PLANET_DISTANCE) : 0;
 
-    if (innerCheck > outerCheck) {
-      innerCheck = outerCheck;
-    }
-    
-    if ( this.radius <= outerCheck ) {
+    if ( distanceToPlanet <= charHeight ) {
       // This order is very important as hitPlayer may trigger game over which
       // must override the obstacle's state.
 
       var angle = Math.atan2(-this.object.position.x, this.object.position.y);
 
-      if (this.radius <= innerCheck || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
+      if (distanceToPlanet <= innerDist || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
         this.splode(false);
         galaxies.engine.hitPlayer();
         break;

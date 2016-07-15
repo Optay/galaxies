@@ -214,13 +214,38 @@ galaxies.utils.rootPosition = function( object ) {
 
 /// Set z-position for objects to map x-y plane to a cone.
 galaxies.utils.conify = function( object ) {
-  object.position.setZ( galaxies.utils.getConifiedDepth( object.position ) );
+  object.position.setZ(galaxies.utils.getConifiedDepth(object.position));
 }
 galaxies.utils.getConifiedDepth = function( position ) {
   // linear
   return ( (galaxies.utils.flatLength(position)/galaxies.engine.CONE_SLOPE) );
   // parabolic
 }
+
+galaxies.utils.projectToCone = function (rootPosition) {
+    var camPos = galaxies.engine.camera.position,
+        dV = rootPosition.clone().sub(camPos),
+        tan2Theta = galaxies.engine.CONE_SLOPE * galaxies.engine.CONE_SLOPE,
+        a = dV.x * dV.x + dV.y * dV.y - dV.z * dV.z * tan2Theta,
+        b = 2 * (camPos.x * dV.x + camPos.y * dV.y - camPos.z * dV.z * tan2Theta),
+        c = camPos.x * camPos.x + camPos.y * camPos.y - camPos.z * camPos.z * tan2Theta,
+        underRoot = b * b - 4 * a * c,
+        pmPart, scalar;
+
+    if (underRoot < 0) {
+        return new THREE.Vector3();
+    }
+
+    pmPart = Math.sqrt(underRoot);
+
+    scalar = (-b + pmPart) / (2 * a);
+
+    if (scalar < 0) {
+        scalar = (-b - pmPart) / (2 * a);
+    }
+
+    return camPos.clone().add(dV.multiplyScalar(scalar));
+};
 
 galaxies.utils.calculateRoundScore = function (roundScore, accuracy, numStars) {
     return Math.round(roundScore * (1 + accuracy) * Math.pow(2, numStars));

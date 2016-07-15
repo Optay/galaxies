@@ -93,8 +93,10 @@ Object.defineProperty(galaxies.engine, "bossMode", {
 
     if (value) {
       galaxies.engine.boss.reset();
+      galaxies.engine.CONE_ANGLE = 40 * Math.PI / 360;
     } else {
       galaxies.engine.boss.disable();
+      galaxies.engine.CONE_ANGLE = 15 * Math.PI / 360;
     }
   }
 });
@@ -120,6 +122,26 @@ galaxies.engine.speedScale = 1;
 // "constants"
 // Some of these are fixed, some are dependent on window size and are recalculated in 
 // the window resize function.
+Object.defineProperty(galaxies.engine, 'CONE_ANGLE', {
+  get: function () {
+    return galaxies.engine._coneAngle;
+  },
+  set: function (value) {
+    galaxies.engine._coneAngle = value;
+
+    galaxies.engine.CONE_SLOPE = Math.tan(value);
+
+    galaxies.engine.INV_CONE_SLOPE = 1 - value;
+
+    galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS +
+        (galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.INV_CONE_SLOPE * 0.14));
+
+    if (galaxies.engine.camera) {
+      galaxies.engine.updateView();
+    }
+  }
+});
+
 galaxies.engine.CONE_ANGLE = 15 * Math.PI/360;//11.4 * Math.PI/360; // Half-angle of the interior of the cone
 
 galaxies.engine.CAMERA_DISTANCES = [30, 40, 50];
@@ -146,9 +168,7 @@ galaxies.engine.powerupMessagesShown = {};
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 4.5;
 galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.62 * galaxies.engine.CHARACTER_HEIGHT/2 );
-galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS + (galaxies.engine.CHARACTER_HEIGHT * 0.08);//2;
 
-galaxies.engine.CONE_SLOPE = Math.tan( galaxies.engine.CONE_ANGLE );
 galaxies.engine.CAMERA_SLOPE = Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE*Math.PI/360 );
 galaxies.engine.VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * galaxies.engine.CAMERA_SLOPE/ (galaxies.engine.CONE_SLOPE + galaxies.engine.CAMERA_SLOPE);
 
@@ -244,11 +264,13 @@ galaxies.engine.updateView = function() {
   // Sets active play area by diagonal window size
   var diagonal = Math.sqrt( Math.pow(galaxies.engine.camera.aspect,2) + 1 );
   var cameraSlope = diagonal * Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE * Math.PI/360 );
-  
+
   galaxies.engine.VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * galaxies.engine.CAMERA_SLOPE/ (galaxies.engine.CONE_SLOPE + galaxies.engine.CAMERA_SLOPE);
   galaxies.engine.OBSTACLE_VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * cameraSlope/ (galaxies.engine.CONE_SLOPE + cameraSlope);
+
+  galaxies.Projectile.prototype.PROJECTILE_SPEED = galaxies.engine.CONE_SLOPE * 23; // 3.0 in original
   galaxies.Projectile.prototype.PROJECTILE_LIFE = (galaxies.engine.OBSTACLE_VISIBLE_RADIUS - galaxies.engine.PROJ_START_Y)/galaxies.Projectile.prototype.PROJECTILE_SPEED + 0.1;
-  
+
   galaxies.engine.OBSTACLE_START_DISTANCE = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.1;//1.2;
 }
 
@@ -564,12 +586,22 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 }
 
 galaxies.engine.nextLevel = function() {
+  if (!galaxies.engine.inTutorial && galaxies.engine.planetNumber % 2 === 0) {
+    if (galaxies.engine.bossMode) {
+      galaxies.engine.bossMode = false;
+    } else {
+      galaxies.engine.bossMode = true;
+
+      return;
+    }
+  }
+
   if (galaxies.engine.slomoDuration > 0.5) {
     galaxies.engine.slomoDuration = 0.5;
   }
 
   galaxies.engine.levelNumber++;
-  
+
   galaxies.engine.clearLevel();
 
   if (galaxies.engine.roundNumber === 1) {
@@ -1414,7 +1446,7 @@ galaxies.engine.update = function() {
   if ( !galaxies.engine.isGameOver && !galaxies.generator.isLevelComplete() ) {
     galaxies.generator.tick( scaledDelta );
   } else if (!galaxies.engine.inTutorial) {
-    galaxies.engine.levelComplete = true;
+    galaxies.engine.levelComplete = galaxies.engine.bossMode ? galaxies.engine.boss.state === "inactive" : true;
   }
   
   if ( galaxies.engine.levelRunning &&
