@@ -144,11 +144,11 @@ Object.defineProperty(galaxies.engine, 'CONE_ANGLE', {
 
 galaxies.engine.CONE_ANGLE = 15 * Math.PI/360;//11.4 * Math.PI/360; // Half-angle of the interior of the cone
 
-galaxies.engine.CAMERA_DISTANCES = [30, 40, 50];
+galaxies.engine.CAMERA_DISTANCES = [30, 40, 50, 50];
 galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[0]; // 40 is original value
 
 galaxies.engine.CAMERA_VIEW_ANGLE = 45; // Will be applied to smallest screen dimension, horizontal or vertical. TODO
-galaxies.engine.ROUNDS_PER_PLANET = 3; // 3
+galaxies.engine.ROUNDS_PER_PLANET = 4; // 3
 
 galaxies.engine.PLANET_DISTANCE = 1.25;
 
@@ -586,7 +586,7 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 }
 
 galaxies.engine.nextLevel = function() {
-  if (!galaxies.engine.inTutorial && galaxies.engine.planetNumber % 2 === 0 && galaxies.engine.roundNumber === 3) {
+  if (galaxies.engine.roundNumber === 4) {
     if (galaxies.engine.bossMode) {
       galaxies.engine.bossMode = false;
     } else {

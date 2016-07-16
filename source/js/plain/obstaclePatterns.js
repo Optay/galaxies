@@ -54,6 +54,8 @@ galaxies.generator.rawPatterns = [
         { time: 32, startAngle: 0, endAngle: 360, type: 'star', random: true },
         { time: 32, duration: 8, startAngle: 90, endAngle: 450, quantity: 8, type: 'asteroid' },
     ],
+    [ // Pluto 1-4
+    ],
     [ // Neptune 2-1
         { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroidice', random: true },
         { time: 6, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: ['asteroidice 90', 'asteroid 10'], random: true },
@@ -94,6 +96,8 @@ galaxies.generator.rawPatterns = [
         { time: 40, duration: 0, startAngle: 180, endAngle: 270, quantity: 5, type: 'asteroid' }, // arc
         { time: 42, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 43, duration: 8, startAngle: 90, endAngle: -270, quantity: 8, type: 'asteroid' }, // spiral
+    ],
+    [ // Neptune 2-4
     ],
     [ // Uranus 3-1
         { time: 0, duration: 8, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroidrad', random: true },
@@ -159,6 +163,8 @@ galaxies.generator.rawPatterns = [
         { time: 54, type: 'ufo' },
         { time: 54.5, duration: 0, quantity: 1, type: 'powerup', powerup: 'clone' },
     ],
+    [ // Uranus 3-4
+    ],
     [ // Saturn 4-1
         { time: 0, duration: 10, startAngle: 0, endAngle: 360, quantity: 10, type: 'miniUFO', random: true },
         { time: 4, duration: 0, startAngle: 240, endAngle: 360, quantity: 3, type: 'asteroidmetal', random: true }, // SPIKY
@@ -221,6 +227,8 @@ galaxies.generator.rawPatterns = [
         { time: 72, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 74, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroid 0', 'asteroidice 70', 'asteroidrad 30'], random: true },
     ],
+    [ // Saturn 1-4
+    ],
     [
         // test 1
 
@@ -265,6 +273,8 @@ galaxies.generator.rawPatterns = [
 
 
         { time: 9, startAngle: -135, type: 'star' }
+    ],
+    [ // test 4
     ],
     /*
      [
