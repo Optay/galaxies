@@ -40,14 +40,23 @@ galaxies.BossMonster.prototype = {
     },
 
     hitEye: function (eye) {
+        var scale = eye.hitThreshold * 1.5;
+
         eye.eyeball.visible = false;
 
-        // TODO: Pop out eye, splatter effect
+        this.detachedEyeball.visible = true;
 
-        if (eye.rootPosition.x < this.object.position.x) {
-            //
-        } else {
-            //
+        galaxies.fx.explode(eye.rootPosition.clone().add(new THREE.Vector3(0, 0, 0.02)), "blood", 1.5);
+
+        this.detachedEyeball.position.copy(eye.rootPosition);
+        this.detachedEyeball.position.z += 0.01;
+        this.detachedEyeball.scale.set(scale, scale, scale);
+
+        this.eyeVel.set(-eye.hitThreshold * 9.7, eye.hitThreshold * 8.4, 0);
+
+        if (eye.rootPosition.x > this.object.position.x) {
+            this.detachedEyeball.scale.x = -this.detachedEyeball.scale.x;
+            this.eyeVel.x = -this.eyeVel.x;
         }
 
         this.ouchAudio.startSound();
@@ -71,14 +80,15 @@ galaxies.BossMonster.prototype = {
                 galaxies.utils.makeSprite('bosseye1', true),
                 galaxies.utils.makeSprite('bosseye2', true),
                 galaxies.utils.makeSprite('bosseye3', true),
-                galaxies.utils.makeSprite('bosseye4', true),
+                galaxies.utils.makeSprite('bosseye4', true)
             ],
             eyelidSprites = [
                 galaxies.utils.makeSprite('bosseyelid1', true),
                 galaxies.utils.makeSprite('bosseyelid2', true),
                 galaxies.utils.makeSprite('bosseyelid3', true),
                 galaxies.utils.makeSprite('bosseyelid4', true)
-            ];
+            ],
+            detachedEyeball = galaxies.utils.makeSprite('bosseyeball', true);
 
         bottomSprite.scale.set(3.44, 2.09, 1);
         middleSprite.scale.set(2.19, 3.92, 1);
@@ -126,6 +136,15 @@ galaxies.BossMonster.prototype = {
         this.bottomSprite = bottomSprite;
         this.topObject = topObject;
 
+        detachedEyeball.scale.set(0.96, 0.91);
+        detachedEyeball.material.side = THREE.DoubleSide;
+
+        this.detachedEyeball = new THREE.Object3D();
+        this.detachedEyeball.add(detachedEyeball);
+        this.detachedEyeball.visible = false;
+
+        galaxies.engine.rootObject.add(this.detachedEyeball);
+
         this.eyes = [];
 
         for (var i = 0; i < 4; ++i) {
@@ -171,6 +190,8 @@ galaxies.BossMonster.prototype = {
         this.targetXPos = 0.5;
         this.xVel = 0;
 
+        this.eyeVel = new THREE.Vector3();
+
         this.asteroidTimer = 0;
 
         this.updateCoordinates();
@@ -197,6 +218,10 @@ galaxies.BossMonster.prototype = {
             this.updateMovement(delta);
 
             this.updateCollisions(delta);
+        }
+
+        if (this.detachedEyeball.visible) {
+            this.updateDetachedEye(delta);
         }
     },
 
@@ -283,13 +308,36 @@ galaxies.BossMonster.prototype = {
         this.eyes.forEach(function (eye) {
             var trueSize = eye.eyeball.scale.clone().multiplyScalar(scale);
 
-            eye.hitThreshold = Math.max(trueSize.x, trueSize.y);
+            eye.hitThreshold = Math.max(trueSize.x, trueSize.y, scale / 3);
         });
 
         this.object.scale.set(scale, scale, scale);
 
         this.updateSpriteX(this.xPosition);
         this.updateSpriteY(this.yPosition);
+    },
+
+    updateDetachedEye: function (delta) {
+        var prevPos = this.detachedEyeball.position.clone(),
+            diff;
+
+        this.detachedEyeball.position.add(this.eyeVel.clone().multiplyScalar(delta));
+
+        diff = this.detachedEyeball.position.clone().sub(prevPos);
+
+        this.eyeVel.y -= this.object.scale.y * 22 * delta;
+
+        this.detachedEyeball.rotation.z = Math.atan2(diff.y, diff.x);
+
+        if (this.eyeVel.x < 0) {
+            this.detachedEyeball.rotation.z += 3 * Math.PI / 4;
+        } else {
+            this.detachedEyeball.rotation.z += Math.PI / 4;
+        }
+
+        if (this.detachedEyeball.position.y + this.detachedEyeball.scale.y < this.bottomEdge) {
+            this.detachedEyeball.visible = false;
+        }
     },
 
     updateEntering: function (delta) {

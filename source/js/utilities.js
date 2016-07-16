@@ -338,16 +338,17 @@ galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, 
 
 galaxies.utils.makeSprite = function (texName, transparent, depthTest, depthWrite) {
     var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
-        mat = new THREE.SpriteMaterial({
+        mat = new THREE.MeshBasicMaterial({
             map: tex,
             transparent: typeof transparent === "boolean" ? transparent  : false,
             depthTest: typeof depthTest === "boolean" ? depthTest  : true,
             depthWrite: typeof depthWrite === "boolean" ? depthWrite  : true
-        });
+        }),
+        geo = new THREE.PlaneGeometry(1, 1);
 
     tex.needsUpdate = true;
 
-    return new THREE.Sprite(mat);
+    return new THREE.Mesh(geo, mat);
 };
 
 // Patch SPE to allow negative speeds to make sphere particles move inwards.

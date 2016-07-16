@@ -230,6 +230,9 @@ galaxies.fx = (function() {
     gradients.blueFire = new THREE.Texture(galaxies.queue.getResult('bluefiregradient'));
     gradients.blueFire.needsUpdate = true;
 
+    gradients.blood = new THREE.Texture(galaxies.queue.getResult('bloodgradient'));
+    gradients.blood.needsUpdate = true;
+
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(2048, 4096), 25);
 
@@ -1225,9 +1228,11 @@ galaxies.fx = (function() {
     explode(position, "blueFire");
   };
 
-  var explode = function (position, style) {
+  var explode = function (position, style, scale) {
     var toonExplosion = fireExplosionPool[fireExplosionIndex],
         grad = gradients[style];
+
+    scale = scale || 1;
 
     if (++fireExplosionIndex >= fireExplosionPoolSize) {
       fireExplosionIndex = 0;
@@ -1241,6 +1246,7 @@ galaxies.fx = (function() {
     toonExplosion.material.uniforms.tGradient.value = grad;
     toonExplosion.sprite.visible = true;
     toonExplosion.sprite.position.copy(position);
+    toonExplosion.sprite.scale.set(scale, scale, scale);
     toonExplosion.rotation = galaxies.utils.flatAngle(position) + Math.PI;
   };
 

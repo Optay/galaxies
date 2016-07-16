@@ -155,6 +155,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'bosseye3', src: 'sprites/boss_eye_3.png' },
     { id: 'bosseye4', src: 'sprites/boss_eye_4.png' },
     { id: 'bosseyeball', src: 'sprites/boss_eyeball.png' },
+    { id: 'bloodgradient', src: 'gradients/blood.png' },
     { id: 'bosseyelid1', src: 'sprites/boss_eyelid_1.png' },
     { id: 'bosseyelid2', src: 'sprites/boss_eyelid_2.png' },
     { id: 'bosseyelid3', src: 'sprites/boss_eyelid_3.png' },

@@ -93,7 +93,7 @@ Object.defineProperty(galaxies.engine, "bossMode", {
 
     if (value) {
       galaxies.engine.boss.reset();
-      galaxies.engine.CONE_ANGLE = 40 * Math.PI / 360;
+      galaxies.engine.CONE_ANGLE = 20 * Math.PI / 360;
     } else {
       galaxies.engine.boss.disable();
       galaxies.engine.CONE_ANGLE = 15 * Math.PI / 360;
@@ -586,7 +586,7 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 }
 
 galaxies.engine.nextLevel = function() {
-  if (!galaxies.engine.inTutorial && galaxies.engine.planetNumber % 2 === 0) {
+  if (!galaxies.engine.inTutorial && galaxies.engine.planetNumber % 2 === 0 && galaxies.engine.roundNumber === 3) {
     if (galaxies.engine.bossMode) {
       galaxies.engine.bossMode = false;
     } else {
