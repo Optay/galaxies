@@ -90,6 +90,19 @@ window.addEventListener("load", function(event) {
   if (isDev) {
     //galaxies.engine.invulnerable = true;
     //galaxies.engine.POWERUP_CHARGED = 100;
+    document.addEventListener("keydown", function (e) {
+      switch (e.keyCode) {
+        case 32:
+          if (galaxies.debug.datgui.domElement.classList.contains("hidden")) {
+            galaxies.debug.stats.domElement.classList.remove("hidden");
+            galaxies.debug.datgui.domElement.classList.remove("hidden");
+          } else {
+            galaxies.debug.stats.domElement.classList.add("hidden");
+            galaxies.debug.datgui.domElement.classList.add("hidden");
+          }
+          break;
+      }
+    });
   } else {
     galaxies.debug.stats.domElement.classList.add("hidden");
     galaxies.debug.datgui.domElement.classList.add("hidden");
