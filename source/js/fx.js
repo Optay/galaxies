@@ -234,6 +234,9 @@ galaxies.fx = (function() {
     gradients.blood = new THREE.Texture(galaxies.queue.getResult('bloodgradient'));
     gradients.blood.needsUpdate = true;
 
+    gradients.white = new THREE.Texture(galaxies.queue.getResult('whitegradient'));
+    gradients.white.needsUpdate = true;
+
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(2048, 4096), 25);
 
@@ -806,33 +809,40 @@ galaxies.fx = (function() {
     effect.rotation = galaxies.utils.flatAngle(position);
   };
   
-  var showHit = function( position, type ) {
+  var showHit = function( position, type) {
+    var scale = 1;
+
     switch (type) {
       case "spread":
       case "clone":
       case "golden":
-        var poof = explosionPoofPool[explosionPoofIndex];
-
-        if (++explosionPoofIndex >= projHitPoolSize) {
-          explosionPoofIndex = 0;
-        }
-
-        poof.spriteSheet.play();
-        poof.material.uniforms.tGradient.value = gradients[type];
-        poof.sprite.visible = true;
-        poof.sprite.position.copy(position);
-        poof.rotation = galaxies.utils.flatAngle(position) + Math.PI;
         break;
       default:
-        var particleGroup = projHitPool[ projHitIndex ];
+        type = "white";
+        scale = 0.7;
+
+        /*var particleGroup = projHitPool[ projHitIndex ];
         projHitIndex ++;
         if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
 
         particleGroup.mesh.position.copy( position );
         particleGroup.mesh.lookAt( galaxies.engine.rootObject.position );
-        particleGroup.triggerPoolEmitter(1);
+        particleGroup.triggerPoolEmitter(1);*/
         break;
     }
+
+    var poof = explosionPoofPool[explosionPoofIndex];
+
+    if (++explosionPoofIndex >= projHitPoolSize) {
+      explosionPoofIndex = 0;
+    }
+
+    poof.spriteSheet.play();
+    poof.material.uniforms.tGradient.value = gradients[type];
+    poof.sprite.visible = true;
+    poof.sprite.position.copy(position);
+    poof.sprite.scale.set(scale, scale, scale);
+    poof.rotation = galaxies.utils.flatAngle(position) + Math.PI;
   };
   
   var showRubble = function( type, position, velocity ) {
