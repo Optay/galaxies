@@ -226,7 +226,8 @@ galaxies.fx = (function() {
           shading: THREE.FlatShading,
           depthTest: false,
           depthWrite: false,
-          transparent: true
+          transparent: true,
+          blending: THREE.AdditiveBlending
         }),
         planetExplodeSprite = new THREE.Sprite(planetExplodeMat);
 
