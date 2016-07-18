@@ -136,7 +136,8 @@ galaxies.fx = (function() {
           shading: THREE.FlatShading,
           depthWrite: false,
           depthTest: false,
-          transparent: true
+          transparent: true,
+          blending: THREE.AdditiveBlending
         }),
         sprite;
 
