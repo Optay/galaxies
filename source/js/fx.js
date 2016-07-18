@@ -799,7 +799,7 @@ galaxies.fx = (function() {
         break;
       default:
         type = "white";
-        scale = 0.7;
+        scale = 0.5;
 
         /*var particleGroup = projHitPool[ projHitIndex ];
         projHitIndex ++;
