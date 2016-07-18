@@ -259,7 +259,7 @@ this.galaxies.Ufo = function() {
         createjs.Tween.get(laserBeam).wait(1000).call( function() {
           new galaxies.audio.PositionedSound({
             source: galaxies.audio.getSound('ufoshoot'),
-            position: galaxies.utils.rootPosition(this.object),
+            position: this.rootPosition,
             baseVolume: 1.5,
             loop: false
           });
@@ -274,7 +274,11 @@ this.galaxies.Ufo = function() {
           laserOrient.rotation.z = (Math.round( Math.random() )* 2 - 1) * Math.PI/16;
           
           if ( step > 2 ) {
+            laserOrient.rotation.z = 0;
+
             galaxies.engine.hitPlayer();
+
+            galaxies.fx.showHit(new THREE.Vector3(Math.cos(anchor.rotation.z), Math.sin(anchor.rotation.z), 0).multiplyScalar(galaxies.engine.PLANET_DISTANCE), "green");
 
             new galaxies.audio.PositionedSound({
               source: galaxies.audio.getSound('trunkfordlaugh'),
@@ -399,7 +403,7 @@ this.galaxies.Ufo = function() {
     // play sound
     new galaxies.audio.PositionedSound({
       source: galaxies.audio.getSound('ufohit'),
-      position: galaxies.utils.rootPosition(this.object),
+      position: this.rootPosition,
       baseVolume: 1.4,
       loop: false
     });

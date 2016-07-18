@@ -193,14 +193,13 @@ galaxies.fx = (function() {
       explosionPoofPool.push(createGradatedSprite('explosionpoof', new THREE.Vector2(2.5, 2.5), frames));
     }
 
-    gradients.spread = new THREE.Texture(galaxies.queue.getResult('spreadgradient'));
-    gradients.spread.needsUpdate = true;
+    var gradientNames = ["spread", "clone", "golden", "heart", "star", "shield", "fire", "blueFire", "blood", "white",
+      "green"];
 
-    gradients.clone = new THREE.Texture(galaxies.queue.getResult('clonegradient'));
-    gradients.clone.needsUpdate = true;
-
-    gradients.golden = new THREE.Texture(galaxies.queue.getResult('goldengradient'));
-    gradients.golden.needsUpdate = true;
+    gradientNames.forEach(function (name) {
+      gradients[name] = new THREE.Texture(galaxies.queue.getResult(name.toLowerCase() + "gradient"));
+      gradients[name].needsUpdate = true;
+    });
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(4096, 4096), 57);
@@ -209,33 +208,12 @@ galaxies.fx = (function() {
       collectEffectPool.push(createGradatedSprite('powerupcollecteffect', new THREE.Vector2(2.5, 2.5), frames));
     }
 
-    gradients.heart = new THREE.Texture(galaxies.queue.getResult('heartgradient'));
-    gradients.heart.needsUpdate = true;
-
-    gradients.star = new THREE.Texture(galaxies.queue.getResult('stargradient'));
-    gradients.star.needsUpdate = true;
-
-    gradients.shield = new THREE.Texture(galaxies.queue.getResult('shieldgradient'));
-    gradients.shield.needsUpdate = true;
-
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(4096, 4096), 53);
 
     for (i = 0; i < fireExplosionPoolSize; ++i) {
       fireExplosionPool.push(createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames));
     }
-
-    gradients.fire = new THREE.Texture(galaxies.queue.getResult('firegradient'));
-    gradients.fire.needsUpdate = true;
-
-    gradients.blueFire = new THREE.Texture(galaxies.queue.getResult('bluefiregradient'));
-    gradients.blueFire.needsUpdate = true;
-
-    gradients.blood = new THREE.Texture(galaxies.queue.getResult('bloodgradient'));
-    gradients.blood.needsUpdate = true;
-
-    gradients.white = new THREE.Texture(galaxies.queue.getResult('whitegradient'));
-    gradients.white.needsUpdate = true;
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(2048, 4096), 25);
@@ -816,6 +794,7 @@ galaxies.fx = (function() {
       case "spread":
       case "clone":
       case "golden":
+      case "green":
         break;
       default:
         type = "white";
@@ -949,7 +928,7 @@ galaxies.fx = (function() {
     new galaxies.audio.PositionedSound({
       source: galaxies.audio.getSound('planetsplode'),
       position: galaxies.engine.rootObject.position,
-      baseVolume: 16,
+      baseVolume: 12,
       loop: false
     });
     
@@ -1203,7 +1182,8 @@ galaxies.fx = (function() {
   };
 
   var showLaserHit = function (position) {
-    laserHitGroup.triggerPoolEmitter(1, position);
+    //laserHitGroup.triggerPoolEmitter(1, position);
+    showHit(position, "green");
   };
 
   var loseHeart = function (angle) {
