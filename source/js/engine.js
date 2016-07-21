@@ -413,7 +413,7 @@ galaxies.engine.initScene = function() {
     });
   }
   
-  galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
+  galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true, preserveDrawingBuffer: true});
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
   galaxies.engine.renderer.setSize( galaxies.engine.canvasWidth, galaxies.engine.canvasHeight );
   galaxies.engine.container.appendChild( galaxies.engine.renderer.domElement );

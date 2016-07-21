@@ -86,11 +86,14 @@ window.addEventListener("load", function(event) {
   }
 
   if (isDev) {
+    var screenshotArea = document.getElementsByClassName("image-viewer")[0],
+        screenshotImage = screenshotArea.getElementsByClassName("screenshot")[0];
+
     //galaxies.engine.invulnerable = true;
     //galaxies.engine.POWERUP_CHARGED = 100;
     document.addEventListener("keydown", function (e) {
       switch (e.keyCode) {
-        case 32:
+        case 32: // Spacebar
           if (galaxies.debug.datgui.domElement.classList.contains("hidden")) {
             galaxies.debug.stats.domElement.classList.remove("hidden");
             galaxies.debug.datgui.domElement.classList.remove("hidden");
@@ -98,6 +101,16 @@ window.addEventListener("load", function(event) {
             galaxies.debug.stats.domElement.classList.add("hidden");
             galaxies.debug.datgui.domElement.classList.add("hidden");
           }
+          break;
+        case 79: // O
+            if (screenshotArea.classList.contains("hidden")) {
+              screenshotArea.classList.remove("hidden");
+            } else {
+              screenshotArea.classList.add("hidden");
+            }
+          break;
+        case 80: // P
+            screenshotImage.src = galaxies.engine.renderer.domElement.toDataURL();
           break;
       }
     });
