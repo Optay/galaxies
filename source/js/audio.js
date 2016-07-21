@@ -45,7 +45,7 @@ galaxies.audio.sounds = {
   'fpo': ['fpo1'],
   'ufo': ['ufo'],
   'music': ['music'],
-  'round3music': ['round3music'],
+  'bossmusic': ['bossmusic'],
   'ufohit': ['ufohit1', 'ufohit2'],
   'ufoshoot': ['ufoshoot'],
   'planetsplode': ['planetsplode'],

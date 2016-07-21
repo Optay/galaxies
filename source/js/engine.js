@@ -28,6 +28,7 @@ galaxies.engine.canvasWidth = 0;
 galaxies.engine.canvasHeight = 0;
 galaxies.engine.canvasHalfWidth = 0;
 galaxies.engine.canvasHalfHeight = 0;
+galaxies.engine.planetScreenPoint = new THREE.Vector2(0.5, 0.5);
 
 galaxies.engine.driftObject = null; // outer world container that rotates slowly to provide skybox motion
 galaxies.engine.rootObject = null; // inner object container that contains all game objects
@@ -93,7 +94,7 @@ Object.defineProperty(galaxies.engine, "bossMode", {
 
     if (value) {
       galaxies.engine.boss.reset();
-      galaxies.engine.CONE_ANGLE = 20 * Math.PI / 360;
+      galaxies.engine.CONE_ANGLE = 30 * Math.PI / 360;
     } else {
       galaxies.engine.boss.disable();
       galaxies.engine.CONE_ANGLE = 15 * Math.PI / 360;
@@ -266,6 +267,8 @@ galaxies.engine.updateView = function() {
   var diagonal = Math.sqrt( Math.pow(galaxies.engine.camera.aspect,2) + 1 );
   var cameraSlope = diagonal * Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE * Math.PI/360 );
 
+  galaxies.engine.updatePlanetScreenPoint();
+
   galaxies.engine.VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * galaxies.engine.CAMERA_SLOPE/ (galaxies.engine.CONE_SLOPE + galaxies.engine.CAMERA_SLOPE);
   galaxies.engine.OBSTACLE_VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * cameraSlope/ (galaxies.engine.CONE_SLOPE + cameraSlope);
 
@@ -274,6 +277,14 @@ galaxies.engine.updateView = function() {
 
   galaxies.engine.OBSTACLE_START_DISTANCE = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * 1.1;//1.2;
 }
+
+galaxies.engine.updatePlanetScreenPoint = function () {
+  var point = new THREE.Vector3().project(galaxies.engine.camera);
+
+  point = new THREE.Vector2(point.x, -point.y);
+
+  galaxies.engine.planetScreenPoint = point.multiplyScalar(0.5).add(new THREE.Vector2(0.5, 0.5));
+};
 
 
 // Force pause state when window is minimized to prevent large deltas when resuming.
@@ -537,7 +548,7 @@ galaxies.engine.restartGame = function() {
   // Character will be removed by planet transition.
   galaxies.engine.rootObject.add( galaxies.engine.player.root );
 
-  if (galaxies.engine.roundNumber === 3) {
+  if (galaxies.engine.roundNumber === 4) {
     createjs.Tween.get(galaxies.audio.soundField)
         .to({volume: 0}, 1500)
         .call(function() {
@@ -563,6 +574,10 @@ galaxies.engine.initLevel = function() {
   galaxies.engine.levelTimer = 0;
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
+
+  if (galaxies.engine.roundNumber === 4) {
+    galaxies.engine.bossMode = true;
+  }
   
   // Each planet gets a set number of levels, starting slow and speeding up.
   // Sigmoid functions set bounds of speedScale based on planet number (absolute level number).
@@ -592,8 +607,8 @@ galaxies.engine.initLevel = function() {
     galaxies.engine.roundScore = 0;
     galaxies.engine.projectilesLaunchedRound = 0;
     galaxies.engine.projectilesHitRound = 0;
-  } else if (galaxies.engine.roundNumber === 3) {
-    galaxies.audio.soundField.changeSource(galaxies.audio.getSound('round3music'));
+  } else if (galaxies.engine.roundNumber === 4) {
+    galaxies.audio.soundField.changeSource(galaxies.audio.getSound('bossmusic'));
     galaxies.audio.soundField.volume = 1;
   }
   
@@ -611,20 +626,20 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
   
   createjs.Tween.removeTweens( galaxies.engine.camera.position );
   createjs.Tween.get( galaxies.engine.camera.position )
-    .to({z:galaxies.engine.CAMERA_Z}, 1500, createjs.Ease.quadInOut);
-}
+      .to({
+        y: roundNumber === 4 ? -galaxies.engine.CAMERA_Z / 6 : 0,
+        z: galaxies.engine.CAMERA_Z
+      }, 1500, createjs.Ease.quadInOut)
+      .call(function () {
+        galaxies.engine.updatePlanetScreenPoint();
+
+        if (roundNumber === 4) {
+          galaxies.engine.ufo.introduceBoss();
+        }
+      });
+};
 
 galaxies.engine.nextLevel = function() {
-  if (galaxies.engine.roundNumber === 4) {
-    if (galaxies.engine.bossMode) {
-      galaxies.engine.bossMode = false;
-    } else {
-      galaxies.engine.bossMode = true;
-
-      return;
-    }
-  }
-
   if (galaxies.engine.slomoDuration > 0.5) {
     galaxies.engine.slomoDuration = 0.5;
   }
@@ -640,6 +655,8 @@ galaxies.engine.nextLevel = function() {
           galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
           galaxies.audio.soundField.volume = 0.6;
         });
+  } else if (galaxies.engine.roundNumber === 4) {
+    galaxies.engine.bossMode = true;
   }
 
   // game ends after earth
@@ -917,8 +934,8 @@ galaxies.engine.onDocumentMouseUp = function( event ) {
 }
 
 galaxies.engine.onDocumentMouseMove = function(event) {
-  var mouseX = ( event.clientX - galaxies.engine.canvasHalfWidth );
-  var mouseY = ( event.clientY - galaxies.engine.canvasHalfHeight );
+  var mouseX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth );
+  var mouseY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
 
   galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
   galaxies.ui.updateReticlePosition(event);

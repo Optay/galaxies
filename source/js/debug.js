@@ -37,6 +37,11 @@ window.addEventListener("load", function(event) {
       galaxies.engine.clearLevel();
       galaxies.engine.initLevel();
     },
+    bossRound: function() {
+      galaxies.engine.levelNumber += 4 - galaxies.engine.roundNumber;
+      galaxies.engine.clearLevel();
+      galaxies.engine.initLevel();
+    },
     miniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
     clone: function() { galaxies.engine.setPowerup('clone'); },
     spread: function() { galaxies.engine.setPowerup('spread'); },
@@ -44,8 +49,7 @@ window.addEventListener("load", function(event) {
     shield: function() { galaxies.engine.setPowerup('shield'); },
     timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
     addUFO: galaxies.engine.addUfo,
-    invulnerable: false,
-    bossMode: false
+    invulnerable: false
   };
 
   datgui.add(userValues, 'pluto' );
@@ -57,6 +61,7 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'earth' );
   datgui.add(userValues, 'round2' );
   datgui.add(userValues, 'round3' );
+  datgui.add(userValues, 'bossRound' );
   datgui.add(userValues, 'miniUFO' );
   datgui.add(userValues, 'clone' );
   datgui.add(userValues, 'spread' );
@@ -68,15 +73,8 @@ window.addEventListener("load", function(event) {
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
   invulnerableController.onChange( setInvulnerable );
 
-  var bossModeController = datgui.add(userValues, 'bossMode');
-  bossModeController.onChange( setBossMode );
-  
   function setInvulnerable( newValue ) {
     galaxies.engine.invulnerable = newValue;
-  }
-
-  function setBossMode( newValue ) {
-    galaxies.engine.bossMode = newValue;
   }
 
   function setLevel( newLevel ) {

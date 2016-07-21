@@ -39,6 +39,14 @@ galaxies.BossMonster.prototype = {
         this.object.visible = false;
     },
 
+    enter: function () {
+        if (this.state === "preEntry") {
+            this.state = "entering";
+            this.object.visible = true;
+            this.updateCoordinates();
+        }
+    },
+
     hitEye: function (eye) {
         var scale = eye.hitThreshold * 1.5;
 
@@ -166,8 +174,8 @@ galaxies.BossMonster.prototype = {
     },
 
     reset: function () {
-        this.state = "entering";
-        this.object.visible = true;
+        this.state = "preEntry";
+        this.object.visible = false;
 
         this.eyes.forEach(function (eye) {
             eye.eyeball.visible = true;
@@ -214,7 +222,7 @@ galaxies.BossMonster.prototype = {
             this.updateIdle(delta);
         }
 
-        if (this.state !== "entering" && this.state !== "exiting") {
+        if (this.state !== "preEntry" && this.state !== "entering" && this.state !== "exiting") {
             this.updateMovement(delta);
 
             this.updateCollisions(delta);
