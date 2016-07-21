@@ -194,7 +194,7 @@ galaxies.fx = (function() {
     }
 
     var gradientNames = ["spread", "clone", "golden", "heart", "star", "shield", "fire", "blueFire", "blood", "white",
-      "green"];
+      "green", "brown", "icy"];
 
     gradientNames.forEach(function (name) {
       gradients[name] = new THREE.Texture(galaxies.queue.getResult(name.toLowerCase() + "gradient"));
@@ -788,27 +788,12 @@ galaxies.fx = (function() {
     effect.rotation = galaxies.utils.flatAngle(position);
   };
   
-  var showHit = function( position, type) {
-    var scale = 1;
-
-    switch (type) {
-      case "spread":
-      case "clone":
-      case "golden":
-      case "green":
-        break;
-      default:
-        type = "white";
-        scale = 0.5;
-
-        /*var particleGroup = projHitPool[ projHitIndex ];
-        projHitIndex ++;
-        if ( projHitIndex >= projHitPoolSize ) { projHitIndex = 0; }
-
-        particleGroup.mesh.position.copy( position );
-        particleGroup.mesh.lookAt( galaxies.engine.rootObject.position );
-        particleGroup.triggerPoolEmitter(1);*/
-        break;
+  var showHit = function( position, type, scale) {
+    if (!gradients[type]) {
+      type = "white";
+      scale = scale || 0.5;
+    } else {
+      scale = scale || 1;
     }
 
     var poof = explosionPoofPool[explosionPoofIndex];

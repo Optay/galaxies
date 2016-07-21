@@ -32,6 +32,8 @@ galaxies.Obstacle = function ( props ) {
   this.explodeSound = 'asteroidsplode';
   this.explosionGain = 2;
   this.passSoundId = '';
+  this.explosionGradient = "brown";
+  this.explosionPoofSize = 0.75;
   
   // Overrides
   for ( var propName in props ) {
@@ -156,7 +158,8 @@ galaxies.Obstacle.prototype.update = function( delta ) {
       var angle = Math.atan2(-this.object.position.x, this.object.position.y);
 
       if (distanceToPlanet <= innerDist || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
-        this.splode(false);
+        this.impact();
+
         galaxies.engine.hitPlayer();
         break;
       }
@@ -165,7 +168,8 @@ galaxies.Obstacle.prototype.update = function( delta ) {
         var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
 
         if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
-          this.splode(false);
+          this.impact();
+
           galaxies.engine.setPowerup('');
           break;
         }
@@ -272,6 +276,14 @@ galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, force
 
 }
 
+galaxies.Obstacle.prototype.impact = function () {
+  if (this.explosionGradient) {
+    galaxies.fx.showHit(this.object.position, this.explosionGradient, this.explosionPoofSize);
+  }
+
+  this.splode(false);
+};
+
 galaxies.Obstacle.prototype.splode = function( spawn ) {
   // Object must be deactivated first to prevent circular hit/splode calls for comets
   this.deactivate();
@@ -350,6 +362,7 @@ galaxies.ObstacleIce = function () {
   props.baseSpeed = 0.25;
   props.mass = 2;
   props.baseLife = 2;
+  props.explosionGradient = "icy";
   
   galaxies.Obstacle.call(this, props);
 }
@@ -403,6 +416,7 @@ galaxies.ObstacleComet = function() {
   
   props.explodeSound = 'cometexplode';
   props.explosionGain = 7;
+  props.explosionGradient = null;
   
   galaxies.Obstacle.call( this, props );
 }
@@ -497,6 +511,8 @@ galaxies.ObstacleRad = function() {
   props.rubbleType = 'rad';
   this.spawnType = 'asteroidradchild';
   this.spawnNumber = 3;
+
+  props.explosionGradient = "green";
   
   galaxies.Obstacle.call( this, props );
   
@@ -522,6 +538,7 @@ galaxies.ObstacleRadChild = function() {
   props.points = [50, 75, 150, 500];
   props.hitThreshold = 0.5;
   props.rubbleType = 'rad';
+  props.explosionGradient = "green";
   
   galaxies.Obstacle.call( this, props );
 }
@@ -552,6 +569,7 @@ galaxies.ObstacleSpiky = function () {
   props.hitSound = 'metalhit';
   props.rubbleType = '';
   props.explodeSound = 'satellitesplode';
+  props.explosionGradient = "white";
 
   galaxies.Obstacle.call(this, props);
 };
