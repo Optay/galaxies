@@ -237,6 +237,8 @@ galaxies.TitleSequence = function() {
     galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).multiplyScalar(0.5).add(cameraScenePos));
 
     galaxies.engine.render();
+
+    galaxies.engine.updateBGStars(delta);
   }
   
   

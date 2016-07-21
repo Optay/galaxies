@@ -216,7 +216,8 @@ galaxies.engine.neutrals = [];
 galaxies.engine.inactiveNeutrals = [];
 
 
-
+// Background stars
+galaxies.engine.bgStars = [];
 
 
 galaxies.engine.ensureCanvasSize = function() {
@@ -371,7 +372,35 @@ galaxies.engine.initScene = function() {
 
   galaxies.engine.skyCube = new THREE.Mesh( new THREE.BoxGeometry( 200, 200, 200 ), material );
   galaxies.engine.scene.add(galaxies.engine.skyCube);
-  
+
+  var bgStarTex = new THREE.Texture(galaxies.queue.getResult('bgstar')),
+      bgStarMat, bgStarSprite, scale, point;
+
+  bgStarTex.needsUpdate = true;
+
+  for (var i = 0; i < 60; ++i) {
+    bgStarMat = new THREE.SpriteMaterial({
+      map: bgStarTex
+    });
+
+    bgStarSprite = new THREE.Sprite(bgStarMat);
+
+    point = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
+        .multiplyScalar(100 + Math.random() * 95);
+
+    scale = 3 + Math.random() * 2;
+
+    bgStarSprite.position.copy(point);
+    bgStarSprite.scale.set(scale, scale, scale);
+
+    galaxies.engine.scene.add(bgStarSprite);
+
+    galaxies.engine.bgStars.push({
+      sprite: bgStarSprite,
+      frequency: 0.5 + Math.random() * 4.5,
+      age: Math.random() * 10
+    });
+  }
   
   galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true});
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
@@ -1466,6 +1495,8 @@ galaxies.engine.update = function() {
   if (galaxies.engine.inTutorial) {
     galaxies.engine.updateTutorial(delta);
   }
+
+  galaxies.engine.updateBGStars(scaledDelta);
   
   
   galaxies.engine.render();
@@ -1473,6 +1504,13 @@ galaxies.engine.update = function() {
   if (stats) {
     stats.end();
   }
+};
+
+galaxies.engine.updateBGStars = function (delta) {
+  galaxies.engine.bgStars.forEach(function (bgStar) {
+    bgStar.age += delta * bgStar.frequency;
+    bgStar.sprite.material.opacity = 0.8 + Math.cos(bgStar.age) * 0.2;
+  });
 };
 
 galaxies.engine.updateTutorial = function (delta) {

@@ -87,6 +87,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'skyboxbottom4', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_bottom4.jpg' },
     { id: 'skyboxfront5', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_front5.jpg' },
     { id: 'skyboxback6', src: 'environment/' + (isMobile ? '1x' : '2x') + '/spacesky_back6.jpg' },
+    { id: 'bgstar', src: 'sprites/star_diamond.png' },
     { id: 'lux', src: 'sprites/lux.png' },
     { id: 'luxclone', src: 'sprites/lux_clone.png' },
     { id: 'luxgolden', src: 'sprites/lux_golden.png' },
