@@ -397,7 +397,7 @@ galaxies.engine.initScene = function() {
     bgStarSprite = new THREE.Sprite(bgStarMat);
 
     point = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
-        .multiplyScalar(100 + Math.random() * 95);
+        .multiplyScalar(180 + Math.random() * 15);
 
     scale = 3 + Math.random() * 2;
 
@@ -575,10 +575,8 @@ galaxies.engine.initLevel = function() {
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
 
-  if (galaxies.engine.roundNumber === 4) {
-    galaxies.engine.bossMode = true;
-  }
-  
+  galaxies.engine.bossMode = galaxies.engine.roundNumber === 4;
+
   // Each planet gets a set number of levels, starting slow and speeding up.
   // Sigmoid functions set bounds of speedScale based on planet number (absolute level number).
   
@@ -627,13 +625,15 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
   createjs.Tween.removeTweens( galaxies.engine.camera.position );
   createjs.Tween.get( galaxies.engine.camera.position )
       .to({
-        y: roundNumber === 4 ? -galaxies.engine.CAMERA_Z / 6 : 0,
         z: galaxies.engine.CAMERA_Z
       }, 1500, createjs.Ease.quadInOut)
       .call(function () {
         galaxies.engine.updatePlanetScreenPoint();
 
         if (roundNumber === 4) {
+          galaxies.engine.removeInputListeners();
+          galaxies.ui.hideReticle();
+          galaxies.engine.targetAngle = 0;
           galaxies.engine.ufo.introduceBoss();
         }
       });
@@ -649,6 +649,8 @@ galaxies.engine.nextLevel = function() {
   galaxies.engine.clearLevel();
 
   if (galaxies.engine.roundNumber === 1) {
+    galaxies.engine.bossMode = false;
+
     createjs.Tween.get(galaxies.audio.soundField)
         .to({volume: 0}, 1500)
         .call(function() {

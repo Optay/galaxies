@@ -482,28 +482,30 @@ this.galaxies.Ufo = function() {
       smokeEmitter.reset(true);
     }
 
-    objectPosition.set(6, -8, galaxies.engine.CAMERA_Z - 10);
+    objectPosition.set(12, -1, galaxies.engine.CAMERA_Z - 8);
 
     galaxies.engine.rootObject.add(anchor);
 
     createjs.Tween.get(objectPosition)
-        .to({x: 2, y: -8}, 2000)
+        .to({x: 2, y: -1}, 2000)
         .call(function () {
           new galaxies.audio.SimpleSound({
             source: galaxies.audio.getSound('unleashthebeast'),
             loop: false
           });
         })
-        .to({x: 1.9, y: -8.1}, 1000)
-        .to({x: 2.1, y: -8}, 1000)
-        .to({x: 2, y: -7.9}, 1000)
-        .to({y: -8}, 1000)
+        .to({x: 1.9, y: -1.1}, 1000)
+        .to({x: 2.1, y: -1}, 1000)
+        .to({x: 2, y: -0.9}, 1000)
+        .to({y: -1}, 1000)
         .to({x: 1.9}, 1000)
-        .to({y: -7.9}, 1500)
+        .to({y: -0.9}, 1500)
         .call(function() {
           galaxies.engine.boss.enter();
+          galaxies.engine.addInputListeners();
+          galaxies.ui.showReticle();
         })
-        .to({x: -6}, 2000)
+        .to({x: -12}, 2000)
         .call(function () {
           galaxies.engine.rootObject.remove(anchor);
           model.rotation.set(Math.PI,0,-Math.PI/2);

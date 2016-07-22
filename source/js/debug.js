@@ -21,12 +21,12 @@ window.addEventListener("load", function(event) {
 
   var userValues = {
     pluto: function() { setLevel(1); },
-    neptune: function() { setLevel(4); },
-    uranus: function() { setLevel(7); },
-    saturn: function() { setLevel(10); },
-    jupiter: function() { setLevel(13); },
-    mars: function() { setLevel(16); },
-    earth: function() { setLevel(19); },
+    neptune: function() { setLevel(1 + galaxies.engine.ROUNDS_PER_PLANET); },
+    uranus: function() { setLevel(1 + 2 * galaxies.engine.ROUNDS_PER_PLANET); },
+    saturn: function() { setLevel(1 + 3 * galaxies.engine.ROUNDS_PER_PLANET); },
+    jupiter: function() { setLevel(1 + 4 * galaxies.engine.ROUNDS_PER_PLANET); },
+    mars: function() { setLevel(1 + 5 * galaxies.engine.ROUNDS_PER_PLANET); },
+    earth: function() { setLevel(1 + 6 * galaxies.engine.ROUNDS_PER_PLANET); },
     round2: function () {
       galaxies.engine.levelNumber += 2 - galaxies.engine.roundNumber;
       galaxies.engine.clearLevel();

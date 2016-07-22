@@ -364,13 +364,18 @@ galaxies.BossMonster.prototype = {
         if (this.yPosition < 1) {
             this.yPosition = Math.min(this.yPosition + delta, 1);
         } else {
-            console.log("inactive");
-            this.state = "inactive";
+            this.disable();
         }
     },
 
     updateIdle: function (delta) {
         this.timeToNextRoar -= delta;
+
+        if (galaxies.engine.isGameOver) {
+            this.state = "exiting";
+
+            return;
+        }
 
         if (this.timeToNextRoar <= 0) {
             this.closeEyes();
