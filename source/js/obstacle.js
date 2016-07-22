@@ -114,87 +114,91 @@ galaxies.Obstacle.prototype.reset = function() {
 }
 
 galaxies.Obstacle.prototype.update = function( delta ) {
-  this.age += delta;
-  
-  // creates a nice curve that starts at 1 and increase to SPEED_SCALE
-  // steeply as the obstacle approaches the planet
-  // Graph it:
-  // https://www.desmos.com/calculator
-  var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE- galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
-  speedScale = 1 - this.SPEED_SCALE / (20*( speedScale - 1.05) );
+  if (this.state !== "cinematic") {
+    this.age += delta;
 
-  speedScale *= 7.5 * galaxies.engine.CONE_SLOPE;
+    // creates a nice curve that starts at 1 and increase to SPEED_SCALE
+    // steeply as the obstacle approaches the planet
+    // Graph it:
+    // https://www.desmos.com/calculator
+    var speedScale = (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE - this.radius ) / (galaxies.engine.OBSTACLE_START_DISTANCE - galaxies.engine.PLANET_DISTANCE); // normalize to 0-1, 0 at start position, 1 when it reaches the planet
+    speedScale = 1 - this.SPEED_SCALE / (20 * ( speedScale - 1.05) );
 
-  var distanceToPlanet = this.radius - galaxies.engine.PLANET_DISTANCE,
-      charHeight = galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.CONE_SLOPE * 0.3);
+    speedScale *= 7.5 * galaxies.engine.CONE_SLOPE;
 
-  if (distanceToPlanet < charHeight) {
-    speedScale *= 4;
-  }
+    var distanceToPlanet = this.radius - galaxies.engine.PLANET_DISTANCE,
+        charHeight = galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.CONE_SLOPE * 0.3);
 
-  this.previousRadius = this.radius;
-  
-  this.angle += this.velocityTangential * delta/this.radius;
-  this.radius += speedScale * this.velocityRadial * delta;
-  this.updatePosition();
-  
-  switch ( this.state ) {
-    // retreat and ricochet are no longer part of the game mechanics
-  case 'retreating':
-    break;
-  case 'ricocheting':
-    break;
-  case 'falling':
-    // accelerate and cap at prescribed obstacle speed
-    this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
-    this.velocityRadial = Math.max( -this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial );
+    if (distanceToPlanet < charHeight) {
+      speedScale *= 4;
+    }
 
-    var innerDist = galaxies.engine.shielded ? (galaxies.engine.SHIELD_RADIUS - galaxies.engine.PLANET_DISTANCE) : 0;
+    this.previousRadius = this.radius;
 
-    if ( distanceToPlanet <= charHeight ) {
-      // This order is very important as hitPlayer may trigger game over which
-      // must override the obstacle's state.
+    this.angle += this.velocityTangential * delta / this.radius;
+    this.radius += speedScale * this.velocityRadial * delta;
+    this.updatePosition();
 
-      var angle = Math.atan2(-this.object.position.x, this.object.position.y);
-
-      if (distanceToPlanet <= innerDist || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
-        this.impact();
-
-        galaxies.engine.hitPlayer();
+    switch (this.state) {
+        // retreat and ricochet are no longer part of the game mechanics
+      case 'retreating':
         break;
-      }
+      case 'ricocheting':
+        break;
+      case 'falling':
+        // accelerate and cap at prescribed obstacle speed
+        this.velocityRadial += galaxies.engine.OBSTACLE_GRAVITY * delta;
+        this.velocityRadial = Math.max(-this.maxVelocityRadial * galaxies.engine.speedScale, this.velocityRadial);
 
-      if (galaxies.engine.currentPowerup === "clone") {
-        var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
+        var innerDist = galaxies.engine.shielded ? (galaxies.engine.SHIELD_RADIUS - galaxies.engine.PLANET_DISTANCE) : 0;
 
-        if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
-          this.impact();
+        if (distanceToPlanet <= charHeight) {
+          // This order is very important as hitPlayer may trigger game over which
+          // must override the obstacle's state.
 
-          galaxies.engine.setPowerup('');
-          break;
+          var angle = Math.atan2(-this.object.position.x, this.object.position.y);
+
+          if (distanceToPlanet <= innerDist || Math.abs(galaxies.utils.normalizeAngle(angle - galaxies.engine.angle)) < 0.35) {
+            this.impact();
+
+            galaxies.engine.hitPlayer();
+            break;
+          }
+
+          if (galaxies.engine.currentPowerup === "clone") {
+            var cloneAngle = galaxies.engine.player.cloneSprite.material.rotation;
+
+            if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
+              this.impact();
+
+              galaxies.engine.setPowerup('');
+              break;
+            }
+          }
         }
-      }
-    }
-    if ( this.radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS ) { this.isActive = true; }
-    
-    
-    // idle sound level
-    if ( this.passSound !== null ) {
-      var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z)/10;
-      soundLevel = THREE.Math.clamp( soundLevel, 0, 2 );
-      
-      if (this.age < 2) {
-        soundLevel *= this.age / 2;
-      }
-      
-      this.passSound.volume = soundLevel;
-    }
-    //
-    
-    break;
-  case 'waiting':
+        if (this.radius < galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
+          this.isActive = true;
+        }
 
-  } // switch
+
+        // idle sound level
+        if (this.passSound !== null) {
+          var soundLevel = 2 - Math.abs(this.object.position.z - galaxies.engine.CAMERA_Z) / 10;
+          soundLevel = THREE.Math.clamp(soundLevel, 0, 2);
+
+          if (this.age < 2) {
+            soundLevel *= this.age / 2;
+          }
+
+          this.passSound.volume = soundLevel;
+        }
+        //
+
+        break;
+      case 'waiting':
+
+    } // switch
+  }
 
   if ( this.tumbling ) {
     this.object.rotateOnAxis( this.tumbleAxis, this.tumbleSpeed * delta );

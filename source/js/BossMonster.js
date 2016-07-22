@@ -4,6 +4,8 @@ this.galaxies = this.galaxies || {};
 
 galaxies.BossMonster = function () {
     this.maxXVel = 0.5;
+    this.roarTime = 5;
+    this.cinematicAsteroids = [];
 
     this.initModel();
 
@@ -189,7 +191,6 @@ galaxies.BossMonster.prototype = {
         this.timeToNextRoar = 0.5;
         this.mouthOpenAmount = 0;
         this.roarTimer = 0;
-        this.roarTime = 4;
 
         this._xPosition = 0.5;
         this._yPosition = 1;
@@ -226,11 +227,53 @@ galaxies.BossMonster.prototype = {
             this.updateMovement(delta);
 
             this.updateCollisions(delta);
+
+            this.updateCinematicAsteroids(delta);
         }
 
         if (this.detachedEyeball.visible) {
             this.updateDetachedEye(delta);
         }
+    },
+
+    updateCinematicAsteroids: function (delta) {
+        var basePosition = this.object.position,
+            yScale = this.object.scale.y;
+
+        this.cinematicAsteroids = this.cinematicAsteroids.filter(function (data) {
+            var asteroid = data.asteroid,
+                conePoint;
+
+            data.progress += delta;
+
+            conePoint = basePosition.clone();
+
+            conePoint.y += yScale * (1 + Math.min(data.progress * 2.5, 1.5));
+
+            conePoint = galaxies.utils.projectToCone(conePoint);
+
+            if (data.progress >= 1 || asteroid.state !== "cinematic") {
+                if (asteroid.state === "cinematic") {
+                   asteroid.state = "falling";
+                }
+
+                asteroid.angle = Math.atan2(conePoint.y, conePoint.x);
+                asteroid.radius = galaxies.utils.flatLength(conePoint);
+                asteroid.updatePosition();
+
+                asteroid.object.scale.copy(data.targetScale);
+
+                asteroid.velocityRadial = -asteroid.maxVelocityRadial * 0.9;
+                asteroid.velocityTangential = (Math.random() - 0.5) * 5;
+
+                return false;
+            }
+
+            asteroid.object.position.copy(conePoint);
+            asteroid.object.scale.copy(data.targetScale.clone().multiplyScalar(data.progress));
+
+            return true;
+        });
     },
 
     updateCollisions: function (delta) {
@@ -446,22 +489,18 @@ galaxies.BossMonster.prototype = {
 
             this.asteroidTimer -= delta;
 
-            if (this.asteroidTimer <= 0) {
+            if (this.asteroidTimer <= 0 && this.roarTime - this.roarTimer > 1) {
                 this.asteroidTimer += 1.2;
 
-                var asteroid = galaxies.engine.addObstacle("asteroid"),
-                    conePoint = this.object.position.clone();
+                var asteroid = galaxies.engine.addObstacle("asteroid");
 
-                conePoint.y += this.object.scale.y * 1.9;
+                asteroid.state = "cinematic";
 
-                conePoint = galaxies.utils.projectToCone(conePoint);
-
-                asteroid.angle = Math.atan2(conePoint.y, conePoint.x);
-                asteroid.radius = galaxies.utils.flatLength(conePoint);
-                asteroid.updatePosition();
-
-                asteroid.velocityRadial = -asteroid.maxVelocityRadial * 0.9;
-                asteroid.velocityTangential = (Math.random() - 0.5) * 5;
+                this.cinematicAsteroids.push({
+                    progress: 0,
+                    asteroid: asteroid,
+                    targetScale: asteroid.object.scale.clone()
+                });
             }
         } else {
             this.mouthOpenAmount = this.roarTimer;
