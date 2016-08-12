@@ -55,6 +55,7 @@ galaxies.generator.rawPatterns = [
         { time: 32, duration: 8, startAngle: 90, endAngle: 450, quantity: 8, type: 'asteroid' },
     ],
     [ // Pluto 1-4
+        {time: 0, type: 'boss', bossType: 'elephatron'}
     ],
     [ // Neptune 2-1
         { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroidice', random: true },
@@ -98,6 +99,7 @@ galaxies.generator.rawPatterns = [
         { time: 43, duration: 8, startAngle: 90, endAngle: -270, quantity: 8, type: 'asteroid' }, // spiral
     ],
     [ // Neptune 2-4
+        {time: 0, type: 'boss', bossType: 'elephatron'}
     ],
     [ // Uranus 3-1
         { time: 0, duration: 8, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroidrad', random: true },

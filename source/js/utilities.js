@@ -351,6 +351,164 @@ galaxies.utils.makeSprite = function (texName, transparent, depthTest, depthWrit
     return new THREE.Mesh(geo, mat);
 };
 
+galaxies.utils.updateCollider = function (collider, object) {
+    var rootObj = galaxies.engine.rootObject;
+
+    switch (collider.type) {
+        case "sphere":
+            collider.rootPosition = rootObj.worldToLocal(object.localToWorld(collider.position.clone()));
+            collider.rootRadius = rootObj.worldToLocal(object.localToWorld(collider.position.clone()
+                .add(new THREE.Vector3(collider.radius, 0, 0)))).distanceTo(collider.rootPosition);
+            break;
+        case "capsule":
+            collider.rootPosition1 = rootObj.worldToLocal(object.localToWorld(collider.position1.clone()));
+            collider.rootPosition2 = rootObj.worldToLocal(object.localToWorld(collider.position2.clone()));
+            collider.rootRadius = rootObj.worldToLocal(object.localToWorld(collider.position1.clone()
+                .add(new THREE.Vector3(collider.radius, 0, 0)))).distanceTo(collider.rootPosition1);
+            break;
+    }
+};
+
+galaxies.utils.flattenProjectile = function (proj) {
+    var camPos = galaxies.engine.camera.position,
+        flatPos = proj.object.position.clone(),
+        flatEdge = flatPos.clone().add(flatPos.clone().normalize().multiplyScalar(proj.hitThreshold)),
+        flatDiff = flatPos.clone().sub(camPos),
+        flatEdgeDiff = flatEdge.clone().sub(camPos);
+
+    flatPos.sub(flatDiff.multiplyScalar(flatPos.z / flatDiff.z));
+    flatEdge.sub(flatEdgeDiff.multiplyScalar(flatEdge.z / flatEdgeDiff.z));
+
+    proj.flatCapsule.position1.copy(proj.flatCapsule.position2);
+    proj.flatCapsule.position2.copy(flatPos);
+    proj.flatCapsule.rootRadius = proj.flatCapsule.radius = flatPos.distanceTo(flatEdge);
+};
+
+galaxies.utils.doSpheresOverlap = function (collider1, collider2) {
+    var combinedRadius = collider1.radius + collider2.radius;
+
+    return collider1.rootPosition.distanceToSquared(collider2.rootPosition) <= combinedRadius * combinedRadius;
+};
+
+galaxies.utils.doSphereCapsuleOverlap = function (collider1, collider2) {
+    var sphere, capsule, capLine, capLineDot, sphereLine, sphereLineDot, scalarSq, distSq, combinedRadius;
+
+    if (collider1.type === "sphere") {
+        sphere = collider1;
+        capsule = collider2;
+    } else {
+        capsule = collider1;
+        sphere = collider2;
+    }
+
+    combinedRadius = sphere.rootRadius + capsule.rootRadius;
+
+    capLine = capsule.rootPosition2.clone().sub(capsule.rootPosition1);
+    sphereLine = sphere.rootPosition.clone().sub(capsule.rootPosition1);
+
+    sphereLineDot = sphereLine.dot(sphereLine);
+
+    scalarSq = sphereLine.dot(capLine);
+
+    if (scalarSq <= 0) {
+        distSq = sphereLineDot;
+    } else {
+        capLineDot = capLine.dot(capLine);
+
+        if (scalarSq >= capLineDot) {
+            distSq = sphereLineDot - 2 * scalarSq + capLineDot;
+        } else {
+            distSq = sphereLineDot - scalarSq * scalarSq / capLineDot;
+        }
+    }
+
+    return distSq <= combinedRadius * combinedRadius;
+};
+
+galaxies.utils.doCapsulesOverlap = function (collider1, collider2) {
+    var combinedRadius = collider1.rootRadius + collider2.rootRadius,
+        dir1 = collider1.rootPosition2.clone().sub(collider1.rootPosition1),
+        dir2 = collider2.rootPosition2.clone().sub(collider2.rootPosition1),
+        w0 = collider1.rootPosition1.clone().sub(collider2.rootPosition1),
+        a = dir1.dot(dir1),
+        b = dir1.dot(dir2),
+        c = dir2.dot(dir2),
+        d = dir1.dot(w0),
+        e = dir2.dot(w0),
+        denom = a * c - b * b,
+        sn, sd, tn, td,
+        sc, tc, wc;
+
+    if (denom === 0) {
+        sd = td = c;
+        sn = 0;
+        tn = e;
+    } else {
+        sd = td = denom;
+        sn = b * e - c * d;
+        tn = a * e - b * d;
+
+        if (sn < 0) {
+            sn = 0;
+            tn = e;
+            td = c;
+        } else if (sn > sd) {
+            sn = sd;
+            tn = e + b;
+            td = c;
+        }
+    }
+
+    if (tn < 0) {
+        tc = 0;
+
+        if (-d < 0) {
+            sc = 0;
+        } else if (-d > a) {
+            sc = 1;
+        } else {
+            sc = -d / a;
+        }
+    } else if (tn > td) {
+        var ndpb = -d + b;
+
+        tc = 1;
+
+        if (ndpb < 0) {
+            sc = 0;
+        } else if (ndpb > a) {
+            sc = 1;
+        } else {
+            sc = ndpb / a;
+        }
+    } else {
+        tc = tn / td;
+        sc = sn / sd;
+    }
+
+    wc = w0.add(dir1.multiplyScalar(sc)).sub(dir2.multiplyScalar(tc));
+
+    return wc.dot(wc) <= combinedRadius * combinedRadius;
+};
+
+galaxies.utils.doCollidersOverlap = (function () {
+    var utils = galaxies.utils,
+        mapping = {
+            "sphere": {
+                "sphere": utils.doSpheresOverlap,
+                "capsule": utils.doSphereCapsuleOverlap
+            },
+            "capsule": {
+                "sphere": utils.doSphereCapsuleOverlap,
+                "capsule": utils.doCapsulesOverlap
+            }
+        };
+
+    return function (collider1, collider2) {
+        return mapping[collider1.type][collider2.type](collider1, collider2);
+    };
+})();
+
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
 // May not be needed in latest version of SPE, but needs to be checked before it can be removed.

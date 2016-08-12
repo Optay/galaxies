@@ -486,6 +486,10 @@ this.galaxies.Ufo = function() {
 
     galaxies.engine.rootObject.add(anchor);
 
+    galaxies.engine.removeInputListeners();
+    galaxies.ui.hideReticle();
+    galaxies.engine.targetAngle = 0;
+
     createjs.Tween.get(objectPosition)
         .to({x: 2, y: -1}, 2000)
         .call(function () {

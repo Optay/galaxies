@@ -39,6 +39,9 @@ galaxies.generator = (function() {
       case 'powerup':
         galaxies.engine.addPowerup(currentLevel[0].powerup);
         break;
+      case 'boss':
+        galaxies.engine.addBoss(currentLevel[0].bossType);
+        break;
       default:
         var obs = galaxies.engine.addObstacle( currentLevel[0].type );
         obs.setAngle(currentLevel[0].angle);
@@ -112,7 +115,8 @@ galaxies.generator = (function() {
         var entry = {
           time: wave.time + timeStep * obsI,
           type: types[obsI],
-          powerup: wave.powerup
+          powerup: wave.powerup,
+          bossType: wave.bossType
         };
         if ( wave.random ) {
           entry.angle = THREE.Math.randFloat(wave.startAngle, wave.endAngle) * Math.PI/180;

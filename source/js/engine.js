@@ -81,6 +81,8 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
   }
 });
 
+galaxies.engine.boss = null;
+
 Object.defineProperty(galaxies.engine, "bossMode", {
   get: function () {
     return galaxies.engine._bossMode;
@@ -93,10 +95,8 @@ Object.defineProperty(galaxies.engine, "bossMode", {
     galaxies.engine._bossMode = value;
 
     if (value) {
-      galaxies.engine.boss.reset();
-      galaxies.engine.CONE_ANGLE = 30 * Math.PI / 360;
+      galaxies.engine.CONE_ANGLE = 20 * Math.PI / 360;
     } else {
-      galaxies.engine.boss.disable();
       galaxies.engine.CONE_ANGLE = 15 * Math.PI / 360;
     }
   }
@@ -428,6 +428,11 @@ galaxies.engine.initScene = function() {
   galaxies.passes = galaxies.passes || {};
   galaxies.passes.indexes = galaxies.passes.indexes || {};
 
+  galaxies.engine.bosses = {
+    monster: new galaxies.BossMonster(),
+    elephatron: new galaxies.Elephatron()
+  };
+
   //galaxies.passes.indexes.bloom = galaxies.engine.composerStack.addPass("BloomPass", false, {});
 
   galaxies.engine.ensureCanvasSize();
@@ -501,10 +506,6 @@ galaxies.engine.initGame = function() {
 
   galaxies.engine.startGame();
 
-  galaxies.engine.boss = new galaxies.BossMonster();
-
-  galaxies.engine.rootObject.add( galaxies.engine.boss.object );
-
   galaxies.engine.bossMode = false;
 } // initGame
 
@@ -575,8 +576,6 @@ galaxies.engine.initLevel = function() {
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
 
-  galaxies.engine.bossMode = galaxies.engine.roundNumber === 4;
-
   // Each planet gets a set number of levels, starting slow and speeding up.
   // Sigmoid functions set bounds of speedScale based on planet number (absolute level number).
   
@@ -629,13 +628,6 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
       }, 1500, createjs.Ease.quadInOut)
       .call(function () {
         galaxies.engine.updatePlanetScreenPoint();
-
-        if (roundNumber === 4) {
-          galaxies.engine.removeInputListeners();
-          galaxies.ui.hideReticle();
-          galaxies.engine.targetAngle = 0;
-          galaxies.engine.ufo.introduceBoss();
-        }
       });
 };
 
@@ -649,16 +641,12 @@ galaxies.engine.nextLevel = function() {
   galaxies.engine.clearLevel();
 
   if (galaxies.engine.roundNumber === 1) {
-    galaxies.engine.bossMode = false;
-
     createjs.Tween.get(galaxies.audio.soundField)
         .to({volume: 0}, 1500)
         .call(function() {
           galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
           galaxies.audio.soundField.volume = 0.6;
         });
-  } else if (galaxies.engine.roundNumber === 4) {
-    galaxies.engine.bossMode = true;
   }
 
   // game ends after earth
@@ -1274,6 +1262,10 @@ galaxies.engine.update = function() {
   galaxies.engine.inactiveObstacles = [];
   galaxies.engine.inactiveNeutrals = [];
 
+  if (galaxies.engine.boss && galaxies.engine.boss.state !== "inactive") {
+    galaxies.engine.projectiles.forEach(galaxies.utils.flattenProjectile);
+  }
+
   galaxies.engine.planeSweep.update();
 
   galaxies.engine.planeSweep.potentialCollisions().forEach(function (collisionPair) {
@@ -1427,7 +1419,7 @@ galaxies.engine.update = function() {
   if (galaxies.engine.bossMode) {
     galaxies.engine.boss.update(scaledDelta);
   }
-  
+
   // update world
   galaxies.engine.driftObject.rotateOnAxis(galaxies.engine.driftAxis, galaxies.engine.driftSpeed * delta );
 
@@ -1502,6 +1494,7 @@ galaxies.engine.update = function() {
       (activeObstacleCount === 0) &&
       ((galaxies.engine.ufo.state === 'idle') ||
       (galaxies.engine.ufo.state === 'inactive')) ) {
+    galaxies.engine.bossMode = false;
     galaxies.engine.nextLevel();
   }
   
@@ -1867,6 +1860,8 @@ galaxies.engine.addInputListeners = function() {
   document.addEventListener( 'touchmove', galaxies.engine.onDocumentTouchMove, false );
 }
 galaxies.engine.removeInputListeners = function() {
+  galaxies.engine.isFiring = false;
+
   document.removeEventListener( 'mousedown', galaxies.engine.onDocumentMouseDown, false );
   document.removeEventListener( 'mouseup', galaxies.engine.onDocumentMouseUp, false );
   document.removeEventListener( 'mousemove', galaxies.engine.onDocumentMouseMove, false );
@@ -1993,6 +1988,23 @@ galaxies.start = function() {
     galaxies.engine.init();
   }
 }
+
+galaxies.engine.addBoss = function (bossType) {
+  galaxies.engine.bossMode = true;
+
+  if (galaxies.engine.boss) {
+    galaxies.engine.boss.disable();
+
+    galaxies.engine.rootObject.remove(galaxies.engine.boss.object);
+  }
+
+  galaxies.engine.boss = galaxies.engine.bosses[bossType];
+  galaxies.engine.boss.reset();
+  galaxies.engine.bossMode = true;
+  galaxies.engine.rootObject.add(galaxies.engine.boss.object);
+
+  galaxies.engine.ufo.introduceBoss();
+};
 
 galaxies.engine.addPowerup = function (powerupType) {
   galaxies.engine.powerupCharge = 0;

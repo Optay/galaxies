@@ -50,6 +50,17 @@ galaxies.Projectile.prototype.reset = function () {
   this.lastPos = new THREE.Vector3();
   this.lifeTimer = 0;
   this.inScene = false;
+
+  this.flatCapsule = new galaxies.colliders.CapsuleCollider(new THREE.Vector3(), new THREE.Vector3(), 0);
+  this.capsule = new galaxies.colliders.CapsuleCollider(new THREE.Vector3(), new THREE.Vector3(), 0);
+
+  this.flatCapsule.rootPosition1 = this.flatCapsule.position1;
+  this.flatCapsule.rootPosition2 = this.flatCapsule.position2;
+  this.flatCapsule.rootRadius = this.flatCapsule.radius;
+
+  this.capsule.rootPosition1 = this.capsule.position1;
+  this.capsule.rootPosition2 = this.capsule.position2;
+  this.capsule.rootRadius = this.capsule.radius;
 };
 
 galaxies.Projectile.prototype.setModel = function (model) {
@@ -197,6 +208,9 @@ galaxies.Projectile.prototype.update = function (delta) {
   }
 
   this.object.translateZ(this.PROJECTILE_SPEED * delta);
+
+  this.capsule.position1.copy(this.lastPos);
+  this.capsule.position2.copy(this.object.position);
 
   this.particleEmitters.forEach(function (emitter) {
     emitter.position.value = this.object.position;
