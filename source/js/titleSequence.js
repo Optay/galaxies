@@ -238,7 +238,7 @@ galaxies.TitleSequence = function() {
 
     galaxies.engine.render();
 
-    galaxies.engine.updateBGStars(delta);
+    galaxies.engine.updateBGStars(delta, cameraScenePos);
   }
   
   

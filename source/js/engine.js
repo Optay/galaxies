@@ -384,17 +384,10 @@ galaxies.engine.initScene = function() {
   galaxies.engine.skyCube = new THREE.Mesh( new THREE.BoxGeometry( 200, 200, 200 ), material );
   galaxies.engine.scene.add(galaxies.engine.skyCube);
 
-  var bgStarTex = new THREE.Texture(galaxies.queue.getResult('bgstar')),
-      bgStarMat, bgStarSprite, scale, point;
-
-  bgStarTex.needsUpdate = true;
+  var bgStarSprite, scale, point;
 
   for (var i = 0; i < 60; ++i) {
-    bgStarMat = new THREE.SpriteMaterial({
-      map: bgStarTex
-    });
-
-    bgStarSprite = new THREE.Sprite(bgStarMat);
+    bgStarSprite = galaxies.utils.makeSprite('bgstar', true);
 
     point = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
         .multiplyScalar(180 + Math.random() * 15);
@@ -474,8 +467,9 @@ galaxies.engine.initGame = function() {
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     map: galaxies.resources.bgPlanetTextures[0].texture,
-    transparent: true
-  } );
+    transparent: true,
+    depthWrite: false
+  });
   galaxies.engine.bgPlanet = new THREE.Mesh( new THREE.PlaneGeometry(200, 200, 1, 1),
                                              bgMaterial );
   
@@ -1456,6 +1450,8 @@ galaxies.engine.update = function() {
   var cameraScenePos = galaxies.engine.camera.localToWorld( new THREE.Vector3() );
   galaxies.engine.bgPlanet.lookAt( cameraScenePos );
 
+  galaxies.engine.updateBGStars(scaledDelta, cameraScenePos);
+
   if (galaxies.engine.sun.visible) {
     galaxies.engine.sun.lookAt(cameraScenePos);
     galaxies.engine.sunFlares.position.copy(galaxies.engine.sun.position.clone().sub(cameraScenePos).multiplyScalar(0.5).add(cameraScenePos));
@@ -1507,9 +1503,6 @@ galaxies.engine.update = function() {
   if (galaxies.engine.inTutorial) {
     galaxies.engine.updateTutorial(delta);
   }
-
-  galaxies.engine.updateBGStars(scaledDelta);
-  
   
   galaxies.engine.render();
 
@@ -1518,10 +1511,12 @@ galaxies.engine.update = function() {
   }
 };
 
-galaxies.engine.updateBGStars = function (delta) {
+galaxies.engine.updateBGStars = function (delta, cameraScenePos) {
   galaxies.engine.bgStars.forEach(function (bgStar) {
+    bgStar.sprite.lookAt(cameraScenePos);
     bgStar.age += delta * bgStar.frequency;
     bgStar.sprite.material.opacity = 0.8 + Math.cos(bgStar.age) * 0.2;
+    bgStar.sprite.rotation.z = bgStar.age * 0.4;
   });
 };
 
