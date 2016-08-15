@@ -91,7 +91,7 @@ this.galaxies.Ufo = function() {
   
   
   var smokeParticles = {
-    type: SPE.distributions.CUBE,
+    type: SPE.distributions.BOX,
     particleCount: 50,
     duration: null,
     activeMultiplier: 0.5,
@@ -114,10 +114,9 @@ this.galaxies.Ufo = function() {
     size: {
       value: 3,
       spread: 1
-    },
-    
+    }
   };
-  var smokeTexture = new THREE.Texture( galaxies.queue.getResult('projhitparticle') );
+  var smokeTexture = new THREE.Texture( galaxies.queue.getResult('smoke') );
   smokeTexture.needsUpdate = true;
   var smokeGroup = new SPE.Group({
     texture: { value: smokeTexture },

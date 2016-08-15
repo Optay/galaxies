@@ -169,7 +169,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'elephatronnose', src: 'bosses/elephatron/1_elepha-tron_nose.png' },
     { id: 'elephatronnosedamaged', src: 'bosses/elephatron/1_elepha-tron_nose_damaged.png' },
     { id: 'elephatronnoseshadow', src: 'bosses/elephatron/2_elepha-tron_nose_shadow.png' },
-    { id: 'elephatronnosedamagedshadow', src: 'bosses/elephatron/2_elepha-tron_nose_shadow_damaged.png' },
+    { id: 'elephatronnosedamagedshadow', src: 'bosses/elephatron/2_elepha-tron_nose_shadow_damage.png' },
     { id: 'elephatroneyeglow', src: 'bosses/elephatron/3_elepha-tron_eyes_glow.png' },
     { id: 'elephatronbody', src: 'bosses/elephatron/4_elepha-tron_body.png' },
     { id: 'elephatronteeth', src: 'bosses/elephatron/5_elepha-tron_teeth.png' },

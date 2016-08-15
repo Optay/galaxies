@@ -2,14 +2,17 @@
 
 this.galaxies = this.galaxies || {};
 
+// TODO: smoke
 galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
     props = props || {};
 
     this.baseProps = props;
 
+    this.scale = 1;
     this.minAngle = null;
     this.maxAngle = null;
     this.maxHealth = 4;
+    this.invincible = false;
     this.shotCooldown = 0.5;
     this.object = new THREE.Object3D();
     this.limb = new THREE.Object3D();
@@ -33,6 +36,8 @@ galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
     this.spawnLaserPellet = spawnLaserPellet;
 
     this.initModel();
+
+    this.initParticles();
 
     this.reset();
 };
@@ -103,7 +108,19 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
         });
 
         if (didHit) {
-            --this.health;
+            if (!this.invincible) {
+                if (this.health === this.maxHealth) {
+                    this.smokeEmitter.enable();
+                }
+
+                --this.health;
+
+                var scalar = 1 - (this.health / this.maxHealth);
+
+                this.smokeEmitter.opacity.value = this.opacityValues.map(function (value) {
+                    return value * scalar;
+                });
+            }
         } else {
             didHit = this.otherColliders.some(function (collider) {
                 return doCollidersOverlap(proj.flatCapsule, collider);
@@ -112,6 +129,13 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
 
         if (didHit) {
             proj.hit();
+
+            new galaxies.audio.PositionedSound({
+                source: galaxies.audio.getSound('ufohit'),
+                position: proj.object.position,
+                baseVolume: 1.4,
+                loop: false
+            });
         }
     }, this);
 
@@ -157,9 +181,11 @@ galaxies.ElephatronLimb.prototype.fireLaser = function () {
 
     spawnPoint = galaxies.engine.rootObject.worldToLocal(spawnPoint);
 
-    spawnPoint.z += 0.05;
+    spawnPoint.z += 0.05 * this.scale;
 
     blast.sprite.position.copy(spawnPoint);
+    blast.sound.updatePosition(spawnPoint);
+    blast.sound.startSound();
 
     this.spawnLaserPellet(spawnPoint);
 };
@@ -213,6 +239,56 @@ galaxies.ElephatronLimb.prototype.initModel = function () {
     this.object.add(this.limb);
 };
 
+galaxies.ElephatronLimb.prototype.initParticles = function () {
+    var smokeParticles = {
+        type: SPE.distributions.BOX,
+        particleCount: 50,
+        maxAge: { value: 2 },
+        velocity: {
+            value: new THREE.Vector3(0, 2, 0),
+            spread: new THREE.Vector3(1, 1, 0)
+        },
+        acceleration: {
+            value: new THREE.Vector3(0, 0, 3)
+        },
+        color: {
+            value: [ new THREE.Color(0.600, 0.600, 0.600),
+                new THREE.Color(0.200, 0.200, 0.200) ],
+            spread: new THREE.Vector3(0.1, 0.1, 0.1)
+        },
+        opacity: {
+            value: [1, 0]
+        },
+        size: {
+            value: 3,
+            spread: 1
+        }
+    };
+
+    var smokeTexture = new THREE.Texture( galaxies.queue.getResult('smoke') );
+
+    smokeTexture.needsUpdate = true;
+
+    var smokeGroup = new SPE.Group({
+        texture: { value: smokeTexture },
+        blending: THREE.NormalBlending,
+        transparent: true,
+        maxParticleCount: 100
+    });
+
+    var smokeEmitter = new SPE.Emitter( smokeParticles );
+
+    smokeGroup.addEmitter( smokeEmitter );
+
+    smokeEmitter.disable();
+
+    galaxies.engine.rootObject.add(smokeGroup.mesh);
+
+    this.opacityValues = smokeEmitter.opacity.value;
+    this.smokeEmitter = smokeEmitter;
+    this.smokeGroup = smokeGroup;
+};
+
 galaxies.ElephatronLimb.prototype.reset = function () {
     this.targetAngle = null;
     this.health = this.maxHealth;
@@ -227,9 +303,26 @@ galaxies.ElephatronLimb.prototype.reset = function () {
     if (this.shadow) {
         this.shadowSprite.material.map = this.shadowTexture;
     }
+
+    this.smokeEmitter.disable();
+
+    if (this.smokeEmitter.age) {
+        this.smokeEmitter.reset(true);
+    }
 };
 
 galaxies.ElephatronLimb.prototype.update = function (delta) {
+    if (this.health !== this.maxHealth) {
+        this.updateCollider(this.damageColliders[0]);
+
+        var pos = this.damageColliders[0].rootPosition.clone();
+
+        pos.z += 0.1 * this.scale;
+
+        this.smokeEmitter.position.value = pos;
+        this.smokeGroup.tick(delta);
+    }
+
     if (this.health === 0) {
         return;
     }
@@ -256,6 +349,14 @@ galaxies.ElephatronLimb.prototype.update = function (delta) {
 
 galaxies.ElephatronLimb.prototype.updateCollider = function (collider) {
     galaxies.utils.updateCollider(collider, this.limb);
+};
+
+galaxies.ElephatronLimb.prototype.updateCoordinates = function (scale) {
+    this.smokeEmitter.size.value = this.smokeEmitter.size.value.map(function () {
+        return scale * 2.5;
+    });
+
+    this.scale = scale;
 };
 
 galaxies.ElephatronLimb.prototype.updateRotation = function (delta) {

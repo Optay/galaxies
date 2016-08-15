@@ -40,7 +40,11 @@ galaxies.Boss.prototype = {
     },
 
     update: function (delta) {
-        if (this.state === "entering") {
+        if (this.state === "inactive") {
+            return;
+        }
+
+            if (this.state === "entering") {
             this.updateEntering(delta);
         }
 

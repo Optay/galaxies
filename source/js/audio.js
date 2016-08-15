@@ -263,6 +263,9 @@ galaxies.audio.PositionedSound = function( props ) {
   }
   
   this.updatePosition = function( newPosition ) {
+    if (!galaxies.audio.listenerObject) {
+      return;
+    }
     this.toSource.subVectors( newPosition, galaxies.audio.listenerObject.position );
     this.distance = this.toSource.length();
     

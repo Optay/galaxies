@@ -49,7 +49,7 @@ galaxies.Elephatron.prototype.fillPools = function () {
     var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8),
         i, tex, sheet, mat, sprite;
 
-    for (i = 0; i < 4; ++i) {
+    for (i = 0; i < 6; ++i) {
         tex = new THREE.Texture(galaxies.queue.getResult('lasercircleblast'));
 
         tex.needsUpdate = true;
@@ -67,11 +67,18 @@ galaxies.Elephatron.prototype.fillPools = function () {
             texture: tex,
             spriteSheet: sheet,
             material: mat,
-            sprite: sprite
+            sprite: sprite,
+            sound: new galaxies.audio.PositionedSound({
+                source: galaxies.audio.getSound('ufoshoot'),
+                position: this.rootPosition,
+                baseVolume: 1.5,
+                loop: false,
+                start: false
+            })
         });
     }
 
-    for (i = 0; i < 8; ++i) {
+    for (i = 0; i < 10; ++i) {
         this.laserPelletPool.push(new galaxies.LaserPellet());
     }
 };
@@ -84,7 +91,7 @@ galaxies.Elephatron.prototype.getLaserBlast = function (angle) {
     }
 
     blast.sprite.visible = true;
-    blast.material.rotation = angle - Math.PI;
+    blast.material.rotation = angle - Math.PI / 2;
     blast.spriteSheet.play();
 
     return blast;
@@ -111,6 +118,10 @@ galaxies.Elephatron.prototype.initModel = function () {
         antenna = galaxies.utils.makeSprite("elephatronantenna", true);
 
     leftLegSprite.material.side = THREE.BackSide;
+    leftLegFlame.material.side = THREE.BackSide;
+
+    leftLegFlame.material.blending = THREE.AdditiveBlending;
+    rightLegFlame.material.blending = THREE.AdditiveBlending;
 
     eyeGlow.scale.set(2.1, 1.03, 1);
     body.scale.set(2.87, 3.26, 1);
@@ -119,8 +130,8 @@ galaxies.Elephatron.prototype.initModel = function () {
     throat.scale.set(2.07, 1.03, 1);
     rightLegSprite.scale.set(0.86, 1.4, 1);
     leftLegSprite.scale.set(-rightLegSprite.scale.x, rightLegSprite.scale.y, 1);
-    leftLegFlame.scale.set(1.13, 1.43, 1);
-    rightLegFlame.scale.copy(leftLegFlame.scale);
+    rightLegFlame.scale.set(1.13, 1.43, 1);
+    leftLegFlame.scale.set(-rightLegFlame.scale.x, rightLegFlame.scale.y, 1);
     leftEar.scale.set(2.43, 2.64, 1);
     rightEar.scale.set(2.43, 2.64, 1);
     antennaGlow.scale.set(0.45, 0.44, 1);
@@ -151,7 +162,7 @@ galaxies.Elephatron.prototype.initModel = function () {
     leftLeg.add(leftLegSprite);
     leftLeg.add(leftLegFlame);
     leftLegSprite.position.set(0, -0.54, 0);
-    leftLegFlame.position.set(0.04, -1.9, -0.01);
+    leftLegFlame.position.set(-0.18, -1.9, -0.01);
 
     rightLeg.position.set(-0.64, -1.09, -0.05);
     rightLeg.add(rightLegSprite);
@@ -166,6 +177,7 @@ galaxies.Elephatron.prototype.initModel = function () {
 
     this.topTeeth = topTeeth;
     this.bottomTeeth = bottomTeeth;
+    this.antennaGlow = antennaGlow;
 
     var colliders = galaxies.colliders;
 
@@ -175,7 +187,8 @@ galaxies.Elephatron.prototype.initModel = function () {
         limbSpriteScale: new THREE.Vector3(-1.73, 1.48, 1),
         limbSpriteOffset: new THREE.Vector3(0.675, -0.43, 0),
         damageColliders: [new colliders.SphereCollider(new THREE.Vector3(1.24, -0.87, 0), 0.4)],
-        // otherColliders: [],
+        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0.4, -0.1, 0),
+            new THREE.Vector3(1.1, -0.5, 0), 0.3)],
         laserEmitPoint: new THREE.Vector3(1.54, -1.17, 0.05),
         minAngle: -Math.PI / 2,
         maxAngle: Math.PI / 2,
@@ -191,7 +204,8 @@ galaxies.Elephatron.prototype.initModel = function () {
         limbSpriteScale: new THREE.Vector3(1.73, 1.48, 1),
         limbSpriteOffset: new THREE.Vector3(-0.675, -0.43, 0),
         damageColliders: [new colliders.SphereCollider(new THREE.Vector3(-1.24, -0.87, 0), 0.4)],
-        // otherColliders: [],
+        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(-0.4, -0.1, 0),
+            new THREE.Vector3(-1.1, -0.5, 0), 0.3)],
         laserEmitPoint: new THREE.Vector3(-1.54, -1.17, 0.05),
         minAngle: Math.PI / 2,
         maxAngle: 3 * Math.PI / 2,
@@ -213,7 +227,10 @@ galaxies.Elephatron.prototype.initModel = function () {
         shadowSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
         shadowPosition: new THREE.Vector3(-0.05, -0.195, -0.01),
         damageColliders: [new colliders.SphereCollider(new THREE.Vector3(0.305, -1.72, 0), 0.4)],
-        // otherColliders: [],
+        otherColliders: [
+            new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-0.1, -0.7, 0), 0.4),
+            new colliders.CapsuleCollider(new THREE.Vector3(-0.12, -0.815, 0), new THREE.Vector3(0.305, -1.72, 0), 0.3)
+        ],
         laserEmitPoint: new THREE.Vector3(0.405, -1.92, 0.05),
         limbAngleOffset: 9 * Math.PI / 24,
         startAngle: -3 * Math.PI / 8
@@ -231,6 +248,8 @@ galaxies.Elephatron.prototype.reset = function () {
 
     this.currentAngle = Math.PI;
     this.targetAngle = null;
+    this.angularVelocity = 0;
+    this.maxAngularVelocity = this.baseMaxAngularVelocity;
     this.mouthOpenAmount = 0;
     this.age = 0;
     this.hoverBounce = 0;
@@ -239,10 +258,17 @@ galaxies.Elephatron.prototype.reset = function () {
     this.timeToNextMove = 0;
     this.timeToNextFireSequence = 2;
     this.directionality = 0.5;
+    this.lastDamageTime = -3;
 
     this.leftArm.reset();
     this.rightArm.reset();
     this.trunk.reset();
+
+    this.leftArm.shotCooldown = this.rightArm.shotCooldown = this.trunk.shotCooldown = (this.health + 1) / this.maxHealth;
+
+    this.leftArm.invincible = true;
+    this.rightArm.invincible = true;
+    this.trunk.invincible = true;
 };
 
 galaxies.Elephatron.prototype.spawnLaserPellet = function (position) {
@@ -258,13 +284,15 @@ galaxies.Elephatron.prototype.spawnLaserPellet = function (position) {
 };
 
 galaxies.Elephatron.prototype.update = function (delta) {
+    galaxies.Boss.prototype.update.call(this, delta);
+
     if (this.state === "inactive") {
         return;
     }
 
-    galaxies.Boss.prototype.update.call(this, delta);
-
     this.age += delta;
+
+    this.antennaGlow.material.opacity = 0.5 + Math.sin(this.age) * 0.5;
 
     if (this.state === "idle") {
         if (this.mouthOpenAmount > 0) {
@@ -288,7 +316,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
         var angle = Math.atan2(-this.object.position.y, -this.object.position.x);
 
         if (this.object.position.x < 0) {
-            this.rightArm.targetAngle = 5 * Math.PI / 4;
+            this.rightArm.targetAngle = (this.object.position.y < 0 ? 5 : 3) * Math.PI / 4;
             this.leftArm.targetAngle = angle;
         } else {
             if (angle < 0) {
@@ -296,7 +324,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
             }
 
             this.rightArm.targetAngle = angle;
-            this.leftArm.targetAngle = -Math.PI / 4;
+            this.leftArm.targetAngle = (this.object.position.y < 0 ? -1 : 1) * Math.PI / 4;
         }
 
         this.trunk.targetAngle = angle;
@@ -343,8 +371,11 @@ galaxies.Elephatron.prototype.update = function (delta) {
 
             this.timeToNextMove -= delta;
 
+            // TODO: factor in limb health
             if (this.timeToNextMove <= 0) {
-                moveAmount = Math.random() * Math.PI;
+                moveAmount = (1 + Math.random() * 3) * Math.PI / 4;
+
+                this.targetAngle = this.currentAngle;
 
                 if (Math.random() < this.directionality) {
                     this.targetAngle -= moveAmount;
@@ -387,25 +418,31 @@ galaxies.Elephatron.prototype.update = function (delta) {
     this.rightArm.update(delta);
     this.trunk.update(delta);
 
-    var health = this.health;
+    var health = this.health,
+        maxHealth;
 
     if (health === 0) {
         this.state = "exiting";
     } else if (prevHealth !== this.health) {
         galaxies.fx.shakeCamera(1, 1.5);
 
+        maxHealth = this.maxHealth;
+
+        if (this.trunk.invincible && this.leftArm.health + this.rightArm.health === 0) {
+            this.trunk.invincible = false;
+        }
+
+        if (this.age - this.lastDamageTime < 3) {
+            this.targetAngle = this.currentAngle + (Math.random() < 0.5 ? -1 : 1) * Math.PI;
+        }
+
+        this.lastDamageTime = this.age;
+
         this.timeToNextFireSequence = 0;
 
-        this.leftArm.shotCooldown = this.rightArm.shotCooldown = this.trunk.shotCooldown = (health + 1) / (2 * health);
-    }
+        this.leftArm.shotCooldown = this.rightArm.shotCooldown = this.trunk.shotCooldown = (health + 1) / maxHealth;
 
-    if (this.state === "exiting") {
-        if (this.position.y > this.bottomEdge - this.object.scale.y * 3) {
-            this.position.y -= delta * this.object.scale.y * 4;
-        } else {
-            this.state = "inactive";
-            this.object.visible = false;
-        }
+        this.maxAngularVelocity = (3 - 2 * (health / maxHealth)) * this.baseMaxAngularVelocity;
     }
 };
 
@@ -421,7 +458,7 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
         this.position.set(this.leftEdge - scale * 4, this.topEdge * 0.8 + this.bottomEdge * 0.2, 0);
     }
 
-    this.maxAngularVelocity = scale / 6;
+    this.baseMaxAngularVelocity = scale / 6;
     this.maxHoverBounce = scale / 4;
 
     this.rx = this.rightEdge * 0.6;
@@ -430,6 +467,26 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
     this.laserBlastPool.forEach(function (blast) {
         blast.sprite.scale.set(scale, scale, scale);
     });
+
+    this.leftArm.updateCoordinates(scale);
+    this.rightArm.updateCoordinates(scale);
+    this.trunk.updateCoordinates(scale);
+};
+
+galaxies.Elephatron.prototype.updateExiting = function (delta) {
+    galaxies.Boss.prototype.updateExiting.call(this);
+
+    if (this.position.y > this.bottomEdge - this.object.scale.y * 3) {
+        this.position.y -= delta * this.object.scale.y * 4;
+        this.object.rotation.z += delta * Math.PI;
+    } else {
+        this.state = "inactive";
+        this.object.visible = false;
+
+        this.leftArm.reset();
+        this.rightArm.reset();
+        this.trunk.reset();
+    }
 };
 
 galaxies.Elephatron.prototype.updateMovement = function (delta) {
@@ -463,6 +520,9 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
 
         if (this.state === "entering") {
             this.state = "idle";
+
+            this.leftArm.invincible = false;
+            this.rightArm.invincible = false;
         }
 
         this.object.rotation.z = 0;
