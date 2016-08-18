@@ -84,6 +84,11 @@ galaxies.Resources = function() {
   var objLoader = new THREE.OBJLoader();
   var parsed = objLoader.parse( galaxies.queue.getResult('asteroidmodel') );
   this.geometries['asteroid'] = parsed.children[0].geometry;
+  parsed = objLoader.parse( galaxies.queue.getResult('icyasteroidmodel') );
+  this.geometries['asteroidice'] = parsed.children[0].geometry;
+  parsed = objLoader.parse( galaxies.queue.getResult('glowasteroidmodel') );
+  this.geometries['asteroidrad'] = parsed.children[0].geometry;
+  this.geometries['asteroidrad'].merge(parsed.children[1].geometry);
   var spikymodel = objLoader.parse(galaxies.queue.getResult('spikyasteroidmodel'));
   this.geometries['spiky'] = spikymodel.children[0].geometry;
   var projmodel = objLoader.parse( galaxies.queue.getResult('projmodel') );
@@ -113,27 +118,48 @@ galaxies.Resources = function() {
       normalMap: asteroidNormal,
       shading: THREE.SmoothShading
   } );
-  
+
+  var icyAsteroidColor = new THREE.Texture(galaxies.queue.getResult('icyasteroidcolor'), THREE.UVMapping);
+
+  icyAsteroidColor.needsUpdate = true;
+
   this.materials['asteroidice'] = new THREE.MeshPhongMaterial( {
+      color: 0xffffff,
+      emissive: 0x11111f,
+      specular: 0xddddff,
+      shininess: 10,
+      map: icyAsteroidColor,
+      normalMap: asteroidNormal,
+      shading: THREE.SmoothShading
+  } );
+
+  this.materials['asteroidiceshell'] = new THREE.MeshPhongMaterial( {
       color: 0x242a2a,
       emissive: 0x11111f,
       specular: 0xddddff,
       shininess: 10,
       opacity: 0.9,
       transparent: true,
-      //map: asteroidColor,
+      map: icyAsteroidColor,
       normalMap: asteroidNormal,
       shading: THREE.SmoothShading,
       blending: THREE.AdditiveBlending
 
   } );
+
+  var glowAsteroidColor = new THREE.Texture(galaxies.queue.getResult('glowasteroidcolor'), THREE.UVMapping),
+      glowAsteroidAmbient = new THREE.Texture(galaxies.queue.getResult('glowasteroidambient'), THREE.UVMapping);
+
+  glowAsteroidColor.needsUpdate = true;
+  glowAsteroidAmbient.needsUpdate = true;
+
   this.materials['asteroidrad'] = new THREE.MeshPhongMaterial( {
-      color: 0xaaffaa,
-      specular: 0x00ff00,
-      opacity: 0.9,
-      transparent: false,
-      map: asteroidColor,
+      color: 0xffffff,
+      emissive: 0x555555,
+      specular: 0xccffcc,
+      map: glowAsteroidColor,
       normalMap: asteroidNormal,
+      emissiveMap: glowAsteroidAmbient,
       shading: THREE.SmoothShading
   } );
 

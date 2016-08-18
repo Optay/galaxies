@@ -373,12 +373,12 @@ galaxies.ObstacleIce = function () {
 galaxies.ObstacleIce.prototype = Object.create( galaxies.Obstacle.prototype );
 galaxies.ObstacleIce.prototype.constructor = galaxies.ObstacleIce;
 galaxies.ObstacleIce.prototype.initModel = function() {
-  var material = galaxies.resources.materials['asteroid'].clone();
-  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], material );
-  this.object.scale.set( 0.40, 0.40, 0.40 );
+  var material = galaxies.resources.materials['asteroidice'].clone();
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroidice'], material );
+  this.object.scale.set( 0.20, 0.20, 0.20 );
   
-  this.ice = new THREE.Mesh( new THREE.DodecahedronGeometry( 1.2 ),
-                            galaxies.resources.materials['asteroidice'] );
+  this.ice = new THREE.Mesh( new THREE.DodecahedronGeometry( 2 ),
+                            galaxies.resources.materials['asteroidiceshell'] );
   this.object.add( this.ice );
 }
 galaxies.ObstacleIce.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
@@ -524,7 +524,7 @@ galaxies.ObstacleRad = function() {
 galaxies.ObstacleRad.prototype = Object.create( galaxies.Obstacle.prototype );
 galaxies.ObstacleRad.prototype.constructor = galaxies.ObstacleRad;
 galaxies.ObstacleRad.prototype.initModel = function() {
-  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], galaxies.resources.materials['asteroidrad'] );
+  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroidrad'], galaxies.resources.materials['asteroidrad'] );
   this.object.scale.set( 0.5, 0.5, 0.5 );
   
   galaxies.fx.addGlowbject( this.object, 0x00ff00 );
