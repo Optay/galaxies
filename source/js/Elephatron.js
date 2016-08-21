@@ -74,7 +74,8 @@ galaxies.Elephatron.prototype.fillPools = function () {
                 position: this.rootPosition,
                 baseVolume: 1.5,
                 loop: false,
-                start: false
+                start: false,
+                dispose: false
             })
         });
     }
