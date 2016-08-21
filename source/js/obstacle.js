@@ -225,7 +225,7 @@ galaxies.Obstacle.prototype.retreat = function() {
 }
 
 galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, forceDestroy ) {
-  if ( this.state === 'inactive' ) { return; }
+  if ( this.state === 'inactive' || this.state === 'cinematic' ) { return; }
 
   if (typeof damage !== "number") {
     damage = 1;

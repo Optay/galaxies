@@ -1228,6 +1228,7 @@ galaxies.fx = (function() {
   };
 
   return {
+    gradients: gradients,
     init: init,
     update: update,
     showHit: showHit,
@@ -1255,6 +1256,8 @@ galaxies.fx = (function() {
     getComet: getComet,
     getShield: getShield,
     showBlueExplosion: showBlueExplosion,
-    explode: explode
+    explode: explode,
+    createGradatedSprite: createGradatedSprite,
+    updateSprite: updateSprite
   };
 })();

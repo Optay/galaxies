@@ -1288,7 +1288,7 @@ galaxies.engine.update = function() {
           aIsLaser = galaxies.engine.laserBullets.indexOf(obsA) > -1,
           bIsLaser = galaxies.engine.laserBullets.indexOf(obsB) > -1;
 
-      if (galaxies.engine.obstacles.indexOf(obsA) !== -1 && galaxies.engine.obstacles.indexOf(obsB) !== -1) {
+      if (aIsObstacle && bIsObstacle) {
         if (obsA instanceof galaxies.ObstacleComet || obsB instanceof galaxies.ObstacleComet) {
           return;
         }

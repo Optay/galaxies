@@ -29,7 +29,16 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
 
     this.detachedEyeball.visible = true;
 
-    galaxies.fx.explode(eye.rootPosition.clone().add(new THREE.Vector3(0, 0, 0.02)), "blood", 1.5);
+    var position = this.object.worldToLocal(eye.eyeball.localToWorld(new THREE.Vector3()));
+
+    position.add(new THREE.Vector3(0, 0, 0.02));
+
+    this.bloodSpurt.spriteSheet.play();
+    this.bloodSpurt.material.uniforms.tGradient.value = galaxies.fx.gradients.blood;
+    this.bloodSpurt.sprite.visible = true;
+    this.bloodSpurt.sprite.position.copy(position);
+    this.bloodSpurt.sprite.scale.set(0.8, 0.8, 0.8);
+    //this.bloodSpurt.rotation = galaxies.utils.flatAngle(position) + Math.PI;
 
     this.detachedEyeball.position.copy(eye.rootPosition);
     this.detachedEyeball.position.z += 0.01;
@@ -156,6 +165,13 @@ galaxies.BossMonster.prototype.initModel = function () {
             rootPosition: null
         });
     }
+
+    var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
+        new THREE.Vector2(4096, 4096), 53);
+
+    this.bloodSpurt = galaxies.fx.createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames);
+
+    THREE.SceneUtils.detach(this.bloodSpurt.sprite, galaxies.engine.rootObject, this.object);
 };
 
 galaxies.BossMonster.prototype.openEyes = function () {
@@ -190,11 +206,17 @@ galaxies.BossMonster.prototype.reset = function () {
 
     this.asteroidTimer = 0;
 
+    this.bloodSpurt.sprite.visible = false;
+
     galaxies.Boss.prototype.reset.call(this);
 };
 
 galaxies.BossMonster.prototype.update = function (delta) {
     galaxies.Boss.prototype.update.call(this, delta);
+
+    var cameraRootPos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
+
+    galaxies.fx.updateSprite(this.bloodSpurt, cameraRootPos, delta);
 
     if (this.state === "roar") {
         this.updateRoar(delta);
