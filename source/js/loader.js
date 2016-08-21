@@ -72,7 +72,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'tripleraquet', src: 'fx/weapon/triple_raquet_fire', type: createjs.AbstractLoader.BINARY },
     { id: 'monsterouch1', src: 'characters/monster_ouch_01', type: createjs.AbstractLoader.BINARY },
     { id: 'monsterroar1', src: 'characters/monster_roar_01', type: createjs.AbstractLoader.BINARY },
-    { id: 'unleashthebeast', src: 'characters/trunkford_unleashedthebeast', type: createjs.AbstractLoader.BINARY }
+    { id: 'unleashthebeast', src: 'characters/trunkford_unleashedthebeast', type: createjs.AbstractLoader.BINARY },
+    { id: 'elephatronhitsuccess', src: 'bosses/elephatron/elepha-tron_hit_successful', type: createjs.AbstractLoader.BINARY },
+    { id: 'elephatronhitfail', src: 'bosses/elephatron/elepha-tron_hit_unsuccessful', type: createjs.AbstractLoader.BINARY },
+    { id: 'elephatronroar', src: 'bosses/elephatron/elepha-tron_roar', type: createjs.AbstractLoader.BINARY }
   ];
   for (var i=0; i< audioItems.length; i++ ) {
     audioItems[i].src = 'audio/' + audioItems[i].src + ext;

@@ -98,6 +98,12 @@ Object.defineProperty(galaxies.engine, "bossMode", {
       galaxies.engine.CONE_ANGLE = 20 * Math.PI / 360;
     } else {
       galaxies.engine.CONE_ANGLE = 15 * Math.PI / 360;
+
+      if (galaxies.engine.boss && galaxies.engine.boss.state !== "inactive") {
+        galaxies.engine.boss.disable();
+
+        galaxies.engine.rootObject.remove(galaxies.engine.boss.object);
+      }
     }
   }
 });
@@ -499,8 +505,6 @@ galaxies.engine.initGame = function() {
   galaxies.engine.fillPools();
 
   galaxies.engine.startGame();
-
-  galaxies.engine.bossMode = false;
 } // initGame
 
 galaxies.engine.fillPools = function () {
@@ -1764,7 +1768,8 @@ galaxies.engine.resetGame = function() {
   galaxies.audio.applyMuteState();
   
   galaxies.engine.clearLevel();
-  
+
+  galaxies.engine.bossMode = false;
   galaxies.engine.levelNumber = galaxies.engine.START_LEVEL_NUMBER;
   galaxies.engine.starsCollected = 0;
   galaxies.engine.starsCollectedRound = 0;
@@ -1985,8 +1990,6 @@ galaxies.start = function() {
 }
 
 galaxies.engine.addBoss = function (bossType) {
-  galaxies.engine.bossMode = true;
-
   if (galaxies.engine.boss) {
     galaxies.engine.boss.disable();
 

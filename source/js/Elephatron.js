@@ -7,6 +7,7 @@ galaxies.Elephatron = function () {
     this.laserBlastIndex = 0;
     this.laserPelletPool = [];
     this.laserPelletIndex = 0;
+
     this.firingTime = 2;
     this.position = new THREE.Vector3();
     this.rx = null;
@@ -95,6 +96,16 @@ galaxies.Elephatron.prototype.getLaserBlast = function (angle) {
     blast.spriteSheet.play();
 
     return blast;
+};
+
+galaxies.Elephatron.prototype.initAudio = function () {
+    galaxies.Boss.prototype.initAudio.call(this);
+
+    this.roarAudio = new galaxies.audio.SimpleSound({
+        source: galaxies.audio.getSound('elephatronroar'),
+        loop: false,
+        start: false
+    });
 };
 
 galaxies.Elephatron.prototype.initModel = function () {
@@ -308,6 +319,8 @@ galaxies.Elephatron.prototype.update = function (delta) {
         if (this.timeToNextFireSequence <= 0) {
             this.state = "firing";
 
+            this.roarAudio.startSound();
+
             this.firingTime = 2 + (1 - (this.health / this.maxHealth)) * 2;
         }
     }
@@ -364,7 +377,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
     var moveAmount;
 
     if (this.state !== "exiting") {
-        if (this.targetAngle) {
+        if (this.targetAngle !== null) {
             this.updateMovement(delta);
         } else if (this.state !== "preEntry") {
             this.hoverBounce = Math.min(this.hoverBounce + delta / 2, this.maxHoverBounce);
@@ -373,7 +386,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
 
             // TODO: factor in limb health
             if (this.timeToNextMove <= 0) {
-                moveAmount = (1 + Math.random() * 3) * Math.PI / 4;
+                moveAmount = (1 + Math.random() * 2) * Math.PI / 4;
 
                 this.targetAngle = this.currentAngle;
 
@@ -433,7 +446,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
         }
 
         if (this.age - this.lastDamageTime < 3) {
-            this.targetAngle = this.currentAngle + (Math.random() < 0.5 ? -1 : 1) * Math.PI;
+            this.timeToNextMove = 0;
         }
 
         this.lastDamageTime = this.age;

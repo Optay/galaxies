@@ -104,11 +104,14 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
 
     galaxies.engine.projectiles.forEach(function (proj) {
         var didHit = this.damageColliders.some(function (collider) {
-            return doCollidersOverlap(proj.flatCapsule, collider);
-        });
+                return doCollidersOverlap(proj.flatCapsule, collider);
+            }),
+            didDamage = false;
 
         if (didHit) {
             if (!this.invincible) {
+                didDamage = true;
+
                 if (this.health === this.maxHealth) {
                     this.smokeEmitter.enable();
                 }
@@ -131,7 +134,7 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
             proj.hit();
 
             new galaxies.audio.PositionedSound({
-                source: galaxies.audio.getSound('ufohit'),
+                source: galaxies.audio.getSound(didDamage ? 'elephatronhitsuccess' : 'elephatronhitfail'),
                 position: proj.object.position,
                 baseVolume: 1.4,
                 loop: false
