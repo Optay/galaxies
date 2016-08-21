@@ -48,6 +48,8 @@ window.addEventListener("load", function(event) {
     golden: function() { galaxies.engine.setPowerup('golden'); },
     shield: function() { galaxies.engine.setPowerup('shield'); },
     timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
+    addBossMonster: function () {galaxies.engine.addBoss('monster');},
+    addElephaTRON: function () {galaxies.engine.addBoss('elephatron');},
     addUFO: galaxies.engine.addUfo,
     invulnerable: false
   };
@@ -68,6 +70,8 @@ window.addEventListener("load", function(event) {
   datgui.add(userValues, 'golden' );
   datgui.add(userValues, 'shield' );
   datgui.add(userValues, 'timeWarp' );
+  datgui.add(userValues, 'addBossMonster' );
+  datgui.add(userValues, 'addElephaTRON' );
   datgui.add(userValues, 'addUFO' );
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
