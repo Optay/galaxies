@@ -473,8 +473,7 @@ galaxies.engine.initGame = function() {
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     map: galaxies.resources.bgPlanetTextures[0].texture,
-    transparent: true,
-    depthWrite: false
+    transparent: true
   });
   galaxies.engine.bgPlanet = new THREE.Mesh( new THREE.PlaneGeometry(200, 200, 1, 1),
                                              bgMaterial );
@@ -686,7 +685,7 @@ galaxies.engine.updateBackgroundPlanet = function() {
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
   galaxies.engine.sunFlares.position.set(0, 0, 0);
   
-  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-50, 120, -100) );
+  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-30, 90, -80) );
 
   var sunTargetScale = 1;
 
