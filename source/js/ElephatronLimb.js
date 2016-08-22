@@ -133,6 +133,10 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
         if (didHit) {
             proj.hit();
 
+            if (didDamage) {
+                galaxies.engine.showCombo(500, 1, this.object);
+            }
+
             new galaxies.audio.PositionedSound({
                 source: galaxies.audio.getSound(didDamage ? 'elephatronhitsuccess' : 'elephatronhitfail'),
                 position: proj.object.position,

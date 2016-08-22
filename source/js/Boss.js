@@ -9,6 +9,22 @@ galaxies.Boss = function () {
 };
 
 galaxies.Boss.prototype = {
+    defeat: function (defeatBonus) {
+        defeatBonus = defeatBonus || 0;
+
+        this.state = "exiting";
+
+        if (this.age < 20) {
+            defeatBonus += 40000;
+        } else if (this.age < 30) {
+            defeatBonus += 20000;
+        } else if (this.age < 40) {
+            defeatBonus += 5000;
+        }
+
+        galaxies.engine.showCombo(defeatBonus, 1, this.object);
+    },
+
     disable: function () {
         this.state = "inactive";
         this.object.visible = false;
@@ -35,6 +51,7 @@ galaxies.Boss.prototype = {
         this.state = "preEntry";
         this.object.visible = false;
         this.invincible = true;
+        this.age = 0;
 
         this.updateCoordinates();
     },
@@ -44,8 +61,10 @@ galaxies.Boss.prototype = {
             return;
         }
 
-            if (this.state === "entering") {
+        if (this.state === "entering") {
             this.updateEntering(delta);
+        } else if (this.state !== "preEntry") {
+            this.age += delta;
         }
 
         if (this.state === "exiting") {

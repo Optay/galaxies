@@ -263,7 +263,6 @@ galaxies.Elephatron.prototype.reset = function () {
     this.angularVelocity = 0;
     this.maxAngularVelocity = this.baseMaxAngularVelocity;
     this.mouthOpenAmount = 0;
-    this.age = 0;
     this.hoverBounce = 0;
     this.xBounce = 0;
     this.yBounce = 0;
@@ -301,8 +300,6 @@ galaxies.Elephatron.prototype.update = function (delta) {
     if (this.state === "inactive") {
         return;
     }
-
-    this.age += delta;
 
     this.antennaGlow.material.opacity = 0.5 + Math.sin(this.age) * 0.5;
 
@@ -436,8 +433,10 @@ galaxies.Elephatron.prototype.update = function (delta) {
         maxHealth;
 
     if (health === 0) {
-        this.state = "exiting";
-    } else if (prevHealth !== this.health) {
+        if (prevHealth > 0) {
+            this.defeat(9000);
+        }
+    } else if (prevHealth !== health) {
         galaxies.fx.shakeCamera(1, 1.5);
 
         maxHealth = this.maxHealth;

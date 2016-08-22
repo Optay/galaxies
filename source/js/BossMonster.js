@@ -57,8 +57,10 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
 
     this.timeToNextRoar = 1;
 
-    if (--this.livesLeft <= 0) {
-        this.state = "exiting";
+    galaxies.engine.showCombo(2000, 1, eye.eyeball);
+
+    if (--this.livesLeft === 0) {
+        this.defeat(6000);
     }
 };
 
