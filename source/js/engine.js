@@ -685,7 +685,7 @@ galaxies.engine.updateBackgroundPlanet = function() {
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
   galaxies.engine.sunFlares.position.set(0, 0, 0);
   
-  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-30, 90, -80) );
+  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-25, 80, -73) );
 
   var sunTargetScale = 1;
 
