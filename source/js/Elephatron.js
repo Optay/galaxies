@@ -195,6 +195,7 @@ galaxies.Elephatron.prototype.initModel = function () {
 
     galaxies.engine.rootObject.add(mainObject);
 
+    this.flameScale = 1.43;
     this.leftLegFlame = leftLegFlame;
     this.rightLegFlame = rightLegFlame;
     this.topTeeth = topTeeth;
@@ -431,6 +432,15 @@ galaxies.Elephatron.prototype.update = function (delta) {
     this.object.position.copy(this.position)
         .add(new THREE.Vector3(Math.sin(this.xBounce), Math.sin(this.yBounce), 0).multiplyScalar(this.hoverBounce));
 
+    var wave = Math.sin(this.age * 3),
+        flameScale = this.flameScale + wave / 8,
+        leftFlame = this.leftLegFlame,
+        rightFlame = this.rightLegFlame;
+
+    leftFlame.scale.y = rightFlame.scale.y = flameScale;
+    leftFlame.position.y = rightFlame.position.y = -1.185 - flameScale / 2;
+    leftFlame.material.opacity = rightFlame.material.opacity = 0.9 + wave * 0.1;
+
     var prevHealth = this.health;
 
     this.leftArm.update(delta);
@@ -544,8 +554,7 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
         this.object.rotation.z = 0;
         this.timeToNextMove = Math.random() * 3 + 3 * this.health / this.maxHealth;
 
-        this.leftLegFlame.scale.y = this.rightLegFlame.scale.y = 1.43;
-        this.leftLegFlame.position.y = this.rightLegFlame.position.y = -1.9;
+        this.flameScale = 1.43;
 
         this.xBounceRate = halfScale + Math.random() * halfScale;
         this.yBounceRate = halfScale + Math.random() * halfScale;
@@ -561,13 +570,11 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
 
     this.position.set(Math.cos(this.currentAngle) * rx, Math.sin(this.currentAngle) * this.ry, 0);
 
-    var xScale = this.object.scale.x,
-        additionalFlameScale = 2 * this.angularVelocity.y / xScale;
+    var xScale = this.object.scale.x;
 
     this.object.rotation.z = 0.05 * (prevPos.x - this.position.x) / (xScale * delta);
 
-    this.leftLegFlame.scale.y = this.rightLegFlame.scale.y = 1.43 + additionalFlameScale;
-    this.leftLegFlame.position.y = this.rightLegFlame.position.y = -1.9 - additionalFlameScale / 2;
+    this.flameScale = 1.43 + 3 * this.angularVelocity.y / xScale;
 };
 
 Object.defineProperties(galaxies.Elephatron.prototype, {
