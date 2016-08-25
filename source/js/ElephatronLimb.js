@@ -16,7 +16,6 @@ galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
     this.shotCooldown = 0.5;
     this.object = new THREE.Object3D();
     this.limb = new THREE.Object3D();
-    this.flip = true;
     this.shadow = null;
     this.maxAngularVelocity = Math.PI / 2;
     this.slowingDistance = Math.PI / 8;
@@ -54,15 +53,12 @@ Object.defineProperties(galaxies.ElephatronLimb.prototype, {
 
             this._angle = value;
 
-            var direction = this.flip ? -Math.sign(Math.sin(value)) : 1,
-                adjustedAngle = value + this.limbAngleOffset * direction;
+            var adjustedAngle = value + this.limbAngleOffset;
 
             this.limb.rotation.z = adjustedAngle;
-            this.limb.scale.y = direction;
 
             if (this.shadow) {
                 this.shadow.rotation.z = adjustedAngle;
-                this.shadow.scale.y = direction;
             }
         }
     },
@@ -140,7 +136,7 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
             new galaxies.audio.PositionedSound({
                 source: galaxies.audio.getSound(didDamage ? 'elephatronhitsuccess' : 'elephatronhitfail'),
                 position: proj.object.position,
-                baseVolume: 1.4,
+                baseVolume: 2.2,
                 loop: false
             });
         }
@@ -180,6 +176,14 @@ galaxies.ElephatronLimb.prototype.confineAngle = function (angle) {
     }
 
     return Math.min(Math.max(angle, this.minAngle), this.maxAngle);
+};
+
+galaxies.ElephatronLimb.prototype.disable = function () {
+    this.smokeEmitter.disable();
+
+    if (this.smokeEmitter.age) {
+        this.smokeEmitter.reset(true);
+    }
 };
 
 galaxies.ElephatronLimb.prototype.fireLaser = function () {
@@ -309,12 +313,6 @@ galaxies.ElephatronLimb.prototype.reset = function () {
 
     if (this.shadow) {
         this.shadowSprite.material.map = this.shadowTexture;
-    }
-
-    this.smokeEmitter.disable();
-
-    if (this.smokeEmitter.age) {
-        this.smokeEmitter.reset(true);
     }
 };
 

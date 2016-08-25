@@ -30,8 +30,16 @@ galaxies.Elephatron.prototype.disable = function () {
     galaxies.Boss.prototype.disable.call(this);
 
     this.laserBlastPool.forEach(function (blast) {
-        galaxies.engine.rootObject.remove(blast);
+        galaxies.engine.rootObject.remove(blast.sprite);
     });
+
+    this.laserPelletPool.forEach(function (pellet) {
+        pellet.removeFromScene();
+    });
+
+    this.leftArm.disable();
+    this.rightArm.disable();
+    this.trunk.disable();
 };
 
 galaxies.Elephatron.prototype.enter = function () {
@@ -72,7 +80,7 @@ galaxies.Elephatron.prototype.fillPools = function () {
             sound: new galaxies.audio.PositionedSound({
                 source: galaxies.audio.getSound('ufoshoot'),
                 position: this.rootPosition,
-                baseVolume: 1.5,
+                baseVolume: 2.4,
                 loop: false,
                 start: false,
                 dispose: false
@@ -93,7 +101,7 @@ galaxies.Elephatron.prototype.getLaserBlast = function (angle) {
     }
 
     blast.sprite.visible = true;
-    blast.material.rotation = angle - Math.PI / 2;
+    blast.material.rotation = angle + Math.PI / 2;
     blast.spriteSheet.play();
 
     return blast;
@@ -187,6 +195,8 @@ galaxies.Elephatron.prototype.initModel = function () {
 
     galaxies.engine.rootObject.add(mainObject);
 
+    this.leftLegFlame = leftLegFlame;
+    this.rightLegFlame = rightLegFlame;
     this.topTeeth = topTeeth;
     this.bottomTeeth = bottomTeeth;
     this.antennaGlow = antennaGlow;
@@ -196,15 +206,14 @@ galaxies.Elephatron.prototype.initModel = function () {
     this.leftArm = new galaxies.ElephatronLimb(this.getLaserBlast, this.spawnLaserPellet, {
         limbTextureID: "elephatronarm",
         limbDamagedTextureID: "elephatronarmdamaged",
-        limbSpriteScale: new THREE.Vector3(-1.73, 1.48, 1),
-        limbSpriteOffset: new THREE.Vector3(0.675, -0.43, 0),
-        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(1.24, -0.87, 0), 0.4)],
-        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0.4, -0.1, 0),
-            new THREE.Vector3(1.1, -0.5, 0), 0.3)],
-        laserEmitPoint: new THREE.Vector3(1.54, -1.17, 0.05),
+        limbSpriteScale: new THREE.Vector3(-1.95, 0.93, 1),
+        limbSpriteOffset: new THREE.Vector3(0.855, -0.065, 0),
+        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(1.46, -0.03, 0), 0.425)],
+        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(1.46, -0.03, 0), 0.3)],
+        laserEmitPoint: new THREE.Vector3(1.68, -0.03, 0.05),
         minAngle: -Math.PI / 2,
         maxAngle: Math.PI / 2,
-        limbAngleOffset: Math.PI / 4,
         startAngle: -Math.PI / 4
     });
 
@@ -213,15 +222,15 @@ galaxies.Elephatron.prototype.initModel = function () {
     this.rightArm = new galaxies.ElephatronLimb(this.getLaserBlast, this.spawnLaserPellet, {
         limbTextureID: "elephatronarm",
         limbDamagedTextureID: "elephatronarmdamaged",
-        limbSpriteScale: new THREE.Vector3(1.73, 1.48, 1),
-        limbSpriteOffset: new THREE.Vector3(-0.675, -0.43, 0),
-        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(-1.24, -0.87, 0), 0.4)],
-        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(-0.4, -0.1, 0),
-            new THREE.Vector3(-1.1, -0.5, 0), 0.3)],
-        laserEmitPoint: new THREE.Vector3(-1.54, -1.17, 0.05),
+        limbSpriteScale: new THREE.Vector3(1.95, 0.93, 1),
+        limbSpriteOffset: new THREE.Vector3(-0.855, -0.065, 0),
+        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(-1.46, -0.03, 0), 0.425)],
+        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(-1.46, -0.03, 0), 0.3)],
+        laserEmitPoint: new THREE.Vector3(-1.68, -0.03, 0.05),
         minAngle: Math.PI / 2,
         maxAngle: 3 * Math.PI / 2,
-        limbAngleOffset: 3 * Math.PI / 4,
+        limbAngleOffset: Math.PI,
         startAngle: 5 * Math.PI / 4
     });
 
@@ -232,7 +241,6 @@ galaxies.Elephatron.prototype.initModel = function () {
         limbDamagedTextureID: "elephatronnosedamaged",
         shadowTextureID: "elephatronnoseshadow",
         shadowDamagedTextureID: "elephatronnosedamagedshadow",
-        flip: false,
         limbSpriteScale: new THREE.Vector3(1.06, 2.23, 1),
         limbSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
         shadowSpriteScale: new THREE.Vector3(1.11, 2.48, 1),
@@ -489,16 +497,11 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
 galaxies.Elephatron.prototype.updateExiting = function (delta) {
     galaxies.Boss.prototype.updateExiting.call(this);
 
-    if (this.position.y > this.bottomEdge - this.object.scale.y * 3) {
+    if (this.position.y > this.bottomEdge - this.object.scale.y * 4) {
         this.position.y -= delta * this.object.scale.y * 4;
         this.object.rotation.z += delta * Math.PI;
     } else {
-        this.state = "inactive";
-        this.object.visible = false;
-
-        this.leftArm.reset();
-        this.rightArm.reset();
-        this.trunk.reset();
+        this.disable();
     }
 };
 
@@ -541,6 +544,9 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
         this.object.rotation.z = 0;
         this.timeToNextMove = Math.random() * 3 + 3 * this.health / this.maxHealth;
 
+        this.leftLegFlame.scale.y = this.rightLegFlame.scale.y = 1.43;
+        this.leftLegFlame.position.y = this.rightLegFlame.position.y = -1.9;
+
         this.xBounceRate = halfScale + Math.random() * halfScale;
         this.yBounceRate = halfScale + Math.random() * halfScale;
 
@@ -555,7 +561,13 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
 
     this.position.set(Math.cos(this.currentAngle) * rx, Math.sin(this.currentAngle) * this.ry, 0);
 
-    this.object.rotation.z = 0.05 * (prevPos.x - this.position.x) / (this.object.scale.x * delta);
+    var xScale = this.object.scale.x,
+        additionalFlameScale = 2 * this.angularVelocity.y / xScale;
+
+    this.object.rotation.z = 0.05 * (prevPos.x - this.position.x) / (xScale * delta);
+
+    this.leftLegFlame.scale.y = this.rightLegFlame.scale.y = 1.43 + additionalFlameScale;
+    this.leftLegFlame.position.y = this.rightLegFlame.position.y = -1.9 - additionalFlameScale / 2;
 };
 
 Object.defineProperties(galaxies.Elephatron.prototype, {
