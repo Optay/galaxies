@@ -2,7 +2,6 @@
 
 this.galaxies = this.galaxies || {};
 
-// TODO: smoke
 galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
     props = props || {};
 

@@ -490,25 +490,25 @@ this.galaxies.Ufo = function() {
     galaxies.engine.targetAngle = 0;
 
     createjs.Tween.get(objectPosition)
-        .to({x: 2, y: -1}, 2000)
+        .to({x: 2, y: -1}, 2000, createjs.Ease.cubicOut)
         .call(function () {
           new galaxies.audio.SimpleSound({
             source: galaxies.audio.getSound('unleashthebeast'),
             loop: false
           });
         })
-        .to({x: 1.9, y: -1.1}, 1000)
-        .to({x: 2.1, y: -1}, 1000)
-        .to({x: 2, y: -0.9}, 1000)
-        .to({y: -1}, 1000)
-        .to({x: 1.9}, 1000)
-        .to({y: -0.9}, 1500)
+        .to({x: 1.9, y: -1.1}, 1000, createjs.Ease.sineInOut)
+        .to({x: 2.1, y: -1}, 1000, createjs.Ease.sineInOut)
+        .to({x: 2, y: -0.9}, 1000, createjs.Ease.sineInOut)
+        .to({y: -1}, 1000, createjs.Ease.sineInOut)
+        .to({x: 1.9}, 1000, createjs.Ease.sineInOut)
+        .to({y: -0.9}, 1500, createjs.Ease.sineInOut)
         .call(function() {
           galaxies.engine.boss.enter();
           galaxies.engine.addInputListeners();
           galaxies.ui.showReticle();
         })
-        .to({x: -12}, 2000)
+        .to({x: -12}, 2000, createjs.Ease.cubicIn)
         .call(function () {
           galaxies.engine.rootObject.remove(anchor);
           model.rotation.set(Math.PI,0,-Math.PI/2);
