@@ -493,7 +493,7 @@ body {
   z-index: 30;
 }
 
-.title:not(li) {
+.menu-holder .title {
   position: absolute;
   width: 800px;
   height: 200px;
@@ -512,7 +512,7 @@ body {
   font-size: 60px;
   line-height: 60px;
 }
-.title-on {
+.menu-holder .title-on {
   top: 50%;
 }
 

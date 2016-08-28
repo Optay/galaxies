@@ -58,6 +58,7 @@ window.addEventListener("load", function(event) {
     Clone: function() { galaxies.engine.setPowerup('clone'); },
     Spread: function() { galaxies.engine.setPowerup('spread'); },
     Golden: function() { galaxies.engine.setPowerup('golden'); },
+    Seeker: function() { galaxies.engine.setPowerup('seeker'); },
     Shield: function() { galaxies.engine.setPowerup('shield'); },
     TimeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
     BossMonster: function () {galaxies.engine.addBoss('monster');},
@@ -92,11 +93,10 @@ window.addEventListener("load", function(event) {
     if (galaxies.engine.planetNumber === previousPlanet) {
       galaxies.engine.initLevel();
     } else {
-      console.log("Moving on!");
       galaxies.engine.initRootRotation();
       galaxies.engine.planetTransition();
     }
-  }
+  };
 
   locationController.onChange(galaxies.debug.changeLocation);
 
@@ -121,6 +121,7 @@ window.addEventListener("load", function(event) {
   powerups.add(userValues, 'Clone' );
   powerups.add(userValues, 'Spread' );
   powerups.add(userValues, 'Golden' );
+  powerups.add(userValues, 'Seeker' );
   powerups.add(userValues, 'Shield' );
   powerups.add(userValues, 'TimeWarp' );
 

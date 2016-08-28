@@ -38,9 +38,11 @@ galaxies.Projectile.prototype.initialize = function (type, model, startAngle, di
   var lookAngle = startAngle + this.lookOffset;
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0).add(this.startPos);
 
-  this.object.lookAt(direction);
+  this.object.rotation.set(Math.PI / 2, Math.atan2(direction.y, direction.x) + Math.PI / 2, 0);
 
   galaxies.utils.conify(this.object);
+
+  this.findSeekTarget();
 };
 
 galaxies.Projectile.prototype.reset = function () {
@@ -125,6 +127,47 @@ galaxies.Projectile.prototype.addToScene = function () {
   });
 };
 
+galaxies.Projectile.prototype.findSeekTarget = function () {
+  this.seekTarget = null;
+
+  if (this.type !== "seeker") {
+    return;
+  }
+
+  var ufo = galaxies.engine.ufo,
+      ourPos = this.object.position,
+      ourAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(ourPos)),
+      maxAngleDiff = Math.PI / 2;
+
+  if (ufo.state !== "inactive") {
+    var ufoAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(ufo.rootPosition.clone().sub(ourPos)));
+
+    if (Math.abs(ufoAngle - ourAngle) < maxAngleDiff) {
+      this.seekTarget = ufo;
+
+      return;
+    }
+  }
+
+  var visRadiusSq = galaxies.engine.OBSTACLE_VISIBLE_RADIUS * galaxies.engine.OBSTACLE_VISIBLE_RADIUS,
+      smallestDiff = maxAngleDiff;
+
+  galaxies.engine.obstacles.every(function (asteroid) {
+    var position = asteroid.object.position.clone(),
+        flSqr = galaxies.utils.flatLengthSqr(position);
+
+    if (asteroid.state === "inactive" || flSqr > visRadiusSq) {
+      return;
+    }
+
+    var asteroidAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(position.sub(ourPos)));
+
+    if (Math.abs(asteroidAngle - ourAngle) < smallestDiff) {
+      this.seekTarget = asteroid;
+    }
+  }, this);
+};
+
 galaxies.Projectile.prototype.updatePosition = function (newAngle) {
   var newStart = new THREE.Vector3(-Math.sin(newAngle), Math.cos(newAngle), 0);
   newStart.multiplyScalar(galaxies.engine.PROJ_START_Y);
@@ -145,9 +188,12 @@ galaxies.Projectile.prototype.updatePosition = function (newAngle) {
   });
 
   direction.multiplyScalar(distanceFromOldStart + 1).add( newStart );
-  this.object.lookAt(direction);
+
+  this.object.rotation.set(Math.PI / 2, Math.atan2(direction.y, direction.x) + Math.PI / 2, 0);
 
   galaxies.utils.conify(this.object);
+
+  this.findSeekTarget();
 };
 
 galaxies.Projectile.prototype.hit = function () {
@@ -205,6 +251,24 @@ galaxies.Projectile.prototype.update = function (delta) {
 
   if (galaxies.utils.flatLengthSqr(this.lastPos) < Math.pow(galaxies.engine.PROJ_START_Y + 1, 2)) {
     this.lastPos.multiplyScalar(0.75);
+  }
+
+  if (this.seekTarget) {
+    var seekPos = (this.seekTarget.rootPosition || this.seekTarget.object.position).clone();
+
+    if (galaxies.utils.flatLengthSqr(seekPos) < galaxies.utils.flatLengthSqr(this.object.position)) {
+      this.seekTarget = null;
+    } else {
+      var currentAngle = galaxies.utils.normalizeAngle(this.object.rotation.y - Math.PI / 2),
+          maxDiff = 2 * Math.PI * delta;
+
+      seekPos.z = this.object.position.z;
+
+      seekPos.sub(this.object.position);
+
+      this.object.rotation.y = Math.min(Math.max(Math.atan2(seekPos.y, seekPos.x), currentAngle - maxDiff),
+              currentAngle + maxDiff) + Math.PI / 2;
+    }
   }
 
   this.object.translateZ(this.PROJECTILE_SPEED * delta);

@@ -134,6 +134,9 @@ galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
 
   var map;
 
+  this.model.scale.set(1, 1, 1);
+  this.model.material.color = 0xFFFFFF;
+
   switch (powerupType) {
     case "clone":
       map = new THREE.Texture(galaxies.queue.getResult("alienproicon"));
@@ -143,6 +146,10 @@ galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
       break;
     case "golden":
       map = new THREE.Texture(galaxies.queue.getResult("rainbowicon"));
+      break;
+    case "seeker":
+      map = new THREE.Texture();
+      this.model.material.color = 0x0000FF;
       break;
     case "heart":
       map = new THREE.Texture(galaxies.queue.getResult("heart"));

@@ -765,8 +765,8 @@ this.galaxies.Player = function() {
   }
   
   var setPowerup = function( powerup ) {
-    if ( powerup === '' ) { powerup = 'base'; }
-    
+    if ( powerup === '' || powerup === 'seeker' ) { powerup = 'base'; }
+
     if ( powerup === 'clone' ) {
       cloneAIData.playedSound = false;
       addClone();

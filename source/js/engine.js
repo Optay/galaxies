@@ -165,7 +165,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 3300;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
-galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
+galaxies.engine.powerups = ['clone', 'spread', 'golden', 'seeker', 'timeWarp', 'shield'];
 galaxies.engine.shownPowerups = [];
 galaxies.engine.powerupCapsules = [];
 galaxies.engine.currentPowerup = 'boottime';
@@ -1029,7 +1029,7 @@ galaxies.engine.shoot = function( indestructible ) {
 
   ++galaxies.engine.projectilesLaunchedRound;
 
-  if (indestructible) {
+  if (galaxies.engine.shotCounter > 0) {
     --galaxies.engine.shotCounter;
 
     galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
@@ -2066,6 +2066,7 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   switch (newPowerup) {
     case 'spread':
     case 'golden':
+    case 'seeker':
       galaxies.engine.powerupTimer = 0;
       galaxies.engine.shotCounter = 20;
       break;
@@ -2106,6 +2107,9 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     case 'shield':
       powerupMessage = 'Lunar Defense';
       break;
+    case 'seeker':
+      powerupMessage = 'Boom-a-Racquet';
+      /* falls through */
     default:
       galaxies.engine.shootFunction = galaxies.engine.shoot;
       break;
