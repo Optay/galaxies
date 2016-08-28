@@ -420,7 +420,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextlost", galaxies.engine.handleContextLost, false);
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);
 
-  galaxies.engine.composer = new WAGNER.Composer(galaxies.engine.renderer);
+  galaxies.engine.composer = new WAGNER.Composer(galaxies.engine.renderer, {useRGBA: true});
   galaxies.engine.shadersPool = new WAGNER.ShadersPool();
   galaxies.engine.composerStack = new WAGNER.Stack(galaxies.engine.shadersPool);
 
@@ -473,7 +473,8 @@ galaxies.engine.initGame = function() {
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     map: galaxies.resources.bgPlanetTextures[0].texture,
-    transparent: true
+    transparent: true,
+    depthWrite: false
   });
   galaxies.engine.bgPlanet = new THREE.Mesh( new THREE.PlaneGeometry(200, 200, 1, 1),
                                              bgMaterial );
