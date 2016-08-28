@@ -493,7 +493,7 @@ body {
   z-index: 30;
 }
 
-.title {
+.title:not(li) {
   position: absolute;
   width: 800px;
   height: 200px;

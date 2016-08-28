@@ -5,9 +5,21 @@ galaxies.debug = {};
 // init debug controls
 window.addEventListener("load", function(event) {
   var datgui = new dat.GUI(),
-      isDev = location.search.search(/[\?&]dev\b/g) !== -1;
+      locationParams = location.search.substr(1).split('&'),
+      urlParams = {},
+      isDev;
+
+  locationParams.forEach(function (param) {
+    var pieces = param.split('=');
+
+    urlParams[pieces[0]] = pieces[1];
+  });
   
   console.log("debug init");
+
+  galaxies.debug.urlParams = urlParams;
+
+  isDev = urlParams.hasOwnProperty("dev");
 
   datgui.close();
 
@@ -20,66 +32,112 @@ window.addEventListener("load", function(event) {
   document.body.appendChild(galaxies.debug.stats.domElement);
 
   var userValues = {
-    pluto: function() { setLevel(1); },
-    neptune: function() { setLevel(1 + galaxies.engine.ROUNDS_PER_PLANET); },
-    uranus: function() { setLevel(1 + 2 * galaxies.engine.ROUNDS_PER_PLANET); },
-    saturn: function() { setLevel(1 + 3 * galaxies.engine.ROUNDS_PER_PLANET); },
-    jupiter: function() { setLevel(1 + 4 * galaxies.engine.ROUNDS_PER_PLANET); },
-    mars: function() { setLevel(1 + 5 * galaxies.engine.ROUNDS_PER_PLANET); },
-    earth: function() { setLevel(1 + 6 * galaxies.engine.ROUNDS_PER_PLANET); },
-    round2: function () {
+    Location: urlParams.startAt || "1-1",
+    Pluto: function() { setLevel(1); },
+    Neptune: function() { setLevel(1 + galaxies.engine.ROUNDS_PER_PLANET); },
+    Uranus: function() { setLevel(1 + 2 * galaxies.engine.ROUNDS_PER_PLANET); },
+    Saturn: function() { setLevel(1 + 3 * galaxies.engine.ROUNDS_PER_PLANET); },
+    Jupiter: function() { setLevel(1 + 4 * galaxies.engine.ROUNDS_PER_PLANET); },
+    Mars: function() { setLevel(1 + 5 * galaxies.engine.ROUNDS_PER_PLANET); },
+    Earth: function() { setLevel(1 + 6 * galaxies.engine.ROUNDS_PER_PLANET); },
+    Round2: function () {
       galaxies.engine.levelNumber += 2 - galaxies.engine.roundNumber;
       galaxies.engine.clearLevel();
       galaxies.engine.initLevel();
     },
-    round3: function() {
+    Round3: function() {
       galaxies.engine.levelNumber += 3 - galaxies.engine.roundNumber;
       galaxies.engine.clearLevel();
       galaxies.engine.initLevel();
     },
-    bossRound: function() {
+    BossRound: function() {
       galaxies.engine.levelNumber += 4 - galaxies.engine.roundNumber;
       galaxies.engine.clearLevel();
       galaxies.engine.initLevel();
     },
-    miniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
-    clone: function() { galaxies.engine.setPowerup('clone'); },
-    spread: function() { galaxies.engine.setPowerup('spread'); },
-    golden: function() { galaxies.engine.setPowerup('golden'); },
-    shield: function() { galaxies.engine.setPowerup('shield'); },
-    timeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
-    addBossMonster: function () {galaxies.engine.addBoss('monster');},
-    addElephaTRON: function () {galaxies.engine.addBoss('elephatron');},
-    addUFO: galaxies.engine.addUfo,
+    Clone: function() { galaxies.engine.setPowerup('clone'); },
+    Spread: function() { galaxies.engine.setPowerup('spread'); },
+    Golden: function() { galaxies.engine.setPowerup('golden'); },
+    Shield: function() { galaxies.engine.setPowerup('shield'); },
+    TimeWarp: function() { galaxies.engine.setPowerup('timeWarp'); },
+    BossMonster: function () {galaxies.engine.addBoss('monster');},
+    ElephaTRON: function () {galaxies.engine.addBoss('elephatron');},
+    MiniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
+    UFO: galaxies.engine.addUfo,
     invulnerable: false
   };
 
-  datgui.add(userValues, 'pluto' );
-  datgui.add(userValues, 'neptune' );
-  datgui.add(userValues, 'uranus' );
-  datgui.add(userValues, 'saturn' );
-  datgui.add(userValues, 'jupiter' );
-  datgui.add(userValues, 'mars' );
-  datgui.add(userValues, 'earth' );
-  datgui.add(userValues, 'round2' );
-  datgui.add(userValues, 'round3' );
-  datgui.add(userValues, 'bossRound' );
-  datgui.add(userValues, 'miniUFO' );
-  datgui.add(userValues, 'clone' );
-  datgui.add(userValues, 'spread' );
-  datgui.add(userValues, 'golden' );
-  datgui.add(userValues, 'shield' );
-  datgui.add(userValues, 'timeWarp' );
-  datgui.add(userValues, 'addBossMonster' );
-  datgui.add(userValues, 'addElephaTRON' );
-  datgui.add(userValues, 'addUFO' );
+  var locationController = datgui.add(userValues, "Location"),
+      validLocation = /\d+\s*-\s*\d+/;
+
+  galaxies.debug.changeLocation = function(value) {
+    if (!validLocation.test(value)) {
+      return;
+    }
+
+    var parts = value.split('-').map(function (val) {
+          return parseInt(val.trim());
+        }),
+        previousPlanet = galaxies.engine.planetNumber;
+
+    if (parts[0] < 1 || parts[0] > galaxies.resources.bgPlanetTextures.length ||
+        parts[1] < 1 || parts[1] > galaxies.engine.ROUNDS_PER_PLANET) {
+      return;
+    }
+
+    galaxies.engine.levelNumber = (parts[0] - 1) * galaxies.engine.ROUNDS_PER_PLANET + parts[1];
+
+    galaxies.engine.clearLevel();
+
+    if (galaxies.engine.planetNumber === previousPlanet) {
+      galaxies.engine.initLevel();
+    } else {
+      console.log("Moving on!");
+      galaxies.engine.initRootRotation();
+      galaxies.engine.planetTransition();
+    }
+  }
+
+  locationController.onChange(galaxies.debug.changeLocation);
+
+  var planets = datgui.addFolder("Planets");
+
+  planets.add(userValues, 'Pluto' );
+  planets.add(userValues, 'Neptune' );
+  planets.add(userValues, 'Uranus' );
+  planets.add(userValues, 'Saturn' );
+  planets.add(userValues, 'Jupiter' );
+  planets.add(userValues, 'Mars' );
+  planets.add(userValues, 'Earth' );
+
+  var round = datgui.addFolder("Round");
+
+  round.add(userValues, 'Round2' );
+  round.add(userValues, 'Round3' );
+  round.add(userValues, 'BossRound' );
+
+  var powerups = datgui.addFolder("Powerups");
+
+  powerups.add(userValues, 'Clone' );
+  powerups.add(userValues, 'Spread' );
+  powerups.add(userValues, 'Golden' );
+  powerups.add(userValues, 'Shield' );
+  powerups.add(userValues, 'TimeWarp' );
+
+  var bosses = datgui.addFolder("Bosses");
+
+  bosses.add(userValues, 'BossMonster' );
+  bosses.add(userValues, 'ElephaTRON' );
+
+  var ufos = datgui.addFolder("UFOs");
+
+  ufos.add(userValues, 'UFO' );
+  ufos.add(userValues, 'MiniUFO' );
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
-  invulnerableController.onChange( setInvulnerable );
-
-  function setInvulnerable( newValue ) {
+  invulnerableController.onChange( function (newValue) {
     galaxies.engine.invulnerable = newValue;
-  }
+  });
 
   function setLevel( newLevel ) {
     galaxies.engine.levelNumber = newLevel;

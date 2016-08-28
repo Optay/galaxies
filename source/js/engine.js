@@ -523,7 +523,10 @@ galaxies.engine.startGame = function() {
   // There can be only one!
   galaxies.engine.ufo = new galaxies.Ufo();
 
-  if (location.search.search(/[\?&]noTutorial\b/g) === -1) {
+  var urlParams = galaxies.debug.urlParams,
+      hasStartPoint = urlParams.hasOwnProperty("startAt");
+
+  if (!hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
     galaxies.engine.inTutorial = true;
   }
 
@@ -536,7 +539,10 @@ galaxies.engine.startGame = function() {
   if ( galaxies.engine.animationFrameRequest == null ) {
     galaxies.engine.animate();
   }
-  
+
+  if (hasStartPoint) {
+    galaxies.debug.changeLocation(urlParams.startAt);
+  }
 }
 
 galaxies.engine.restartGame = function() {
