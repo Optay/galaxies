@@ -294,6 +294,8 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
 
+    smokeGroup.mesh.position.z = 0.1;
+
     this.opacityValues = smokeEmitter.opacity.value;
     this.smokeEmitter = smokeEmitter;
     this.smokeGroup = smokeGroup;
@@ -319,11 +321,7 @@ galaxies.ElephatronLimb.prototype.update = function (delta) {
     if (this.health !== this.maxHealth) {
         this.updateCollider(this.damageColliders[0]);
 
-        var pos = this.damageColliders[0].rootPosition.clone();
-
-        pos.z += 0.1 * this.scale;
-
-        this.smokeEmitter.position.value = pos;
+        this.smokeEmitter.position.value = this.damageColliders[0].rootPosition.clone();
         this.smokeGroup.tick(delta);
     }
 
