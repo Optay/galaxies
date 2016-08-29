@@ -14,6 +14,7 @@ galaxies.Projectile = function (type, model, startAngle, directionOffset, indest
   this.rotationAxis = new THREE.Vector3(0, 1, 0);
   this.particleEmitters = [];
   this.particleGroups = [];
+  this.currentAngle = 0;
 
   this.initialize(type, model, startAngle, directionOffset, indestructible, particles);
 };
@@ -38,7 +39,9 @@ galaxies.Projectile.prototype.initialize = function (type, model, startAngle, di
   var lookAngle = startAngle + this.lookOffset;
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0).add(this.startPos);
 
-  this.object.rotation.set(Math.PI / 2, Math.atan2(direction.y, direction.x) + Math.PI / 2, 0);
+  this.currentAngle = lookAngle;
+
+  this.object.lookAt(direction);
 
   galaxies.utils.conify(this.object);
 
@@ -136,13 +139,13 @@ galaxies.Projectile.prototype.findSeekTarget = function () {
 
   var ufo = galaxies.engine.ufo,
       ourPos = this.object.position,
-      ourAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(ourPos)),
+      ourAngle = galaxies.utils.flatAngle(ourPos),
       maxAngleDiff = Math.PI / 2;
 
   if (ufo.state !== "inactive") {
-    var ufoAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(ufo.rootPosition.clone().sub(ourPos)));
+    var ufoAngle = galaxies.utils.flatAngle(ufo.rootPosition.clone().sub(ourPos));
 
-    if (Math.abs(ufoAngle - ourAngle) < maxAngleDiff) {
+    if (Math.abs(galaxies.utils.normalizeAngle(ufoAngle - ourAngle)) < maxAngleDiff) {
       this.seekTarget = ufo;
 
       return;
@@ -160,9 +163,9 @@ galaxies.Projectile.prototype.findSeekTarget = function () {
       return;
     }
 
-    var asteroidAngle = galaxies.utils.normalizeAngle(galaxies.utils.flatAngle(position.sub(ourPos)));
+    var asteroidAngle = galaxies.utils.flatAngle(position.sub(ourPos));
 
-    if (Math.abs(asteroidAngle - ourAngle) < smallestDiff) {
+    if (Math.abs(galaxies.utils.normalizeAngle(asteroidAngle - ourAngle)) < smallestDiff) {
       this.seekTarget = asteroid;
     }
   }, this);
@@ -175,6 +178,8 @@ galaxies.Projectile.prototype.updatePosition = function (newAngle) {
   var lookAngle = newAngle + this.lookOffset;
   var distanceFromOldStart = galaxies.utils.flatLength(this.object.position.clone().sub(this.startPos));
   var direction = new THREE.Vector3(-Math.sin(lookAngle), Math.cos(lookAngle), 0);
+
+  this.currentAngle = lookAngle;
 
   this.startPos = newStart;
 
@@ -189,7 +194,7 @@ galaxies.Projectile.prototype.updatePosition = function (newAngle) {
 
   direction.multiplyScalar(distanceFromOldStart + 1).add( newStart );
 
-  this.object.rotation.set(Math.PI / 2, Math.atan2(direction.y, direction.x) + Math.PI / 2, 0);
+  this.object.lookAt(direction);
 
   galaxies.utils.conify(this.object);
 
@@ -259,15 +264,20 @@ galaxies.Projectile.prototype.update = function (delta) {
     if (galaxies.utils.flatLengthSqr(seekPos) < galaxies.utils.flatLengthSqr(this.object.position)) {
       this.seekTarget = null;
     } else {
-      var currentAngle = galaxies.utils.normalizeAngle(this.object.rotation.y - Math.PI / 2),
-          maxDiff = 2 * Math.PI * delta;
+      var maxDiff = 2 * Math.PI * delta,
+          targetAngle, diff;
 
       seekPos.z = this.object.position.z;
 
       seekPos.sub(this.object.position);
 
-      this.object.rotation.y = Math.min(Math.max(Math.atan2(seekPos.y, seekPos.x), currentAngle - maxDiff),
-              currentAngle + maxDiff) + Math.PI / 2;
+      targetAngle = Math.atan2(seekPos.y, seekPos.x);
+
+      diff = Math.max(Math.min(galaxies.utils.normalizeAngle(targetAngle - this.currentAngle), maxDiff), -maxDiff);
+
+      this.currentAngle += diff;
+
+      this.object.rotation.set(Math.PI / 2, this.currentAngle + Math.PI / 2, 0);
     }
   }
 

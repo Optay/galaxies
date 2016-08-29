@@ -135,7 +135,7 @@ galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
   var map;
 
   this.model.scale.set(1, 1, 1);
-  this.model.material.color = 0xFFFFFF;
+  this.model.material.color.set(0xFFFFFF);
 
   switch (powerupType) {
     case "clone":
@@ -149,7 +149,7 @@ galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
       break;
     case "seeker":
       map = new THREE.Texture();
-      this.model.material.color = 0x0000FF;
+      this.model.material.color.set(0x0000FF);
       break;
     case "heart":
       map = new THREE.Texture(galaxies.queue.getResult("heart"));

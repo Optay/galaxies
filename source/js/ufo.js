@@ -507,6 +507,7 @@ this.galaxies.Ufo = function() {
           galaxies.engine.boss.enter();
           galaxies.engine.addInputListeners();
           galaxies.ui.showReticle();
+          createjs.Tween.get(model.rotation).to({x: -Math.PI / 2}, 2000, createjs.Ease.cubicIn);
         })
         .to({x: -12}, 2000, createjs.Ease.cubicIn)
         .call(function () {

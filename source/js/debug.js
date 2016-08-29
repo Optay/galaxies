@@ -79,7 +79,8 @@ window.addEventListener("load", function(event) {
     var parts = value.split('-').map(function (val) {
           return parseInt(val.trim());
         }),
-        previousPlanet = galaxies.engine.planetNumber;
+        previousPlanet = galaxies.engine.planetNumber,
+        previousRound = galaxies.engine.roundNumber;
 
     if (parts[0] < 1 || parts[0] > galaxies.resources.bgPlanetTextures.length ||
         parts[1] < 1 || parts[1] > galaxies.engine.ROUNDS_PER_PLANET) {
@@ -89,6 +90,10 @@ window.addEventListener("load", function(event) {
     galaxies.engine.levelNumber = (parts[0] - 1) * galaxies.engine.ROUNDS_PER_PLANET + parts[1];
 
     galaxies.engine.clearLevel();
+
+    if (previousRound === 4 && galaxies.engine.roundNumber !== 4) {
+      galaxies.engine.bossMode = false;
+    }
 
     if (galaxies.engine.planetNumber === previousPlanet) {
       galaxies.engine.initLevel();
