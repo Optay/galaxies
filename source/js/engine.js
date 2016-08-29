@@ -67,8 +67,10 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
       galaxies.engine.soundDilation = soundValue;
 
       galaxies.audio.positionedSounds.forEach(function (sound) {
-        sound.source.playbackRate.value = soundValue;
-      });
+         if (sound.source) {
+         sound.source.playbackRate.value = soundValue;
+         }
+       });
 
       galaxies.engine.obstacles.forEach(function (obstacle) {
         if (obstacle.passSound) {
@@ -165,7 +167,7 @@ galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 3300;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
-galaxies.engine.powerups = ['clone', 'spread', 'golden', 'seeker', 'timeWarp', 'shield'];
+galaxies.engine.powerups = ['clone', 'spread', 'golden', 'timeWarp', 'shield'];
 galaxies.engine.shownPowerups = [];
 galaxies.engine.powerupCapsules = [];
 galaxies.engine.currentPowerup = 'boottime';
@@ -420,7 +422,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextlost", galaxies.engine.handleContextLost, false);
   galaxies.engine.renderer.context.canvas.addEventListener( "webglcontextrestored", galaxies.engine.handleContextRestored, false);
 
-  galaxies.engine.composer = new WAGNER.Composer(galaxies.engine.renderer, {useRGBA: true});
+  galaxies.engine.composer = new WAGNER.Composer(galaxies.engine.renderer);
   galaxies.engine.shadersPool = new WAGNER.ShadersPool();
   galaxies.engine.composerStack = new WAGNER.Stack(galaxies.engine.shadersPool);
 
@@ -473,8 +475,7 @@ galaxies.engine.initGame = function() {
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     map: galaxies.resources.bgPlanetTextures[0].texture,
-    transparent: true,
-    depthWrite: false
+    transparent: true
   });
   galaxies.engine.bgPlanet = new THREE.Mesh( new THREE.PlaneGeometry(200, 200, 1, 1),
                                              bgMaterial );
@@ -524,10 +525,7 @@ galaxies.engine.startGame = function() {
   // There can be only one!
   galaxies.engine.ufo = new galaxies.Ufo();
 
-  var urlParams = galaxies.debug.urlParams,
-      hasStartPoint = urlParams.hasOwnProperty("startAt");
-
-  if (!hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
+  if (location.search.search(/[\?&]noTutorial\b/g) === -1) {
     galaxies.engine.inTutorial = true;
   }
 
@@ -540,10 +538,7 @@ galaxies.engine.startGame = function() {
   if ( galaxies.engine.animationFrameRequest == null ) {
     galaxies.engine.animate();
   }
-
-  if (hasStartPoint) {
-    galaxies.debug.changeLocation(urlParams.startAt);
-  }
+  
 }
 
 galaxies.engine.restartGame = function() {
@@ -1029,7 +1024,7 @@ galaxies.engine.shoot = function( indestructible ) {
 
   ++galaxies.engine.projectilesLaunchedRound;
 
-  if (galaxies.engine.shotCounter > 0) {
+  if (indestructible) {
     --galaxies.engine.shotCounter;
 
     galaxies.ui.updateShotCount(galaxies.engine.shotCounter);
@@ -2066,7 +2061,6 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
   switch (newPowerup) {
     case 'spread':
     case 'golden':
-    case 'seeker':
       galaxies.engine.powerupTimer = 0;
       galaxies.engine.shotCounter = 20;
       break;
@@ -2107,9 +2101,6 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
     case 'shield':
       powerupMessage = 'Lunar Defense';
       break;
-    case 'seeker':
-      powerupMessage = 'Boom-a-Racquet';
-      /* falls through */
     default:
       galaxies.engine.shootFunction = galaxies.engine.shoot;
       break;
