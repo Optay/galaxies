@@ -483,20 +483,16 @@ galaxies.ObstacleComet.prototype.splode = function() {
   galaxies.fx.showFireworks( this.object.position );
   
   // hit all obstacles within range of explosion
-  var range = 5;
   for ( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
     var obs = galaxies.engine.obstacles[i];
-    if ( obs === this ) { continue; }
-    var relativePosition = new THREE.Vector3();
-    relativePosition.subVectors( obs.object.position, this.object.position );
-    relativePosition.z = 0;
-    if ( relativePosition.length() < range ) {
-      obs.hit( this.object.position, 2, 2 );
+
+    if ( obs !== this && obs.radius < galaxies.engine.VISIBLE_RADIUS ) {
+      obs.hit(this.object.position, 2, 2);
     }
   }
 
   var worldPos = this.object.localToWorld(new THREE.Vector3()),
-      edgePos = this.object.position.clone().normalize().setZ(0).multiplyScalar(range).add(this.object.position);
+      edgePos = this.object.position.clone().normalize().setZ(0).multiplyScalar(8).add(this.object.position);
 
   galaxies.fx.showWarpBubble(worldPos, edgePos);
 }
