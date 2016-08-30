@@ -307,6 +307,8 @@ this.galaxies.Player = function() {
   }
   var animateShoot = function() {
     activeAnimator.play();
+
+    createjs.Tween.get(characterShadow.material).to({opacity: 0.5}, 250).to({opacity: 1}, 250);
   }
   var animateHit = function() {
     removeClone(true);
@@ -786,8 +788,9 @@ this.galaxies.Player = function() {
   
   var die = function() {
     galaxies.ui.hideReticle();
-    characterShadow.material.opacity = 0;
     cloneShadow.material.opacity = 0;
+
+    createjs.Tween.get(characterShadow.material).to({opacity: 0}, 10);
 
     if (teleportingClone) {
         createjs.Tween.removeTweens(cloneTeleportSprite.material);
