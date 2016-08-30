@@ -486,7 +486,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
   for ( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
     var obs = galaxies.engine.obstacles[i];
 
-    if ( obs !== this && obs.radius < galaxies.engine.VISIBLE_RADIUS ) {
+    if ( obs !== this && obs.isActive ) {
       obs.hit(this.object.position, 2, 2);
     }
   }
