@@ -152,6 +152,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'stargradient', src: 'gradients/star.png' },
     { id: 'firegradient', src: 'gradients/fire.png' },
     { id: 'bluefiregradient', src: 'gradients/blueFire.png' },
+    { id: 'ufofiregradient', src: 'gradients/ufoFire.png' },
     { id: 'toonexplosion', src: 'sprites/game_fire_explosion.png' },
     { id: 'planetexplosion', src: 'sprites/game_over_explosion.png' },
     { id: 'bosstop', src: 'bosses/monster/boss_1_top_no_eyes.png' },

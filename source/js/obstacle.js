@@ -703,7 +703,8 @@ galaxies.MiniUFO.prototype.reset = function () {
 galaxies.MiniUFO.prototype.splode = function( spawn ) {
   galaxies.Obstacle.prototype.splode.call(this, spawn);
 
-  galaxies.fx.explode(this.object.position);
+  galaxies.fx.explode(this.object.position, "ufoFire");
+  galaxies.fx.tintScreenOrange(0.2, 200, 400);
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {

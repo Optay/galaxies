@@ -194,13 +194,13 @@ galaxies.fx = (function() {
     }
 
     var gradientNames = ["spread", "clone", "golden", "heart", "star", "shield", "fire", "blueFire", "blood", "white",
-      "green", "brown", "icy"];
+      "green", "brown", "icy", "ufoFire"];
 
     gradientNames.forEach(function (name) {
       gradients[name] = new THREE.Texture(galaxies.queue.getResult(name.toLowerCase() + "gradient"));
       gradients[name].needsUpdate = true;
     });
-
+console.log(gradients);
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(4096, 4096), 57);
 
@@ -827,7 +827,7 @@ galaxies.fx = (function() {
   
   var showDebris = function( position, velocity ) {
     //explosionGroup.triggerPoolEmitter(1, position);
-    explode(position);
+    //explode(position);
 
     debrisIndex = showObjects( debrisPool, debrisSetSize, debrisIndex, position, velocity, 2 );
   }
@@ -890,22 +890,7 @@ galaxies.fx = (function() {
     planetExplosion.sprite.visible = true;
     planetExplosion.spriteSheet.play();
 
-    var passes = galaxies.passes;
-
-    galaxies.engine.composerStack.enablePass(passes.indexes.colorAdd);
-
-    passes.colorAdd = galaxies.engine.composerStack.passItems[passes.indexes.colorAdd].pass;
-
-    passes.colorAdd.params.amount = 0.0;
-
-    createjs.Tween.get(passes.colorAdd.params)
-        .to({amount: 0.4}, 250)
-        .to({amount: 0.0}, 750)
-        .call(function () {
-          galaxies.engine.composerStack.disablePass(passes.indexes.colorAdd);
-
-          passes.colorAdd = null;
-        });
+    tintScreenOrange(0.4, 250, 750);
     
     // pose lux
     galaxies.engine.player.die();
@@ -919,6 +904,27 @@ galaxies.fx = (function() {
     });
     
   }
+
+  var tintScreenOrange = function (amount, transition1, transition2) {
+      var passes = galaxies.passes;
+
+      if (!passes.colorAdd) {
+          galaxies.engine.composerStack.enablePass(passes.indexes.colorAdd);
+
+          passes.colorAdd = galaxies.engine.composerStack.passItems[passes.indexes.colorAdd].pass;
+      }
+
+      passes.colorAdd.params.amount = 0.0;
+
+      createjs.Tween.get(passes.colorAdd.params)
+          .to({amount: amount}, transition1)
+          .to({amount: 0.0}, transition2)
+          .call(function () {
+              galaxies.engine.composerStack.disablePass(passes.indexes.colorAdd);
+
+              passes.colorAdd = null;
+          });
+  };
   
   var updateSprite = function (spriteData, cameraRootPos, delta) {
     var tex = spriteData.texture;
@@ -1214,8 +1220,9 @@ galaxies.fx = (function() {
     if (++fireExplosionIndex >= fireExplosionPoolSize) {
       fireExplosionIndex = 0;
     }
-    
+
     if (!grad) {
+      console.log("no grad");
       grad = gradients.fire;
     }
 
@@ -1258,6 +1265,7 @@ galaxies.fx = (function() {
     showBlueExplosion: showBlueExplosion,
     explode: explode,
     createGradatedSprite: createGradatedSprite,
-    updateSprite: updateSprite
+    updateSprite: updateSprite,
+    tintScreenOrange: tintScreenOrange
   };
 })();
