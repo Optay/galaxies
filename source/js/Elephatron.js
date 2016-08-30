@@ -22,6 +22,8 @@ galaxies.Elephatron = function () {
     this.fillPools();
 
     galaxies.Boss.call(this);
+
+    this.name = "Elephatron";
 };
 
 galaxies.Elephatron.prototype = Object.create(galaxies.Boss.prototype);

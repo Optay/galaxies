@@ -819,6 +819,7 @@ this.galaxies.Player = function() {
   
   
   return {
+    name: "Luxamillion",
     root: rootObject,
     sprite: character,
     cloneSprite: clone,

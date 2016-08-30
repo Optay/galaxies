@@ -8,6 +8,8 @@ galaxies.BossMonster = function () {
     this.cinematicAsteroids = [];
 
     galaxies.Boss.call(this);
+
+    this.name = "Occularry";
 };
 
 galaxies.BossMonster.prototype = Object.create(galaxies.Boss.prototype);

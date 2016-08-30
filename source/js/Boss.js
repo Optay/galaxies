@@ -6,6 +6,8 @@ galaxies.Boss = function () {
     this.initModel();
     this.initAudio();
     this.reset();
+
+    this.name = '';
 };
 
 galaxies.Boss.prototype = {

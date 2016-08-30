@@ -594,7 +594,7 @@ galaxies.engine.initLevel = function() {
   
   galaxies.ui.updateLevel( galaxies.engine.planetNumber, galaxies.engine.roundNumber );
 
-  if (!galaxies.engine.inTutorial) {
+  if (!galaxies.engine.inTutorial && galaxies.engine.roundNumber !== 4) {
     galaxies.ui.showTitle("ROUND " + galaxies.engine.roundNumber, 1.5);
   }
   
@@ -2008,6 +2008,11 @@ galaxies.engine.addBoss = function (bossType) {
   galaxies.engine.boss.reset();
   galaxies.engine.bossMode = true;
   galaxies.engine.rootObject.add(galaxies.engine.boss.object);
+
+  var titleText = "ROUND 4<br>" + galaxies.engine.boss.name.toUpperCase() + " vs " +
+      galaxies.engine.player.name.toUpperCase();
+
+  galaxies.ui.showTitle(titleText, 3.5);
 
   galaxies.engine.ufo.introduceBoss();
 };
