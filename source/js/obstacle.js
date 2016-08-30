@@ -495,6 +495,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
       edgePos = this.object.position.clone().normalize().setZ(0).multiplyScalar(8).add(this.object.position);
 
   galaxies.fx.showWarpBubble(worldPos, edgePos);
+  galaxies.fx.tintScreenOrange(0.3, 300, 400);
 }
 
 /**
