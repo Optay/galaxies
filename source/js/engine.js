@@ -67,7 +67,9 @@ Object.defineProperty(galaxies.engine, "timeDilation", {
       galaxies.engine.soundDilation = soundValue;
 
       galaxies.audio.positionedSounds.forEach(function (sound) {
-        sound.source.playbackRate.value = soundValue;
+        if (sound.source) {
+          sound.source.playbackRate.value = soundValue;
+        }
       });
 
       galaxies.engine.obstacles.forEach(function (obstacle) {
@@ -811,7 +813,7 @@ galaxies.engine.startPlanetMove = function() {
       galaxies.engine.updateScene();
 
       if (galaxies.engine.inTutorial) {
-        galaxies.ui.showTitle("HOW TO PLAY", 4);
+        galaxies.ui.showTitle("TRAINING", 4);
       } else {
         galaxies.ui.showTitle(galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1], 4);
         console.log(galaxies.engine.planetNumber, galaxies.resources.levelTitles[galaxies.engine.planetNumber - 1]);

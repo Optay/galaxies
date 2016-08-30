@@ -630,7 +630,7 @@ galaxies.ui = (function() {
   
   var updateLevel = function( newPlanetNumber, roundNumber ) {
     if (newPlanetNumber === 0 && roundNumber === 0) {
-      levelDisplay.innerHTML = "HOW TO PLAY";
+      levelDisplay.innerHTML = "TRAINING";
     } else {
       levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
     }
