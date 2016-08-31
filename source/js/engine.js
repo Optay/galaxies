@@ -350,7 +350,9 @@ galaxies.engine.initScene = function() {
   galaxies.engine.rootObject.add(galaxies.engine.camera);
   
   galaxies.engine.light = new THREE.DirectionalLight( 0xffffff, 1 );
+  galaxies.engine.ambientLight = new THREE.AmbientLight( 0x404040 );
   galaxies.engine.rootObject.add( galaxies.engine.light );
+  galaxies.engine.rootObject.add( galaxies.engine.ambientLight );
 
   var sunTex = new THREE.Texture(galaxies.queue.getResult('sun'));
   sunTex.needsUpdate = true;
