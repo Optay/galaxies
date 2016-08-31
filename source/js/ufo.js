@@ -382,7 +382,7 @@ this.galaxies.Ufo = function() {
 
       galaxies.engine.showCombo( this.points, 1, this.object );
       galaxies.fx.explode(this.rootPosition, 'ufoFire');
-      galaxies.fx.tintScreenOrange(0.3, 0.2, 0.5);
+      galaxies.fx.tintScreenOrange(0.3, 200, 500);
     } else {
       // waggle
       this.waggler.rotation.z = Math.PI/4;
