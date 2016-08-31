@@ -434,14 +434,13 @@ galaxies.Elephatron.prototype.update = function (delta) {
     this.object.position.copy(this.position)
         .add(new THREE.Vector3(Math.sin(this.xBounce), Math.sin(this.yBounce), 0).multiplyScalar(this.hoverBounce));
 
-    var wave = Math.sin(this.age * 3),
-        flameScale = this.flameScale + wave / 8,
+    var flameScale = this.flameScale + Math.sin(this.age * 60) / 10,
         leftFlame = this.leftLegFlame,
         rightFlame = this.rightLegFlame;
 
     leftFlame.scale.y = rightFlame.scale.y = flameScale;
     leftFlame.position.y = rightFlame.position.y = -1.185 - flameScale / 2;
-    leftFlame.material.opacity = rightFlame.material.opacity = 0.9 + wave * 0.1;
+    leftFlame.material.opacity = rightFlame.material.opacity = 0.9 + Math.sin(this.age * 3) * 0.1;
 
     var prevHealth = this.health;
 
