@@ -512,7 +512,7 @@ body {
   font-size: 54px;
   line-height: 1em;
 
-  .small, .SMALL {
+  &::first-line {
     font-size: 36px;
     line-height: 1em;
   }

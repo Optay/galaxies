@@ -50,13 +50,13 @@ galaxies.Resources = function() {
   this.bgPlanetTextures[6] = {texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ), scale: 1};
   
   this.levelTitles = [];
-  this.levelTitles[0] = "<span class='small'>Defend</span><br>The Plutonian Perimeter";
-  this.levelTitles[1] = "<span class='small'>Protect</span><br>The Neptunian Neutral Zone";
-  this.levelTitles[2] = "<span class='small'>Guard</span><br>The Uranian Outer Realm";
-  this.levelTitles[3] = "<span class='small'>Preserve</span><br>The Saturnian Sector";
-  this.levelTitles[4] = "<span class='small'>Safeguard</span><br>The Jovian Galactic Region";
-  this.levelTitles[5] = "<span class='small'>Secure</span><br>The Martian Microcosm";
-  this.levelTitles[6] = "<span class='small'>Save</span><br>The Terrestrial Territories";
+  this.levelTitles[0] = "Defend<br>The Plutonian Perimeter";
+  this.levelTitles[1] = "Protect<br>The Neptunian Neutral Zone";
+  this.levelTitles[2] = "Guard<br>The Uranian Outer Realm";
+  this.levelTitles[3] = "Preserve<br>The Saturnian Sector";
+  this.levelTitles[4] = "Safeguard<br>The Jovian Galactic Region";
+  this.levelTitles[5] = "Secure<br>The Martian Microcosm";
+  this.levelTitles[6] = "Save<br>The Terrestrial Territories";
   for( var i=0, len=this.levelTitles.length; i<len; i++ ) {
     this.levelTitles[i] = this.levelTitles[i].toUpperCase();
   }
