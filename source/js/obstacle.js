@@ -766,10 +766,12 @@ galaxies.MiniUFO.prototype.update = function (delta) {
 
   if (this.state === "retreating") {
     this.angleOffset = Math.min(this.angleOffset + delta * Math.PI / 6, Math.PI * 0.95);
-    this.velocityRadial = Math.min(this.velocityRadial + 2 * (this.angleOffset - 1) * delta,
+    this.velocityRadial = Math.min(this.velocityRadial + 0.25 * (this.angleOffset - 1) * delta,
         this.maxVelocityRadial * galaxies.engine.speedScale);
 
     this.radius += this.velocityRadial * delta;
+
+    this.object.position.z += 25 * Math.max(this.velocityRadial, 0);
 
     if (this.radius > galaxies.engine.OBSTACLE_VISIBLE_RADIUS) {
       this.deactivate();
