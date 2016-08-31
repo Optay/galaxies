@@ -610,6 +610,8 @@ console.log(gradients);
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
 
+    smokeGroup.mesh.position.z = 1;
+
     var explosionSettings = {
       type: SPE.distributions.SPHERE,
       particleCount: 200,
