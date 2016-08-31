@@ -345,10 +345,11 @@ galaxies.ui = (function() {
   var titleQueue = [];
   var titleActive = false;
   var currentTitle = null;
-  var showTitle = function( titleText, time ) {
+  var showTitle = function( titleText, time, small ) {
     var newTitle = {
       text: titleText,
-      time: time * 1000
+      time: time * 1000,
+      small: small
     };
     
     titleQueue.push( newTitle );
@@ -368,6 +369,13 @@ galaxies.ui = (function() {
     
     title.innerHTML = nextTitle.text;
     title.classList.remove('hidden');
+
+    if (nextTitle.small) {
+      title.classList.add('small-text');
+    } else {
+      title.classList.remove('small-text');
+    }
+
     window.getComputedStyle(title).top; // reflow
     
     title.classList.add('title-on');
@@ -442,6 +450,7 @@ galaxies.ui = (function() {
 
     title.innerHTML = '<div class="score-title">BONUS <span class="bonus-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
     title.classList.add("title-on");
+    title.classList.add("small-text");
 
     var bonusElem = title.querySelector(".bonus-score"),
         accTitle = title.querySelector(".acc-title"),
@@ -615,7 +624,7 @@ galaxies.ui = (function() {
     
     showTitle( "BONUS " + galaxies.utils.addCommas(bonus) +
                "<br>FINAL SCORE " + galaxies.utils.addCommas(score) +
-               "<br>ACCURACY " + Math.round(accuracy * 100) + '%');
+               "<br>ACCURACY " + Math.round(accuracy * 100) + '%', 0, true);
   }
   var hideGameOver = function() {
     gameOverTitle.classList.remove('game-over-title-on');

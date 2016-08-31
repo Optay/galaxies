@@ -509,10 +509,10 @@ body {
   color: $score-color;
   
   font-family: 'Futura';
-  font-size: 54px;
+  font-size: 45px;
   line-height: 1em;
 
-  &::first-line {
+  &::first-line, &.small-text {
     font-size: 36px;
     line-height: 1em;
   }
