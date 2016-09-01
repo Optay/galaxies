@@ -156,7 +156,11 @@ window.addEventListener("load", function(event) {
   if (isDev) {
     var screenshotArea = document.getElementsByClassName("image-viewer")[0],
         altCanvas = screenshotArea.getElementsByClassName("screenshot-canvas")[0],
-        altCtx = altCanvas.getContext("2d");
+        altCtx = altCanvas.getContext("2d"),
+        dbW = 0,
+        dbH = 0,
+        pixels = [],
+        needsConversion = false;
 
     altCanvas.style.maxWidth = "50%";
     altCanvas.style.maxHeight = "50%";
@@ -177,32 +181,40 @@ window.addEventListener("load", function(event) {
         case 79: // O
             if (screenshotArea.classList.contains("hidden")) {
               screenshotArea.classList.remove("hidden");
+
+              if (needsConversion) {
+                var trueWidth = dbW * 4,
+                    imgData = altCtx.createImageData(dbW, dbH),
+                    data = imgData.data,
+                    row, col;
+
+                needsConversion = false;
+
+                for (row = 0; row < dbH; ++row) {
+                  for (col = 0; col < trueWidth; ++col) {
+                    data[row * trueWidth + col] = pixels[(dbH - row - 1) * trueWidth + col];
+                  }
+                }
+
+                altCanvas.width = dbW;
+                altCanvas.height = dbH;
+
+                altCtx.putImageData(imgData, 0, 0);
+              }
             } else {
               screenshotArea.classList.add("hidden");
             }
           break;
         case 80: // P
-            var gl = galaxies.engine.renderer.context,
-                dbW = gl.drawingBufferWidth,
-                dbH = gl.drawingBufferHeight,
-                trueWidth = dbW * 4,
-                pixels = new Uint8Array(trueWidth * dbH),
-                imgData = altCtx.createImageData(dbW , dbH ),
-                data = imgData.data,
-                row, col;
+            var gl = galaxies.engine.renderer.context;
+
+            dbW = gl.drawingBufferWidth;
+            dbH = gl.drawingBufferHeight;
+            pixels = new Uint8Array(dbW * dbH * 4);
 
             gl.readPixels(0, 0, dbW, dbH, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-            for (row = 0; row < dbH; ++row) {
-              for (col = 0; col < trueWidth; ++col) {
-                data[row * trueWidth + col] = pixels[(dbH - row - 1) * trueWidth + col];
-              }
-            }
-
-            altCanvas.width = gl.drawingBufferWidth;
-            altCanvas.height = gl.drawingBufferHeight;
-
-            altCtx.putImageData(imgData, 0, 0);
+            needsConversion = true;
           break;
       }
     });
