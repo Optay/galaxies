@@ -155,7 +155,11 @@ window.addEventListener("load", function(event) {
 
   if (isDev) {
     var screenshotArea = document.getElementsByClassName("image-viewer")[0],
-        screenshotImage = screenshotArea.getElementsByClassName("screenshot")[0];
+        altCanvas = screenshotArea.getElementsByClassName("screenshot-canvas")[0],
+        altCtx = altCanvas.getContext("2d");
+
+    altCanvas.style.maxWidth = "50%";
+    altCanvas.style.maxHeight = "50%";
 
     //galaxies.engine.invulnerable = true;
     //galaxies.engine.POWERUP_CHARGED = 100;
@@ -178,7 +182,27 @@ window.addEventListener("load", function(event) {
             }
           break;
         case 80: // P
-            screenshotImage.src = galaxies.engine.renderer.domElement.toDataURL();
+            var gl = galaxies.engine.renderer.context,
+                dbW = gl.drawingBufferWidth,
+                dbH = gl.drawingBufferHeight,
+                trueWidth = dbW * 4,
+                pixels = new Uint8Array(trueWidth * dbH),
+                imgData = altCtx.createImageData(dbW , dbH ),
+                data = imgData.data,
+                row, col;
+
+            gl.readPixels(0, 0, dbW, dbH, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+            for (row = 0; row < dbH; ++row) {
+              for (col = 0; col < trueWidth; ++col) {
+                data[row * trueWidth + col] = pixels[(dbH - row - 1) * trueWidth + col];
+              }
+            }
+
+            altCanvas.width = gl.drawingBufferWidth;
+            altCanvas.height = gl.drawingBufferHeight;
+
+            altCtx.putImageData(imgData, 0, 0);
           break;
       }
     });
