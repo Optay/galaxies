@@ -499,7 +499,7 @@ galaxies.ObstacleComet.prototype.splode = function() {
       edgePos = this.object.position.clone().normalize().setZ(0).multiplyScalar(8).add(this.object.position);
 
   galaxies.fx.showWarpBubble(worldPos, edgePos);
-  galaxies.fx.tintScreenOrange(0.3, 300, 400);
+  galaxies.fx.tintScreen(0xFFAA00, 0.3, 300, 400);
 }
 
 /**
@@ -709,7 +709,7 @@ galaxies.MiniUFO.prototype.splode = function( spawn ) {
   galaxies.Obstacle.prototype.splode.call(this, spawn);
 
   galaxies.fx.explode(this.object.position, "ufoFire");
-  galaxies.fx.tintScreenOrange(0.2, 200, 400);
+  galaxies.fx.tintScreen(0xFFAA00, 0.2, 200, 400);
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {

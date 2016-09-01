@@ -82,10 +82,19 @@ galaxies.Capsule = function( powerupType ) {
 galaxies.Capsule.prototype = Object.create( galaxies.BaseTarget.prototype );
 galaxies.Capsule.prototype.constructor = galaxies.Capsule;
 galaxies.Capsule.prototype.hit = function() {
+  var colors = {
+    "clone": 0xb11db1,
+    "spread": 0xffb31a,
+    "golden": 0xfefe4c,
+    "seeker": 0x0000ff,
+    "heart": 0xb80000,
+    "shield": 0x0000b6
+  };
   // release the powerup
   console.log("Capsule.hit");
   galaxies.engine.setPowerup( this.powerup, this.object );
-  
+  galaxies.fx.tintScreen(colors.hasOwnProperty(this.powerup) ? colors[this.powerup] : 0xFFFFFF, 0.25, 200, 500);
+
   var soundId = 'powerupcollect';
   if ( this.powerup === 'heart' ) {
     soundId = 'heartcollect';
@@ -262,6 +271,7 @@ galaxies.Star.prototype.hit = function() {
   });
   
   galaxies.fx.showStaricles( this.object.position );
+  galaxies.fx.tintScreen(0xFFFF00, 0.25, 200, 500);
   
   this.clear();
 }

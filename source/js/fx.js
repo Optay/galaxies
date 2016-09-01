@@ -892,7 +892,7 @@ console.log(gradients);
     planetExplosion.sprite.visible = true;
     planetExplosion.spriteSheet.play();
 
-    tintScreenOrange(0.4, 250, 750);
+    tintScreen(0xFFAA00, 0.4, 250, 750);
     
     // pose lux
     galaxies.engine.player.die();
@@ -907,7 +907,7 @@ console.log(gradients);
     
   }
 
-  var tintScreenOrange = function (amount, transition1, transition2) {
+  var tintScreen = function (color, amount, fadeInTime, fadeOutTime) {
       var passes = galaxies.passes;
 
       if (!passes.colorAdd) {
@@ -917,10 +917,11 @@ console.log(gradients);
       }
 
       passes.colorAdd.params.amount = 0.0;
+      passes.colorAdd.params.color.set(color);
 
       createjs.Tween.get(passes.colorAdd.params)
-          .to({amount: amount}, transition1)
-          .to({amount: 0.0}, transition2)
+          .to({amount: amount}, fadeInTime)
+          .to({amount: 0.0}, fadeOutTime)
           .call(function () {
               galaxies.engine.composerStack.disablePass(passes.indexes.colorAdd);
 
@@ -1268,6 +1269,6 @@ console.log(gradients);
     explode: explode,
     createGradatedSprite: createGradatedSprite,
     updateSprite: updateSprite,
-    tintScreenOrange: tintScreenOrange
+    tintScreen: tintScreen
   };
 })();
