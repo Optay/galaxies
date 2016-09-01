@@ -65,6 +65,7 @@ window.addEventListener("load", function(event) {
     ElephaTRON: function () {galaxies.engine.addBoss('elephatron');},
     MiniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
     UFO: galaxies.engine.addUfo,
+    MoonColor: "#FFFFFF",
     invulnerable: false
   };
 
@@ -139,6 +140,13 @@ window.addEventListener("load", function(event) {
 
   ufos.add(userValues, 'UFO' );
   ufos.add(userValues, 'MiniUFO' );
+
+  var colorChanger = datgui.addColor(userValues, 'MoonColor');
+  colorChanger.onChange(function (newValue) {
+    galaxies.engine.planet.material.color.set(newValue);
+  });
+
+  galaxies.debug.moonColor = colorChanger;
 
   var invulnerableController = datgui.add( userValues, 'invulnerable' );
   invulnerableController.onChange( function (newValue) {

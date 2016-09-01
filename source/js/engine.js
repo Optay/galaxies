@@ -893,6 +893,7 @@ galaxies.engine.updateScene = function() {
 galaxies.engine.randomizePlanet = function() {
   galaxies.engine.planet.rotation.set( Math.random()*galaxies.utils.PI_2, Math.random()*galaxies.utils.PI_2, Math.random()*galaxies.utils.PI_2, 'ZXY' );
   galaxies.engine.planet.material.color.setHSL( Math.random(), THREE.Math.randFloat(0.1, 0.4), THREE.Math.randFloat(0.5, 0.7) );
+  galaxies.debug.moonColor.setValue('#' + galaxies.engine.planet.material.color.getHexString());
   galaxies.engine.planetAngle = galaxies.engine.planet.rotation.z;   // planetAngle is the zero value for rotation the planet when lux moves
 
 }
