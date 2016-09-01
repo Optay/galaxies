@@ -133,6 +133,10 @@ galaxies.Resources = function() {
       shading: THREE.SmoothShading
   } );
 
+  this.materials['rubbleice'] = new THREE.MeshLambertMaterial({
+      color: 0x74858c
+  });
+
   this.materials['asteroidiceshell'] = new THREE.MeshPhongMaterial( {
       color: 0x242a2a,
       emissive: 0x11111f,

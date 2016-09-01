@@ -370,6 +370,7 @@ galaxies.ObstacleIce = function () {
   props.baseSpeed = 0.25;
   props.mass = 2;
   props.baseLife = 2;
+  props.rubbleType = 'icy';
   props.explosionGradient = "icy";
   
   galaxies.Obstacle.call(this, props);

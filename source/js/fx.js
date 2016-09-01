@@ -266,6 +266,14 @@ console.log(gradients);
                                      1.0 );
       rubblePool['ice'][i] = rubbleObject;
     }
+    rubblePool['icy'] = [];
+    rubbleIndex['icy'] = 0;
+    for (var i=0; i<rubblePoolSize; i++ ) {
+        var rubbleObject = new Rubble( galaxies.resources.geometries['asteroid'],
+            galaxies.resources.materials['rubbleice'],
+            0.1 );
+        rubblePool['icy'][i] = rubbleObject;
+    }
     // rad
     var radmat = new THREE.MeshLambertMaterial( {
       color: 0x60a173 } );
