@@ -640,6 +640,10 @@ galaxies.engine.updateCameraZ = function( roundNumber ) {
 };
 
 galaxies.engine.nextLevel = function() {
+  if (galaxies.engine.isGameOver) {
+    return;
+  }
+
   if (galaxies.engine.slomoDuration > 0.5) {
     galaxies.engine.slomoDuration = 0.5;
   }
