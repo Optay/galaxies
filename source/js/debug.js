@@ -83,7 +83,7 @@ window.addEventListener("load", function(event) {
         previousPlanet = galaxies.engine.planetNumber,
         previousRound = galaxies.engine.roundNumber;
 
-    if (parts[0] < 1 || parts[0] > galaxies.resources.bgPlanetTextures.length ||
+    if (parts[0] < 1 || parts[0] > galaxies.resources.planetData.length ||
         parts[1] < 1 || parts[1] > galaxies.engine.ROUNDS_PER_PLANET) {
       return;
     }

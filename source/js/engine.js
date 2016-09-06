@@ -476,7 +476,7 @@ galaxies.engine.initGame = function() {
   // Create background planet
   var bgMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
-    map: galaxies.resources.bgPlanetTextures[0].texture,
+    map: galaxies.resources.planetData[0].texture,
     transparent: true,
     depthWrite: false
   });
@@ -489,8 +489,8 @@ galaxies.engine.initGame = function() {
   galaxies.engine.rootObject.add( galaxies.engine.bgPlanet );
 
   // Cycle all the planet textures in reverse order to cache them
-  for (var i = galaxies.resources.bgPlanetTextures.length - 1; i > -1; --i) {
-    galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[i].texture;
+  for (var i = galaxies.resources.planetData.length - 1; i > -1; --i) {
+    galaxies.engine.bgPlanet.material.map = galaxies.resources.planetData[i].texture;
 
     //galaxies.engine.renderer.render(galaxies.engine.scene, galaxies.engine.camera);
     galaxies.engine.render();
@@ -688,7 +688,8 @@ galaxies.engine.nextLevel = function() {
 };
 
 galaxies.engine.updateBackgroundPlanet = function() {
-  var bgPlanetIndex = (galaxies.engine.planetNumber - 1) % galaxies.resources.bgPlanetTextures.length;
+  var bgPlanetIndex = (galaxies.engine.planetNumber - 1) % galaxies.resources.planetData.length,
+      planetData = galaxies.resources.planetData[bgPlanetIndex];
 
   galaxies.engine.rootObject.add( galaxies.engine.bgPlanet );
 
@@ -696,7 +697,14 @@ galaxies.engine.updateBackgroundPlanet = function() {
   galaxies.engine.sun.add(galaxies.engine.sunFlares);
   galaxies.engine.sunFlares.position.set(0, 0, 0);
   
-  galaxies.engine.bgPlanet.position.copy( galaxies.resources.bgPlanetTextures[bgPlanetIndex].position || new THREE.Vector3(-25, 80, -73) );
+  galaxies.engine.bgPlanet.position.copy( planetData.position || new THREE.Vector3(-25, 80, -73) );
+
+  if (planetData.hasOwnProperty("moonColor")) {
+    galaxies.engine.planet.material.color.set(planetData.moonColor);
+    galaxies.debug.moonColor.setValue('#' + galaxies.engine.planet.material.color.getHexString());
+  } else {
+    galaxies.engine.randomizePlanet();
+  }
 
   var sunTargetScale = 1;
 
@@ -725,8 +733,8 @@ galaxies.engine.updateBackgroundPlanet = function() {
   
   galaxies.engine.bgPlanet.up = galaxies.engine.rootObject.localToWorld( new THREE.Vector3(0,1,0) );
 
-  console.log( "Setting background planet texture", galaxies.engine.planetNumber, galaxies.resources.bgPlanetTextures.length, bgPlanetIndex );
-  galaxies.engine.bgPlanet.material.map = galaxies.resources.bgPlanetTextures[bgPlanetIndex].texture;
+  console.log( "Setting background planet texture", galaxies.engine.planetNumber, galaxies.resources.planetData.length, bgPlanetIndex );
+  galaxies.engine.bgPlanet.material.map = planetData.texture;
 
   if (galaxies.engine.sun.visible) {
     galaxies.engine.sun.scale.set(0.1, 0.1, 0.1);
@@ -743,7 +751,7 @@ galaxies.engine.updateBackgroundPlanet = function() {
   createjs.Tween.removeTweens( galaxies.engine.bgPlanet.scale );
 
   galaxies.engine.bgPlanet.scale.set( 0.1, 0.1, 0.1 );
-  var targetScale = galaxies.resources.bgPlanetTextures[bgPlanetIndex].scale;
+  var targetScale = planetData.scale;
   // Tween time should be dependent on transition time which should be a constant
   createjs.Tween.get( galaxies.engine.bgPlanet.scale )
     .to({x:targetScale, y:targetScale, z:targetScale}, 3000, createjs.Ease.quadOut);
@@ -879,7 +887,6 @@ galaxies.engine.planetTransitionComplete = function() {
 // randomize moon, set and position bgplanet, set scene lighting
 galaxies.engine.updateScene = function() {
   galaxies.engine.scene.add( galaxies.engine.planet ); // First level planet must be added here
-  galaxies.engine.randomizePlanet();
   
   if ( galaxies.engine.roundNumber === 1 ) {
     // Update background planet

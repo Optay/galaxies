@@ -40,14 +40,44 @@ galaxies.Resources = function() {
   this.skyRefract.needsUpdate = true;
 
   // Background Planets
-  this.bgPlanetTextures = [];
-  this.bgPlanetTextures[0] = {texture: new THREE.Texture( galaxies.queue.getResult('planetpluto') ), scale: 0.55};
-  this.bgPlanetTextures[1] = {texture: new THREE.Texture( galaxies.queue.getResult('planetneptune') ), scale: 1};
-  this.bgPlanetTextures[2] = {texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ), scale: 1, position: new THREE.Vector3(40, 90, -80)};
-  this.bgPlanetTextures[3] = {texture: new THREE.Texture( galaxies.queue.getResult('planetsaturn') ), scale: 1.75};
-  this.bgPlanetTextures[4] = {texture: new THREE.Texture( galaxies.queue.getResult('planetjupiter') ), scale: 1};
-  this.bgPlanetTextures[5] = {texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ), scale: 1, position: new THREE.Vector3(40, 90, -80)};
-  this.bgPlanetTextures[6] = {texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ), scale: 1};
+  this.planetData = [];
+  this.planetData[0] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetpluto') ),
+      scale: 0.55,
+      moonColor: "#c08d9c"
+  };
+  this.planetData[1] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetneptune') ),
+      scale: 1,
+      moonColor: "#f5d2c7"
+  };
+  this.planetData[2] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ),
+      scale: 1,
+      moonColor: "#7ad8ff",
+      position: new THREE.Vector3(40, 90, -80)
+  };
+  this.planetData[3] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetsaturn') ),
+      scale: 1.75,
+      moonColor: "#87c5af"
+  };
+  this.planetData[4] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetjupiter') ),
+      scale: 1,
+      moonColor: "#e3d781"
+  };
+  this.planetData[5] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ),
+      scale: 1,
+      moonColor: "#f2bbaf",
+      position: new THREE.Vector3(40, 90, -80)
+  };
+  this.planetData[6] = {
+      texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ),
+      scale: 1,
+      moonColor: "#f5eae6"
+  };
   
   this.levelTitles = [];
   this.levelTitles[0] = "Defend<br>The Plutonian Perimeter";
@@ -62,8 +92,8 @@ galaxies.Resources = function() {
   }
   
   
-  for ( var i=0, len=this.bgPlanetTextures.length; i<len; i++ ) {
-    this.bgPlanetTextures[i].texture.needsUpdate = true;
+  for (var i=0, len=this.planetData.length; i<len; i++ ) {
+    this.planetData[i].texture.needsUpdate = true;
   }
   
   // Light angles by level
