@@ -634,7 +634,8 @@ galaxies.MiniUFO = function () {
     baseSpeed: 0.4,
     hitSound: "ufohit",
     rubbleType: "debris",
-    shakeAmount: 1.5
+    shakeAmount: 1.5,
+    points: [20, 100, 100, 100]
   };
 
   this.onLaserHit = this.onLaserHit.bind(this);
