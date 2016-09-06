@@ -790,7 +790,8 @@ this.galaxies.Player = function() {
     galaxies.ui.hideReticle();
     cloneShadow.material.opacity = 0;
 
-    createjs.Tween.get(characterShadow.material).to({opacity: 0}, 10);
+    createjs.Tween.removeTweens(characterShadow.material);
+    characterShadow.material.opacity = 0;
 
     if (teleportingClone) {
         createjs.Tween.removeTweens(cloneTeleportSprite.material);
