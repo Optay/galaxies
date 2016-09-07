@@ -278,7 +278,7 @@ galaxies.Elephatron.prototype.reset = function () {
     this.xBounce = 0;
     this.yBounce = 0;
     this.timeToNextMove = 0;
-    this.timeToNextFireSequence = 2;
+    this.timeToNextFireSequence = 0;
     this.directionality = 0.5;
     this.lastDamageTime = -3;
 
