@@ -281,6 +281,7 @@ galaxies.Elephatron.prototype.reset = function () {
     this.timeToNextFireSequence = 0;
     this.directionality = 0.5;
     this.lastDamageTime = -3;
+    this.firstMove = true;
 
     this.leftArm.reset();
     this.rightArm.reset();
@@ -486,7 +487,7 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
 
     this.object.scale.set(scale, scale, scale);
 
-    if (this.state === "entering" && !this.targetPosition) {
+    if (this.firstMove && !this.targetPosition) {
         this.position.set(this.leftEdge - scale * 4, this.topEdge * 0.8 + this.bottomEdge * 0.2, 0);
     }
 
@@ -529,7 +530,7 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
         rx = this.rx,
         maxVel = this.maxAngularVelocity;
 
-    if (this.state === "entering") {
+    if (this.firstMove) {
         rx *= 2;
         maxVel *= 2;
     }
@@ -539,14 +540,22 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
     var angleDiff = Math.abs(this.targetAngle - this.currentAngle),
         slowingDistance = this.maxAngularVelocity;
 
+    if (this.state === "entering" && angleDiff < 3 * Math.PI / 8) {
+        this.state = "firing";
+
+        this.roarAudio.startSound();
+
+        this.firingTime = 2;
+    }
+
     if (angleDiff < 0.01) {
         var halfScale = this.object.scale.x / 2;
 
         this.angularVelocity = null;
         this.targetAngle = null;
 
-        if (this.state === "entering") {
-            this.state = "idle";
+        if (this.firstMove) {
+            this.firstMove = false;
 
             this.leftArm.invincible = false;
             this.rightArm.invincible = false;
