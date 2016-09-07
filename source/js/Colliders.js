@@ -13,6 +13,9 @@ galaxies.colliders.SphereCollider = function (position, radius) {
 
     this.position = position;
     this.radius = radius;
+
+    this.rootPosition = null;
+    this.rootRadius = null;
 };
 
 galaxies.colliders.CapsuleCollider = function (position1, position2, radius) {
@@ -21,4 +24,8 @@ galaxies.colliders.CapsuleCollider = function (position1, position2, radius) {
     this.position1 = position1;
     this.position2 = position2;
     this.radius = radius;
+
+    this.rootPosition1 = null;
+    this.rootPosition2 = null;
+    this.rootRadius = null;
 };
