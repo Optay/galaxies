@@ -407,7 +407,10 @@ galaxies.ui = (function() {
     hideReticle();
 
     setTimeout(function() {
+      resultTitle.innerHTML = galaxies.ui.levelClearText || "MOON DEFENDED";
       resultTitle.classList.add("level-done-title-on");
+
+      galaxies.ui.levelClearText = null;
 
       for (var i = 0; i < 3; ++i) {
         scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
@@ -864,6 +867,7 @@ galaxies.ui = (function() {
 
   return {
     init: init,
+    levelClearText: null,
     gameContainer: gameContainer,
     showMenu: showMenu,
     showGameOver: showGameOver,

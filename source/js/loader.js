@@ -188,7 +188,10 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'elephatronrightear', src: 'bosses/elephatron/9_elepha-tron_right_ear.png' },
     { id: 'elephatronleftear', src: 'bosses/elephatron/10_elepha-tron_left_ear.png' },
     { id: 'elephatronantennaglow', src: 'bosses/elephatron/11_elepha-tron_antenna_glow.png' },
-    { id: 'elephatronantenna', src: 'bosses/elephatron/12_elepha-tron_antenna.png' }
+    { id: 'elephatronantenna', src: 'bosses/elephatron/12_elepha-tron_antenna.png' },
+    { id: 'insecticlydeface', src: 'bosses/insecticlyde/boss_insect_face.png' },
+    { id: 'insecticlydesegment', src: 'bosses/insecticlyde/boss_insect_back.png' },
+    { id: 'insecticlydemandible', src: 'bosses/insecticlyde/boss_insect_mandible.png' }
   ];
   for (var i=0; i<imageItems.length; i++ ) {
     imageItems[i].src = 'images/' + imageItems[i].src;

@@ -41,6 +41,7 @@ galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
 };
 
 galaxies.ElephatronLimb.prototype = {};
+galaxies.ElephatronLimb.prototype.constructor = galaxies.ElephatronLimb;
 
 Object.defineProperties(galaxies.ElephatronLimb.prototype, {
     angle: {

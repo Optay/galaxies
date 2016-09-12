@@ -13,6 +13,7 @@ galaxies.BossMonster = function () {
 };
 
 galaxies.BossMonster.prototype = Object.create(galaxies.Boss.prototype);
+galaxies.BossMonster.prototype.constructor = galaxies.BossMonster;
 
 galaxies.BossMonster.prototype.closeEyes = function () {
     this.invincible = true;
@@ -187,6 +188,8 @@ galaxies.BossMonster.prototype.openEyes = function () {
 };
 
 galaxies.BossMonster.prototype.reset = function () {
+    galaxies.ui.levelClearText = "OCULARRY DEFEATED";
+
     this.eyes.forEach(function (eye) {
         eye.eyeball.visible = true;
     });
@@ -243,6 +246,7 @@ galaxies.BossMonster.prototype.update = function (delta) {
     }
 };
 
+// TODO: Figure out how to "fling" the asteroids in a way that feels right
 galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
     var basePosition = this.object.position,
         yScale = this.object.scale.y;
@@ -255,7 +259,7 @@ galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
 
         conePoint = basePosition.clone();
 
-        conePoint.y += yScale * (1 + Math.min(data.progress * 2.5, 1.5));
+        conePoint.y += yScale * (1 + data.progress * 1.5);
 
         conePoint = galaxies.utils.projectToCone(conePoint);
 

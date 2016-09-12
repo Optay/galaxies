@@ -433,7 +433,8 @@ galaxies.engine.initScene = function() {
 
   galaxies.engine.bosses = {
     monster: new galaxies.BossMonster(),
-    elephatron: new galaxies.Elephatron()
+    elephatron: new galaxies.Elephatron(),
+    insecticlyde: new galaxies.Insecticlyde()
   };
 
   //galaxies.passes.indexes.bloom = galaxies.engine.composerStack.addPass("BloomPass", false, {});

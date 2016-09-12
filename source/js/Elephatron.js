@@ -27,6 +27,7 @@ galaxies.Elephatron = function () {
 };
 
 galaxies.Elephatron.prototype = Object.create(galaxies.Boss.prototype);
+galaxies.Elephatron.prototype.constructor = galaxies.Elephatron;
 
 galaxies.Elephatron.prototype.disable = function () {
     galaxies.Boss.prototype.disable.call(this);
@@ -268,6 +269,8 @@ galaxies.Elephatron.prototype.initModel = function () {
 
 galaxies.Elephatron.prototype.reset = function () {
     galaxies.Boss.prototype.reset.call(this);
+
+    galaxies.ui.levelClearText = "ELEPHATRON DECOMMISSIONED";
 
     this.currentAngle = Math.PI;
     this.targetAngle = null;

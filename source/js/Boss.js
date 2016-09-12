@@ -7,6 +7,8 @@ galaxies.Boss = function () {
     this.initAudio();
     this.reset();
 
+    this.disable();
+
     this.name = '';
 };
 
