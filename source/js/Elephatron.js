@@ -272,6 +272,7 @@ galaxies.Elephatron.prototype.reset = function () {
 
     galaxies.ui.levelClearText = "ELEPHATRON DECOMMISSIONED";
 
+    this.xVel = 0;
     this.currentAngle = Math.PI;
     this.targetAngle = null;
     this.angularVelocity = 0;
@@ -390,6 +391,8 @@ galaxies.Elephatron.prototype.update = function (delta) {
     var moveAmount;
 
     if (this.state !== "exiting") {
+        var prevPos = this.position.clone();
+
         if (this.targetAngle !== null) {
             this.updateMovement(delta);
         } else if (this.state !== "preEntry") {
@@ -414,6 +417,10 @@ galaxies.Elephatron.prototype.update = function (delta) {
                 }
             }
         }
+
+        this.xVel = 0.9 * this.xVel + 0.1 * (prevPos.x - this.position.x) / delta;
+
+        this.object.rotation.z = 0.05 * this.xVel / this.object.scale.x;
     }
 
     this.laserBlastPool.forEach(function (blast) {
@@ -529,8 +536,7 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
         this.hoverBounce = Math.max(this.hoverBounce - delta / 2, 0);
     }
 
-    var prevPos = this.position.clone(),
-        rx = this.rx,
+    var rx = this.rx,
         maxVel = this.maxAngularVelocity;
 
     if (this.firstMove) {
@@ -564,7 +570,6 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
             this.rightArm.invincible = false;
         }
 
-        this.object.rotation.z = 0;
         this.timeToNextMove = Math.random() * 3 + 3 * this.health / this.maxHealth;
 
         this.flameScale = 1.43;
@@ -583,11 +588,7 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
 
     this.position.set(Math.cos(this.currentAngle) * rx, Math.sin(this.currentAngle) * this.ry, 0);
 
-    var xScale = this.object.scale.x;
-
-    this.object.rotation.z = 0.05 * (prevPos.x - this.position.x) / (xScale * delta);
-
-    this.flameScale = 1.43 + 3 * this.angularVelocity.y / xScale;
+    this.flameScale = 1.43 + 3 * this.angularVelocity.y / this.object.scale.x;
 };
 
 Object.defineProperties(galaxies.Elephatron.prototype, {
