@@ -200,7 +200,7 @@ galaxies.fx = (function() {
       gradients[name] = new THREE.Texture(galaxies.queue.getResult(name.toLowerCase() + "gradient"));
       gradients[name].needsUpdate = true;
     });
-console.log(gradients);
+
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(4096, 4096), 57);
 
@@ -1233,7 +1233,6 @@ console.log(gradients);
     }
 
     if (!grad) {
-      console.log("no grad");
       grad = gradients.fire;
     }
 
@@ -1241,6 +1240,9 @@ console.log(gradients);
     toonExplosion.material.uniforms.tGradient.value = grad;
     toonExplosion.sprite.visible = true;
     toonExplosion.sprite.position.copy(position);
+
+    toonExplosion.sprite.position.z += 0.1;
+
     toonExplosion.sprite.scale.set(scale, scale, scale);
     toonExplosion.rotation = galaxies.utils.flatAngle(position) + Math.PI;
   };

@@ -97,6 +97,15 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
     }, this);
 
     if (hitLast) {
+        var lastSegment = this.segments[this.activeSegments - 1],
+            segmentCenter = lastSegment.object.position.clone();
+
+        segmentCenter.x -= Math.cos(lastSegment.angle) * lastSegment.scale;
+        segmentCenter.y -= Math.sin(lastSegment.angle) * lastSegment.scale;
+
+        galaxies.engine.showCombo(500, 1, lastSegment.object);
+        galaxies.fx.explode(segmentCenter, "green", this.scale);
+
         --this.activeSegments;
     }
 };
@@ -163,12 +172,13 @@ galaxies.Insecticlyde.prototype.reset = function () {
 galaxies.Insecticlyde.prototype.update = function (delta) {
     this.updateMovement(delta);
 
+    // TODO: movements
+
     if (this.targetPositions.length === 0) {
         if (this.state === "entering") {
             this.state = "moving";
 
-            this.targetPositions.push({x: 0.712, y: 0.712});
-            this.targetPositions.push({x: 0.8, y: 0.5});
+            this.targetPositions.push({x: 1, y: 1});
         }
     }
 
@@ -220,8 +230,6 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
 galaxies.Insecticlyde.prototype.updateMovement = function (delta) {
     if (this.targetPositions.length === 0) {
-        this.updateSegments(delta, true);
-
         return;
     }
 
@@ -290,9 +298,15 @@ galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdat
 
             lookAngle = Math.atan2(pos.y, pos.x);
 
-            // TODO: normalize look angle
+            var angleDiff = lookAngle - segment.angle;
 
-            segment.angle = 0.1 * lookAngle + 0.9 * segment.angle;//Math.max(Math.min(0.1 * lookAngle + 0.9 * segment.angle, angle + mad), angle - mad);
+            if (angleDiff > Math.PI) {
+                lookAngle -= 2 * Math.PI;
+            } else if (angleDiff < -Math.PI) {
+                lookAngle += 2 * Math.PI;
+            }
+
+            segment.angle = Math.max(Math.min(0.1 * lookAngle + 0.9 * segment.angle, angle + mad), angle - mad);
         }
 
         segment.update(delta);
