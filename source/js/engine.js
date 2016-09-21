@@ -563,7 +563,7 @@ galaxies.engine.restartGame = function() {
         .to({volume: 0}, 1500)
         .call(function() {
           galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
-          galaxies.audio.soundField.volume = 0.6;
+          galaxies.audio.soundField.volume = galaxies.audio.muteState === 'none' ? 0.4 : 0;
         });
   }
   
@@ -615,7 +615,7 @@ galaxies.engine.initLevel = function() {
     galaxies.engine.projectilesHitRound = 0;
   } else if (galaxies.engine.roundNumber === 4) {
     galaxies.audio.soundField.changeSource(galaxies.audio.getSound('bossmusic'));
-    galaxies.audio.soundField.volume = 1;
+    galaxies.audio.soundField.volume = galaxies.audio.muteState === 'none' ? 1 : 0;
   }
   
 
@@ -658,7 +658,7 @@ galaxies.engine.nextLevel = function() {
         .to({volume: 0}, 1500)
         .call(function() {
           galaxies.audio.soundField.changeSource(galaxies.audio.getSound('music'));
-          galaxies.audio.soundField.volume = 0.6;
+          galaxies.audio.soundField.volume = galaxies.audio.muteState === 'none' ? 0.4 : 0;
         });
   }
 

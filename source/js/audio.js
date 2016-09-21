@@ -611,7 +611,7 @@ galaxies.audio.setMusicMute = function( mute ) {
   if ( mute ) {
     galaxies.audio.soundField.volume = 0;
   } else {
-    galaxies.audio.soundField.volume = 0.6; // global music volume, should be a const
+    galaxies.audio.soundField.volume = galaxies.engine.bossMode ? 1.0 : 0.4; // global music volume, should be a const
   }
 }
 

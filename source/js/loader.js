@@ -43,7 +43,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'cometloop', src: 'fx/environment/comet_fire_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'fpo1', src: 'fx/UFO_laser_fire', type: createjs.AbstractLoader.BINARY },
     { id: 'ufo', src: 'fx/environment/ufo_engine_loop', type: createjs.AbstractLoader.BINARY },
-    { id: 'music', src: 'music/music_5_1_loop', type: createjs.AbstractLoader.BINARY },
+    { id: 'music', src: 'music/lux_hero_loop', type: createjs.AbstractLoader.BINARY },
     { id: 'ufohit1', src: 'fx/impact/ufo_hit_01', type: createjs.AbstractLoader.BINARY },
     { id: 'ufohit2', src: 'fx/impact/ufo_hit_02', type: createjs.AbstractLoader.BINARY },
     { id: 'ufoshoot', src: 'fx/UFO_laser_fire', type: createjs.AbstractLoader.BINARY },
