@@ -509,6 +509,46 @@ galaxies.utils.doCollidersOverlap = (function () {
     };
 })();
 
+galaxies.utils.getBezierPoint = function (p0x, p0y, a0x, a0y, a1x, a1y, p1x, p1y, t) {
+    var p0 = new THREE.Vector2(p0x, p0y),
+        p1 = new THREE.Vector2(p1x, p1y);
+
+    if (t === 0) {
+        return p0;
+    } else if (t === 1) {
+        return p1;
+    }
+
+    var a0 = new THREE.Vector2(a0x, a0y),
+        a1 = new THREE.Vector2(a1x, a1y),
+        t2 = t * t,
+        t3 = t2 * t,
+        invT = 1 - t,
+        invT2 = invT * invT,
+        invT3 = invT2 * invT;
+
+    return p0.multiplyScalar(invT3).add(a0.multiplyScalar(3 * invT2 * t)).add(a1.multiplyScalar(3 * invT * t2))
+        .add(p1.multiplyScalar(t3));
+};
+
+galaxies.utils.getBezierTangent = function (p0x, p0y, a0x, a0y, a1x, a1y, p1x, p1y, t) {
+    var p0 = new THREE.Vector2(a0x - p0x, a0y - p0y).multiplyScalar(3),
+        p2 = new THREE.Vector2(p1x - a1x, p1y - a1y).multiplyScalar(3);
+
+    if (t === 0) {
+        return p0;
+    } else if (t === 1) {
+        return p2;
+    }
+
+    var p1 = new THREE.Vector2(a1x - a0x, a1y - a0y).multiplyScalar(6),
+        t2 = t * t,
+        invT = 1 - t,
+        invT2 = invT * invT;
+
+    return p0.multiplyScalar(invT2).add(p1.multiplyScalar(invT * t)).add(p2.multiplyScalar(t2));
+};
+
 // Patch SPE to allow negative speeds to make sphere particles move inwards.
 // This is used by the UFO laser charge effect.
 // May not be needed in latest version of SPE, but needs to be checked before it can be removed.

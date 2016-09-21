@@ -6,9 +6,17 @@ galaxies.Insecticlyde = function () {
     this.maxSegments = 10;
     this.maxAngleDiff = Math.PI / 3;
     this.taperCount = 3;
-    this.maxVelocity = 0.4;
 
     this.segments = [];
+    this.movementController = null;
+    this.position = new THREE.Vector2();
+
+    this.patterns = [
+        [{x: 0.5, y: 1.5}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.8}],
+        [{x: 0.25, y: -0.8}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.9, y: 0}, {x: 1, y: -0.8}],
+        [{x: 1.8, y: -0.8}, {x: 1, y: 0}, {x: 0.4, y: 0.4}, {x: 0, y: 1}, {x: -0.8, y: 1.8}]
+    ];
+    this.patternIndex = 0;
 
     galaxies.Boss.call(this);
 
@@ -51,26 +59,6 @@ Object.defineProperties(galaxies.Insecticlyde.prototype, {
             this.object.scale.set(value, value, value);
 
             this.updateActiveSegments();
-        }
-    },
-    xPosition: {
-        get: function () {
-            return this._xPosition;
-        },
-        set: function (value) {
-            this._xPosition = value;
-
-            this.object.position.x = (1 - value) * this.leftEdge + value * this.rightEdge;
-        }
-    },
-    yPosition: {
-        get: function () {
-            return this._yPosition;
-        },
-        set: function (value) {
-            this._yPosition = value;
-
-            this.object.position.y = (1 - value) * this.bottomEdge + value * this.topEdge;
         }
     }
 });
@@ -144,7 +132,7 @@ galaxies.Insecticlyde.prototype.disable = function () {
 galaxies.Insecticlyde.prototype.enter = function () {
     galaxies.Boss.prototype.enter.call(this);
 
-    this.targetPositions = [{x: 0.5, y: 0.8}];
+    this.movementController.addPoints([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1, y: 1.5}]);
 };
 
 galaxies.Insecticlyde.prototype.initModel = function () {
@@ -154,7 +142,7 @@ galaxies.Insecticlyde.prototype.initModel = function () {
 
     this.head.scale.set(1.58, 1.27, 1);
 
-    this.damageCollider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.65);
+    this.damageCollider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.7);
 
     this.object.add(this.head);
 
@@ -185,11 +173,12 @@ galaxies.Insecticlyde.prototype.reset = function () {
     this.headAngle = 0;
     this.activeSegments = this.maxSegments;
 
-    this.yPosition = 0.8;
-    this.xPosition = -0.1;
+    this.position.x = this.leftEdge - this.scale * 2;
+    this.position.y = this.topEdge - this.scale * 2;
 
-    this.targetPositions = [];
-    this.velocity = 0;
+    if (this.movementController) {
+        this.movementController.reset();
+    }
 
     this.updateSegments(0, true);
 };
@@ -198,12 +187,11 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
     this.updateMovement(delta);
 
     // TODO: movements
+    if (this.state !== "preEntry" && this.movementController.numPoints < 3) {
+        this.movementController.addPoints(this.patterns[this.patternIndex]);
 
-    if (this.targetPositions.length === 0) {
-        if (this.state === "entering") {
-            this.state = "moving";
-
-            this.targetPositions.push({x: 1, y: 1});
+        if (++this.patternIndex >= this.patterns.length) {
+            this.patternIndex = 0;
         }
     }
 
@@ -249,48 +237,43 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
     this.object.scale.set(newScale, newScale, newScale);
 
+    var speed = newScale * 8;
+
+    if (this.movementController) {
+        this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);
+    } else {
+        this.movementController = new galaxies.BossMover(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge,
+            speed);
+    }
+
     this.updateActiveSegments(true, (this.state === "preEntry") || (this.state === "entering"));
-    this.updateSegments(0, true);
+
+    this.updateMovement(0, true);
+
+    if (this.state === "preEntry") {
+        this.position.x = this.leftEdge - newScale * 2;
+        this.position.y = this.topEdge - newScale * 2;
+
+        this.updateSegments(0, true);
+    }
 };
 
-galaxies.Insecticlyde.prototype.updateMovement = function (delta) {
-    if (this.targetPositions.length === 0) {
+galaxies.Insecticlyde.prototype.updateMovement = function (delta, skipAngleUpdate) {
+    if (this.state === "preEntry") {
         return;
     }
 
-    var targetPos = this.targetPositions[0],
-        posDiff = {x: targetPos.x - this.xPosition, y: targetPos.y - this.yPosition},
-        desiredFacingAngle = Math.atan2(posDiff.y, posDiff.x),
-        angleDiff = desiredFacingAngle - this.headAngle,
-        absDiff = Math.abs(angleDiff),
-        distToDestSq = (posDiff.x * posDiff.x) + (posDiff.y * posDiff.y);
+    var dataChanged = this.movementController.update(delta);
 
-    if (absDiff > 0.001) {
-        var rotateBy = delta * Math.PI;
+    var pos = this.movementController.getCurrentPosition(),
+        angle = this.movementController.getCurrentFacingAngle();
 
-        if (rotateBy > absDiff) {
-            this.headAngle = desiredFacingAngle;
-        } else {
-            this.headAngle += Math.sign(angleDiff) * rotateBy;
-        }
-
-        if (absDiff > Math.PI / 3) {
-            this.velocity *= 0.8;
-        }
+    if (pos) {
+        this.position = pos;
+        this.headAngle = angle;
     }
 
-    this.velocity = Math.min(this.velocity + delta / 2, this.maxVelocity);
-
-    var moveAmt = this.velocity * delta;
-
-    if (distToDestSq <= moveAmt * moveAmt) {
-        this.targetPositions.shift();
-    }
-
-    this.xPosition += Math.cos(this.headAngle) * moveAmt;
-    this.yPosition += Math.sin(this.headAngle) * moveAmt;
-
-    this.updateSegments(delta);
+    this.updateSegments(delta, skipAngleUpdate || !dataChanged);
 };
 
 galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdate) {
@@ -298,6 +281,9 @@ galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdat
 
     var mad = this.maxAngleDiff,
         prevSegment;
+
+    this.object.position.x = this.position.x;
+    this.object.position.y = this.position.y;
 
     this.segments.forEach(function (segment, index) {
         var so = segment.object,
