@@ -76,12 +76,18 @@ Object.defineProperties(galaxies.Insecticlyde.prototype, {
 });
 
 galaxies.Insecticlyde.prototype.checkCollisions = function () {
-    var hitLast = false;
+    var hitLast = false,
+        destroyedHead = false,
+        headCollider;
+
+    galaxies.utils.updateCollider(this.damageCollider, this.object);
+
+    headCollider = this.damageCollider;
 
     galaxies.engine.projectiles.forEach(function (projectile) {
         var projectileHit = false;
 
-        this.segments.forEach(function (segment, index) {
+        this.segments.some(function (segment, index) {
             if (segment.enabled && segment.didGetHit(projectile)) {
                 projectileHit = true;
 
@@ -89,7 +95,24 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
                     hitLast = true;
                 }
             }
+
+            return !segment.enabled;
         }, this);
+
+        if (galaxies.utils.doCollidersOverlap(projectile.flatCapsule, headCollider)) {
+            projectileHit = true;
+
+            if (!destroyedHead && this.activeSegments === 0) {
+                destroyedHead = true;
+
+                this.state = "inactive";
+                this.object.visible = false;
+
+                galaxies.engine.showCombo(8000, 1, this.object);
+                galaxies.fx.explode(this.object.position, "green", this.scale * 3);
+                galaxies.fx.tintScreen(0x00FF00, 0.3, 200, 500);
+            }
+        }
 
         if (projectileHit) {
             projectile.hit();
@@ -130,6 +153,8 @@ galaxies.Insecticlyde.prototype.initModel = function () {
     this.head = galaxies.utils.makeSprite("insecticlydeface", true);
 
     this.head.scale.set(1.58, 1.27, 1);
+
+    this.damageCollider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.65);
 
     this.object.add(this.head);
 
