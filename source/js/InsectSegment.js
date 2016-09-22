@@ -4,7 +4,6 @@ this.galaxies = this.galaxies || {};
 
 galaxies.InsectSegment = function () {
     this.object = new THREE.Object3D();
-    this.targetScale = 1;
 
     this.initModel();
 
@@ -65,6 +64,7 @@ galaxies.InsectSegment.prototype.initModel = function () {
 galaxies.InsectSegment.prototype.reset = function () {
     this.angle = 0;
     this.enabled = true;
+    this.targetScale = 1;
     this.scale = 1;
 };
 
@@ -72,7 +72,7 @@ galaxies.InsectSegment.prototype.update = function (delta) {
     var scaleDiff = this.targetScale - this.scale,
         absScaleDiff = Math.abs(scaleDiff);
 
-    if (Math.abs(scaleDiff) > 0.0001) {
+    if (absScaleDiff > 0.0001) {
         var scaleAdd = delta / 4;
 
         if (scaleAdd > absScaleDiff) {

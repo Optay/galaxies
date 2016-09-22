@@ -12,11 +12,13 @@ galaxies.Insecticlyde = function () {
     this.position = new THREE.Vector2();
 
     this.patterns = [
-        [{x: 0.5, y: 1.5}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.8}],
+        [{x: 0.6, y: 1.5}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.8}],
         [{x: 0.25, y: -0.8}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.9, y: 0}, {x: 1, y: -0.8}],
-        [{x: 1.8, y: -0.8}, {x: 1, y: 0}, {x: 0.4, y: 0.4}, {x: 0, y: 1}, {x: -0.8, y: 1.8}]
+        [{x: 1.8, y: -0.8}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.8, y: 1.8}]
     ];
     this.patternIndex = 0;
+
+    this.fillPools();
 
     galaxies.Boss.call(this);
 
@@ -127,12 +129,86 @@ galaxies.Insecticlyde.prototype.disable = function () {
     this.segments.forEach(function (segment) {
         segment.object.visible = false;
     });
+
+    this.laserBlastPool.forEach(function (blast) {
+        galaxies.engine.rootObject.remove(blast.sprite);
+    });
+
+    this.laserPelletPool.forEach(function (pellet) {
+        pellet.removeFromScene();
+    });
 };
 
 galaxies.Insecticlyde.prototype.enter = function () {
     galaxies.Boss.prototype.enter.call(this);
 
     this.movementController.addPoints([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1, y: 1.5}]);
+
+    this.laserBlastPool.forEach(function (blast) {
+        blast.sprite.visible = false;
+
+        galaxies.engine.rootObject.add(blast.sprite);
+    });
+};
+
+galaxies.Insecticlyde.prototype.fillPools = function () {
+    var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8),
+        i, tex, mat, sheet, sprite;
+
+    this.laserBlastPool = [];
+    this.laserBlastIndex = 0;
+
+    for (i = 0; i < 3; ++i) {
+        tex = new THREE.Texture(galaxies.queue.getResult('lasercircleblast'));
+
+        tex.needsUpdate = true;
+
+        mat = new THREE.SpriteMaterial({
+            map: tex,
+            transparent: true
+        });
+
+        sheet = new galaxies.SpriteSheet(tex, frames, 30);
+
+        sprite = new THREE.Sprite(mat);
+
+        this.laserBlastPool.push({
+            texture: tex,
+            spriteSheet: sheet,
+            material: mat,
+            sprite: sprite,
+            sound: new galaxies.audio.PositionedSound({
+                source: galaxies.audio.getSound('ufoshoot'),
+                position: this.rootPosition,
+                baseVolume: 2.4,
+                loop: false,
+                start: false,
+                dispose: false
+            })
+        });
+    }
+
+    this.laserPelletPool = [];
+    this.laserPelletIndex = 0;
+
+    for (i = 0; i < 15; ++i) {
+        this.laserPelletPool.push(new galaxies.LaserPellet());
+    }
+};
+
+galaxies.Insecticlyde.prototype.fireLaserPellet = function (position, angle) {
+    var pellet = this.laserPelletPool[this.laserPelletIndex],
+        direction;
+
+    if (++this.laserPelletIndex >= this.laserPelletPool.length) {
+        this.laserPelletIndex = 0;
+    }
+
+    if (typeof angle === "number") {
+        direction = new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0);
+    }
+
+    pellet.addToScene(position, direction);
 };
 
 galaxies.Insecticlyde.prototype.initModel = function () {
@@ -172,6 +248,7 @@ galaxies.Insecticlyde.prototype.reset = function () {
 
     this.headAngle = 0;
     this.activeSegments = this.maxSegments;
+    this.timeToNextShot = 0;
 
     this.position.x = this.leftEdge - this.scale * 2;
     this.position.y = this.topEdge - this.scale * 2;
@@ -183,11 +260,32 @@ galaxies.Insecticlyde.prototype.reset = function () {
     this.updateSegments(0, true);
 };
 
+galaxies.Insecticlyde.prototype.triggerLaserBlast = function (position) {
+    var blast = this.laserBlastPool[this.laserBlastIndex];
+
+    if (++this.laserBlastIndex >= this.laserBlastPool.length) {
+        this.laserBlastIndex = 0;
+    }
+
+    blast.sprite.visible = true;
+    blast.material.rotation = this.headAngle + Math.PI / 2;
+    blast.spriteSheet.play();
+    blast.sprite.position.copy(position);
+    blast.sprite.position.z += 0.1;
+
+    blast.sound.updatePosition(blast.sprite.position);
+    blast.sound.startSound();
+};
+
 galaxies.Insecticlyde.prototype.update = function (delta) {
     this.updateMovement(delta);
 
     // TODO: movements
     if (this.state !== "preEntry" && this.movementController.numPoints < 3) {
+        if (this.state === "entering") {
+            this.state = "moving";
+        }
+
         this.movementController.addPoints(this.patterns[this.patternIndex]);
 
         if (++this.patternIndex >= this.patterns.length) {
@@ -195,11 +293,54 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
         }
     }
 
+    if ((this.state !== "preEntry") && (this.state !== "entering")) {
+        var firing = false;
+
+        if (this.position.x > this.leftEdge && this.position.x < this.rightEdge &&
+            this.position.y > this.bottomEdge && this.position.y < this.topEdge) {
+            firing = Math.abs(Math.atan2(this.position.y, this.position.x) - this.headAngle) > Math.PI / 2;
+        }
+
+        if (firing) {
+            this.timeToNextShot -= delta;
+
+            if (this.timeToNextShot <= 0) {
+                this.timeToNextShot = 2 + Math.random();
+console.log("FIRE");
+                var position = this.object.position.clone()
+                    .add(new THREE.Vector3(Math.cos(this.headAngle), Math.sin(this.headAngle), 0)
+                        .multiplyScalar(this.scale * 0.5));
+
+                this.fireLaserPellet(position, this.headAngle - Math.PI / 6);
+                this.fireLaserPellet(position, this.headAngle);
+                this.fireLaserPellet(position, this.headAngle + Math.PI / 6);
+
+                this.triggerLaserBlast(position);
+            }
+        }
+    }
+
+    this.laserBlastPool.forEach(function (blast) {
+        if (blast.sprite.visible) {
+            blast.spriteSheet.update(delta);
+
+            if (!blast.spriteSheet.isPlaying()) {
+                blast.sprite.visible = false;
+            }
+        }
+    });
+
+    this.laserPelletPool.forEach(function (pellet) {
+        if (pellet.state !== "inactive") {
+            pellet.update(delta);
+        }
+    });
+
     this.checkCollisions();
 };
 
 galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force) {
-    var taperAt = this.maxSegments - this.taperCount,
+    var taperAt = this.activeSegments - this.taperCount,
         taperPlusOne = this.taperCount + 1,
         outerScale = this.scale;
 
@@ -231,13 +372,13 @@ galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force
 galaxies.Insecticlyde.prototype.updateCoordinates = function () {
     galaxies.Boss.prototype.updateCoordinates.call(this);
 
-    var newScale = Math.min(Math.abs(this.topEdge - this.bottomEdge), Math.abs(this.rightEdge - this.leftEdge)) / 12;
+    var newScale = Math.min(Math.abs(this.topEdge - this.bottomEdge), Math.abs(this.rightEdge - this.leftEdge)) / 16;
 
     this._scale = newScale;
 
     this.object.scale.set(newScale, newScale, newScale);
 
-    var speed = newScale * 8;
+    var speed = newScale * 5;
 
     if (this.movementController) {
         this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);

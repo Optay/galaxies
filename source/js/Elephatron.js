@@ -305,9 +305,7 @@ galaxies.Elephatron.prototype.spawnLaserPellet = function (position) {
         this.laserPelletIndex = 0;
     }
 
-    var startPos = galaxies.utils.projectToCone(position);
-
-    pellet.addToScene(startPos);
+    pellet.addToScene(position);
 };
 
 galaxies.Elephatron.prototype.update = function (delta) {

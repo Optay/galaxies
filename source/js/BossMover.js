@@ -124,6 +124,7 @@ galaxies.BossMover.prototype = {
     update: function (delta) {
         var prevProgress = this.segmentProgress;
 
+        // TODO: use instantaneous change rate of bezier instead? Would be more even
         this.segmentProgress += this.segmentChangeRate * delta;
 
         if (this.segmentProgress > 1) {

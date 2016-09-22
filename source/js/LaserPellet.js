@@ -11,16 +11,30 @@ galaxies.LaserPellet = function () {
 
 galaxies.LaserPellet.prototype = {};
 
-galaxies.LaserPellet.prototype.addToScene = function (position) {
+galaxies.LaserPellet.prototype.addToScene = function (position, direction) {
     this.state = "active";
 
     this.object.position.copy(position);
 
+    this.object.position.z += 0.1;
+
     galaxies.engine.rootObject.add(this.object);
 
-    galaxies.utils.conify(this.object);
+    this.velocity = null;
 
-    this.velocity = position.clone().normalize().multiplyScalar(-30);
+    if (direction) {
+        var a = position.clone().multiplyScalar(-1).normalize(),
+            b = direction.clone().normalize(),
+            cosTheta = a.dot(b);
+
+        if (Math.abs(cosTheta) < 0.985) {
+            this.velocity = b.multiplyScalar(30);
+        }
+    }
+
+    if (this.velocity === null) {
+        this.velocity = position.clone().normalize().multiplyScalar(-30);
+    }
 };
 
 galaxies.LaserPellet.prototype.impact = function (hitPlayer) {
@@ -60,7 +74,7 @@ galaxies.LaserPellet.prototype.update = function (delta) {
         radius;
 
     if (galaxies.engine.shielded) {
-        radius = galaxies.engine.SHIELD_RADIUS - 0.9; // Why this is, I'm not really sure
+        radius = galaxies.engine.SHIELD_RADIUS;
 
         if (flatLenSq <= radius * radius) {
             this.impact(true);
@@ -92,6 +106,4 @@ galaxies.LaserPellet.prototype.update = function (delta) {
             }
         }
     }
-
-    galaxies.utils.conify(this.object);
 };
