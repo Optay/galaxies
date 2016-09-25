@@ -1523,7 +1523,7 @@ galaxies.engine.update = function() {
   
   
   // AUDIO
-  galaxies.audio.soundField.update(scaledDelta);
+  //galaxies.audio.soundField.update(scaledDelta);
 
 
   // TUTORIAL
