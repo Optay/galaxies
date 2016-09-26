@@ -298,22 +298,20 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
 
         if (this.position.x > this.leftEdge && this.position.x < this.rightEdge &&
             this.position.y > this.bottomEdge && this.position.y < this.topEdge) {
-            firing = Math.abs(Math.atan2(this.position.y, this.position.x) - this.headAngle) > Math.PI / 2;
+            firing = Math.abs(Math.atan2(this.position.y, this.position.x) - this.headAngle) > (5 * Math.PI / 6);
         }
 
         if (firing) {
             this.timeToNextShot -= delta;
 
             if (this.timeToNextShot <= 0) {
-                this.timeToNextShot = 2 + Math.random();
-console.log("FIRE");
+                this.timeToNextShot = 0.125;
+
                 var position = this.object.position.clone()
                     .add(new THREE.Vector3(Math.cos(this.headAngle), Math.sin(this.headAngle), 0)
                         .multiplyScalar(this.scale * 0.5));
 
-                this.fireLaserPellet(position, this.headAngle - Math.PI / 6);
                 this.fireLaserPellet(position, this.headAngle);
-                this.fireLaserPellet(position, this.headAngle + Math.PI / 6);
 
                 this.triggerLaserBlast(position);
             }
@@ -397,6 +395,10 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
         this.updateSegments(0, true);
     }
+
+    this.laserBlastPool.forEach(function (blast) {
+        blast.sprite.scale.set(newScale, newScale, newScale);
+    });
 };
 
 galaxies.Insecticlyde.prototype.updateMovement = function (delta, skipAngleUpdate) {
