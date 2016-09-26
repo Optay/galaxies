@@ -521,6 +521,17 @@ body {
   top: 50%;
 }
 
+.menu-holder .caption {
+  position: absolute;
+  width: 100%;
+  bottom: 70px;
+
+  font-family: 'Futura';
+  color: $score-color;
+  font-size: 27px;
+  text-align: center;
+}
+
 .level-results {
   position: absolute;
   width: 100%;

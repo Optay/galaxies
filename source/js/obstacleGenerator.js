@@ -26,9 +26,8 @@ galaxies.generator = (function() {
     levelTimer += delta;
 
     galaxies.ui.updateTimer( levelTimer );
-    
-    while ( (currentLevel.length > 0) && (currentLevel[0].time < levelTimer ) ) {
 
+    while ( (currentLevel.length > 0) && (currentLevel[0].time < levelTimer ) ) {
       switch ( currentLevel[0].type ) {
       case 'star':
         galaxies.engine.addStar( currentLevel[0].angle );
@@ -41,6 +40,9 @@ galaxies.generator = (function() {
         break;
       case 'boss':
         galaxies.engine.addBoss(currentLevel[0].bossType);
+        break;
+      case 'caption':
+        galaxies.ui.showCaption(currentLevel[0].value, currentLevel[0].displayFor);
         break;
       default:
         var obs = galaxies.engine.addObstacle( currentLevel[0].type );
@@ -109,14 +111,15 @@ galaxies.generator = (function() {
         }
       }
       galaxies.utils.shuffleArray(types);
-      console.log(types);
-      
+
       for (var obsI = 0; obsI<wave.quantity; obsI++ ) {
         var entry = {
           time: wave.time + timeStep * obsI,
           type: types[obsI],
           powerup: wave.powerup,
-          bossType: wave.bossType
+          bossType: wave.bossType,
+          value: wave.value,
+          displayFor: wave.displayFor
         };
         if ( wave.random ) {
           entry.angle = THREE.Math.randFloat(wave.startAngle, wave.endAngle) * Math.PI/180;

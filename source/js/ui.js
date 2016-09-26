@@ -45,7 +45,7 @@ galaxies.ui = (function() {
   // tutorial item
   var interactMessage = null;
   var interactCircle = null;
-  var skipTutorialButton = uiHolder.querySelector(".skip-tutorial");
+  var skipSequenceButton = uiHolder.querySelector(".skip-sequence");
   
   // pause menu
   var pauseOverlay = uiHolder.querySelector(".pause-overlay");
@@ -72,6 +72,9 @@ galaxies.ui = (function() {
   
   // title
   var title = uiHolder.querySelector(".title");
+
+  // caption
+  var caption = uiHolder.querySelector(".caption");
   
   // game element
   var gameContainer = document.getElementById( 'container' );
@@ -173,8 +176,8 @@ galaxies.ui = (function() {
     recommendSafari.addEventListener('mouseover', onOverButton);
     recommendEdge.addEventListener('mouseover', onOverButton);
 
-    skipTutorialButton.addEventListener('click', galaxies.engine.endTutorial);
-    skipTutorialButton.addEventListener('touchstart', galaxies.engine.endTutorial);
+    skipSequenceButton.addEventListener('click', galaxies.engine.endTutorial);
+    skipSequenceButton.addEventListener('touchstart', galaxies.engine.endTutorial);
 
   
     logoAppear();
@@ -357,7 +360,7 @@ galaxies.ui = (function() {
     if ( (!titleActive) || (currentTitle.time===0) ) {
       updateTitle();
     }
-  }
+  };
   var updateTitle = function() {
     if ( titleQueue.length == 0 ) {
       clearTitle();
@@ -390,7 +393,7 @@ galaxies.ui = (function() {
     }
     
     currentTitle = nextTitle;
-  }
+  };
   var clearTitle = function() {
     title.classList.remove('title-on');
     title.classList.add('hidden');
@@ -399,7 +402,19 @@ galaxies.ui = (function() {
     
     createjs.Tween.removeTweens( title );
     titleActive = false;
-  }
+  };
+
+  var showCaption = function (captionText, time) {
+    caption.classList.remove("hidden");
+
+    caption.innerHTML = captionText;
+
+    createjs.Tween.removeTweens(caption);
+console.log(time * 1000);
+    createjs.Tween.get(caption)
+        .wait(time * 1000)
+        .call(function() {caption.classList.add("hidden")});
+  };
 
   var showLevelResults = function (bonusScore, roundAccuracy) {
     levelResults.classList.remove("hidden");
@@ -775,18 +790,18 @@ galaxies.ui = (function() {
   var startTutorial = function () {
     showReticle();
 
-    skipTutorialButton.classList.remove("hidden");
+    skipSequenceButton.classList.remove("hidden");
 
     setTimeout(function () {
-      skipTutorialButton.classList.remove("invisible");
+      skipSequenceButton.classList.remove("invisible");
     }, 17);
   };
 
   var endTutorial = function () {
-    skipTutorialButton.classList.add("invisible");
+    skipSequenceButton.classList.add("invisible");
 
     setTimeout(function () {
-      skipTutorialButton.classList.add("hidden");
+      skipSequenceButton.classList.add("hidden");
     }, 500);
   };
 
@@ -874,6 +889,7 @@ galaxies.ui = (function() {
     showPauseButton: showPauseButton,
     hidePauseButton: hidePauseButton,
     showTitle: showTitle,
+    showCaption: showCaption,
     clearTitle: clearTitle,
     showLevelResults: showLevelResults,
     clearLevelResults: clearLevelResults,

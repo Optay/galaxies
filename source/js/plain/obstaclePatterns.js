@@ -55,7 +55,8 @@ galaxies.generator.rawPatterns = [
         { time: 32, duration: 8, startAngle: 90, endAngle: 450, quantity: 8, type: 'asteroid' },
     ],
     [ // Pluto 1-4
-        {time: 0, type: 'boss', bossType: 'insecticlyde'}
+        {time: 0, type: 'boss', bossType: 'insecticlyde'},
+        {time: 2, type: 'caption', value: 'Ooooh, this will sting just a little. Insecticlyde, do my bidding.', displayFor: 6}
     ],
     [ // Neptune 2-1
         { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroidice', random: true },
@@ -99,7 +100,8 @@ galaxies.generator.rawPatterns = [
         { time: 43, duration: 8, startAngle: 90, endAngle: -270, quantity: 8, type: 'asteroid' }, // spiral
     ],
     [ // Neptune 2-4
-        {time: 0, type: 'boss', bossType: 'elephatron'}
+        {time: 0, type: 'boss', bossType: 'elephatron'},
+        {time: 2, type: 'caption', value: 'Elephatron, I command you to finish our pink space friend.', displayFor: 6}
     ],
     [ // Uranus 3-1
         { time: 0, duration: 8, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroidrad', random: true },
@@ -166,6 +168,8 @@ galaxies.generator.rawPatterns = [
         { time: 54.5, duration: 0, quantity: 1, type: 'powerup', powerup: 'clone' },
     ],
     [ // Uranus 3-4
+        {time: 0, type: 'boss', bossType: 'monster'},
+        {time: 2, type: 'caption', value: 'You think you can stop me, Luxie? Muhahaha. Unleash the beast.', displayFor: 6}
     ],
     [ // Saturn 4-1
         { time: 0, duration: 10, startAngle: 0, endAngle: 360, quantity: 10, type: 'miniUFO', random: true },
