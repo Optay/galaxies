@@ -472,7 +472,8 @@ this.galaxies.Ufo = function() {
 
   this.introduceBoss = function () {
     var model = this.model,
-        objectPosition = this.object.position;
+        objectPosition = this.object.position,
+        self = this;
 
     anchor.rotation.set(0, 0, 0);
 
@@ -493,7 +494,9 @@ this.galaxies.Ufo = function() {
     createjs.Tween.get(objectPosition)
         .to({x: 2, y: -1}, 2000, createjs.Ease.cubicOut)
         .call(function () {
-          new galaxies.audio.SimpleSound({
+          galaxies.ui.showSkipButton();
+
+          self.bossIntroAudio = new galaxies.audio.SimpleSound({
             source: galaxies.audio.getSound('unleashthebeast'),
             loop: false
           });
@@ -504,11 +507,22 @@ this.galaxies.Ufo = function() {
         .to({y: -1}, 1000, createjs.Ease.sineInOut)
         .to({x: 1.9}, 1000, createjs.Ease.sineInOut)
         .to({y: -0.9}, 1500, createjs.Ease.sineInOut)
+        .call(this.finishBossIntro, this);
+  };
+
+  this.finishBossIntro = function () {
+    var model = this.model,
+        objectPosition = this.object.position;
+
+    createjs.Tween.removeTweens(objectPosition);
+
+    createjs.Tween.get(objectPosition)
         .call(function() {
           galaxies.engine.boss.enter();
           galaxies.engine.addInputListeners();
           galaxies.ui.showReticle();
           createjs.Tween.get(model.rotation).to({x: -Math.PI / 2}, 2000, createjs.Ease.cubicIn);
+          galaxies.ui.hideSkipButton();
         })
         .to({x: -12}, 2000, createjs.Ease.cubicIn)
         .call(function () {
@@ -516,6 +530,15 @@ this.galaxies.Ufo = function() {
           model.rotation.set(Math.PI,0,-Math.PI/2);
           objectPosition.set(0, 0, 0);
         });
+  };
+
+  this.skipBossIntro = function () {
+    this.finishBossIntro();
+
+    if (this.bossIntroAudio) {
+      createjs.Tween.get(this.bossIntroAudio)
+          .to({volume: 0}, 2000);
+    }
   };
   
   

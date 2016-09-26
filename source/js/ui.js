@@ -176,8 +176,8 @@ galaxies.ui = (function() {
     recommendSafari.addEventListener('mouseover', onOverButton);
     recommendEdge.addEventListener('mouseover', onOverButton);
 
-    skipSequenceButton.addEventListener('click', galaxies.engine.endTutorial);
-    skipSequenceButton.addEventListener('touchstart', galaxies.engine.endTutorial);
+    skipSequenceButton.addEventListener('click', galaxies.engine.skipSequence);
+    skipSequenceButton.addEventListener('touchstart', galaxies.engine.skipSequence);
 
   
     logoAppear();
@@ -410,7 +410,7 @@ galaxies.ui = (function() {
     caption.innerHTML = captionText;
 
     createjs.Tween.removeTweens(caption);
-console.log(time * 1000);
+
     createjs.Tween.get(caption)
         .wait(time * 1000)
         .call(function() {caption.classList.add("hidden")});
@@ -790,6 +790,10 @@ console.log(time * 1000);
   var startTutorial = function () {
     showReticle();
 
+    galaxies.ui.showSkipButton();
+  };
+
+  var showSkipButton = function () {
     skipSequenceButton.classList.remove("hidden");
 
     setTimeout(function () {
@@ -797,7 +801,7 @@ console.log(time * 1000);
     }, 17);
   };
 
-  var endTutorial = function () {
+  var hideSkipButton = function () {
     skipSequenceButton.classList.add("invisible");
 
     setTimeout(function () {
@@ -907,7 +911,8 @@ console.log(time * 1000);
     setMixButtons: setMixButtons,
     updateShotCount: updateShotCount,
     startTutorial: startTutorial,
-    endTutorial: endTutorial,
+    showSkipButton: showSkipButton,
+    hideSkipButton: hideSkipButton,
     showInteractionMessage: showInteractionMessage,
     hideInteractionMessage: hideInteractionMessage,
     updateReticlePosition: updateReticlePosition,
