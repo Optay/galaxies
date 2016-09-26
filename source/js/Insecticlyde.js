@@ -12,9 +12,10 @@ galaxies.Insecticlyde = function () {
     this.position = new THREE.Vector2();
 
     this.patterns = [
-        [{x: 0.6, y: 1.5}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.8}],
-        [{x: 0.25, y: -0.8}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.9, y: 0}, {x: 1, y: -0.8}],
-        [{x: 1.8, y: -0.8}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.8, y: 1.8}]
+        [{x: 0.6, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.4}],
+        [{x: 0.25, y: -0.4}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.4}],
+        [{x: 1.4, y: -0.4}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.4, y: 1.4}],
+        [{x: 0.2, y: 1.4}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.4}]
     ];
     this.patternIndex = 0;
 
@@ -142,7 +143,7 @@ galaxies.Insecticlyde.prototype.disable = function () {
 galaxies.Insecticlyde.prototype.enter = function () {
     galaxies.Boss.prototype.enter.call(this);
 
-    this.movementController.addPoints([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1, y: 1.5}]);
+    this.movementController.addPoints([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1, y: 1.2}]);
 
     this.laserBlastPool.forEach(function (blast) {
         blast.sprite.visible = false;
@@ -294,11 +295,22 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
     }
 
     if ((this.state !== "preEntry") && (this.state !== "entering")) {
-        var firing = false;
+        var firing = false,
+            angleDiff;
 
         if (this.position.x > this.leftEdge && this.position.x < this.rightEdge &&
             this.position.y > this.bottomEdge && this.position.y < this.topEdge) {
-            firing = Math.abs(Math.atan2(this.position.y, this.position.x) - this.headAngle) > (5 * Math.PI / 6);
+            angleDiff = Math.atan2(this.position.y, this.position.x) - this.headAngle;
+
+            while (angleDiff > Math.PI) {
+                angleDiff -= 2 * Math.PI;
+            }
+
+            while (angleDiff < -Math.PI) {
+                angleDiff += 2 * Math.PI;
+            }
+
+            firing = Math.abs(angleDiff) > (5 * Math.PI / 6);
         }
 
         if (firing) {

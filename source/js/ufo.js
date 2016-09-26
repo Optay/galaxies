@@ -507,7 +507,9 @@ this.galaxies.Ufo = function() {
         .to({y: -1}, 1000, createjs.Ease.sineInOut)
         .to({x: 1.9}, 1000, createjs.Ease.sineInOut)
         .to({y: -0.9}, 1500, createjs.Ease.sineInOut)
-        .call(this.finishBossIntro, this);
+        .call(function () {
+          self.finishBossIntro.call(self);
+        });
   };
 
   this.finishBossIntro = function () {
