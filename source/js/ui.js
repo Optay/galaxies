@@ -407,12 +407,25 @@ galaxies.ui = (function() {
   var showCaption = function (captionText, time) {
     caption.classList.remove("hidden");
 
-    caption.innerHTML = captionText;
+    caption.innerHTML = '';
 
     createjs.Tween.removeTweens(caption);
 
-    createjs.Tween.get(caption)
-        .wait(time * 1000)
+    var msPerChar = 33,
+        numChars = captionText.length,
+        tween = createjs.Tween.get(caption),
+        delayedAddChar = function(char) {
+          tween.wait(msPerChar).call(function () {
+            caption.innerHTML += char;
+          });
+        },
+        i;
+
+    for (i = 0; i < numChars; ++i) {
+      delayedAddChar(captionText[i]);
+    }
+
+    tween.wait(time * 1000)
         .call(function() {caption.classList.add("hidden")});
   };
 
