@@ -201,6 +201,12 @@ galaxies.engine.levelNumber = galaxies.engine.START_LEVEL_NUMBER;
 galaxies.engine.targetAngle = 0;
 galaxies.engine.angle = 0;
 
+// Interaction tracking
+galaxies.engine.bIsDown = false;
+galaxies.engine.downPoint = new THREE.Vector2();
+galaxies.engine.downTime = 0;
+galaxies.engine.bIsAiming = false;
+
 // Active obstacles.
 galaxies.engine.obstacles = [];
 galaxies.engine.inactiveObstacles = [];
@@ -922,48 +928,108 @@ galaxies.engine.setLightPosition = function( angles ) {
 }
 
 
+galaxies.engine.commonInteractStart = function (event) {
+  galaxies.engine.bIsDown = true;
+  galaxies.engine.bIsAiming = false;
+  galaxies.engine.isFiring = false;
+  galaxies.engine.downPoint.x = event.clientX;
+  galaxies.engine.downPoint.y = event.clientY;
+  galaxies.engine.downTime = 0;
+
+  galaxies.ui.updateReticlePosition(event);
+};
+
+galaxies.engine.commonInteractMove = function (event) {
+  var relativeX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
+      relativeY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
+
+  galaxies.engine.targetAngle = -(Math.atan2(relativeY, relativeX) + Math.PI/2); // sprite is offset
+  galaxies.ui.updateReticlePosition(event);
+
+  if (!galaxies.engine.bIsDown || galaxies.engine.isFiring || galaxies.engine.bIsAiming) {
+    return;
+  }
+
+  var currentPoint = new THREE.Vector2(event.clientX, event.clientY),
+      threshold = Math.min(galaxies.engine.canvasWidth, galaxies.engine.canvasHeight) * 0.01;
+
+  threshold *= threshold;
+
+  if (galaxies.engine.downPoint.distanceToSquared(currentPoint) > threshold) {
+    galaxies.engine.bIsAiming = true;
+  }
+};
+
+galaxies.engine.commonInteractEnd = function (event) {
+  galaxies.engine.bIsDown = false;
+  galaxies.engine.bIsAiming = false;
+  galaxies.engine.isFiring = false;
+
+  galaxies.ui.updateReticlePosition(event);
+};
+
 galaxies.engine.onDocumentMouseDown = function( event ) {
     // Commented out so datgui menu works, has side effect of making
     // FX text selectable.
-	//event.preventDefault(); 
+	//event.preventDefault();
 
-    galaxies.engine.isFiring = true;
-    galaxies.ui.updateReticlePosition(event);
-}
+    galaxies.engine.commonInteractStart(event);
+};
+
+galaxies.engine.averageTouchLocation = function (event) {
+  var totalX = 0,
+      totalY = 0,
+      touches = event.touches,
+      numTouches = touches.length,
+      i, touch;
+
+  for (i = 0; i < numTouches; ++i) {
+    touch = touches[i];
+
+    totalX += touch.clientX;
+    totalY += touch.clientY;
+  }
+
+  return {clientX: totalX / numTouches, clientY: totalY / numTouches};
+};
+
 galaxies.engine.onDocumentTouchStart = function( event ) {
     event.preventDefault();
-    
-    galaxies.engine.isFiring = true;
-    galaxies.engine.onDocumentTouchMove( event );
-}
+
+    if (galaxies.engine.bIsDown) {
+      return;
+    }
+
+    var touchAverage = galaxies.engine.averageTouchLocation(event);
+
+    galaxies.engine.commonInteractStart(touchAverage);
+};
 
 
 galaxies.engine.onDocumentMouseUp = function( event ) {
-  galaxies.engine.isFiring = false;
-  
-  galaxies.ui.updateReticlePosition(event);
-}
+  galaxies.engine.commonInteractEnd(event);
+};
+
+galaxies.engine.onDocumentTouchEnd = function (event) {
+  var touchAverage = galaxies.engine.averageTouchLocation(event);
+
+  if (event.changedTouches.length === event.touches.length) {
+    galaxies.engine.commonInteractEnd(touchAverage);
+  } else {
+    galaxies.engine.commonInteractMove(touchAverage);
+  }
+};
 
 galaxies.engine.onDocumentMouseMove = function(event) {
-  var mouseX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth );
-  var mouseY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
-
-  galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
-  galaxies.ui.updateReticlePosition(event);
-}
+  galaxies.engine.commonInteractMove(event);
+};
 galaxies.engine.onDocumentTouchMove = function( event ) {
   event.preventDefault();
-  
-  var touches = event.changedTouches;
-  for ( var i=0; i<touches.length; i++ ) {
-      var mouseX = touches[i].clientX - galaxies.engine.canvasHalfWidth;
-      var mouseY = touches[i].clientY - galaxies.engine.canvasHalfHeight;
-      
-      galaxies.engine.targetAngle = -(Math.atan2(mouseY, mouseX) + Math.PI/2); // sprite is offset
-      galaxies.ui.updateReticlePosition(touches[i]);
-  }
-        
-}
+
+  var touchAverage = galaxies.engine.averageTouchLocation(event);
+
+  galaxies.engine.commonInteractMove(touchAverage);
+};
 
 galaxies.engine.addObstacle = function( type ) {
   // Get from pool and initialize
@@ -1196,6 +1262,14 @@ galaxies.engine.update = function() {
   scaledDelta = delta * galaxies.engine.timeDilation;
 
   var activeObstacleCount = 0;
+
+  if (galaxies.engine.bIsDown && !galaxies.engine.bIsAiming && !galaxies.engine.isFiring) {
+    galaxies.engine.downTime += delta;
+
+    if (galaxies.engine.downTime > 0.25) {
+      galaxies.engine.isFiring = true;
+    }
+  }
 
   galaxies.engine.obstacles.forEach(function (obstacle) {
     if (obstacle.state === "inactive") {
@@ -1887,8 +1961,8 @@ galaxies.engine.addInputListeners = function() {
   document.addEventListener( 'mousemove', galaxies.engine.onDocumentMouseMove, false );
   
   document.addEventListener( 'touchstart', galaxies.engine.onDocumentTouchStart, false );
-  document.addEventListener( 'touchend', galaxies.engine.onDocumentMouseUp, false );
-  document.addEventListener( 'touchleave', galaxies.engine.onDocumentMouseUp, false );
+  document.addEventListener( 'touchend', galaxies.engine.onDocumentTouchEnd, false );
+  document.addEventListener( 'touchleave', galaxies.engine.onDocumentTouchEnd, false );
   document.addEventListener( 'touchmove', galaxies.engine.onDocumentTouchMove, false );
 }
 galaxies.engine.removeInputListeners = function() {
@@ -1899,8 +1973,8 @@ galaxies.engine.removeInputListeners = function() {
   document.removeEventListener( 'mousemove', galaxies.engine.onDocumentMouseMove, false );
   
   document.removeEventListener( 'touchstart', galaxies.engine.onDocumentTouchStart, false );
-  document.removeEventListener( 'touchend', galaxies.engine.onDocumentMouseUp, false );
-  document.removeEventListener( 'touchleave', galaxies.engine.onDocumentMouseUp, false );
+  document.removeEventListener( 'touchend', galaxies.engine.onDocumentTouchEnd, false );
+  document.removeEventListener( 'touchleave', galaxies.engine.onDocumentTouchEnd, false );
   document.removeEventListener( 'touchmove', galaxies.engine.onDocumentTouchMove, false );
 }
 
