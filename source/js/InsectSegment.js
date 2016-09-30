@@ -58,7 +58,7 @@ galaxies.InsectSegment.prototype.initModel = function () {
 
     this.object.add(this.segment);
 
-    this.collider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.45);
+    this.collider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.4);
 };
 
 galaxies.InsectSegment.prototype.reset = function () {

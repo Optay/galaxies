@@ -12,10 +12,10 @@ galaxies.Insecticlyde = function () {
     this.position = new THREE.Vector2();
 
     this.patterns = [
-        [{x: 0.6, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.4}],
-        [{x: 0.25, y: -0.4}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.4}],
-        [{x: 1.4, y: -0.4}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.4, y: 1.4}],
-        [{x: 0.2, y: 1.4}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.4}]
+        [{x: 0.6, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.2}],
+        [{x: 0.25, y: -0.2}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.2}],
+        [{x: 1.2, y: -0.2}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.2, y: 1.2}],
+        [{x: 0.2, y: 1.2}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.2}]
     ];
     this.patternIndex = 0;
 
@@ -49,7 +49,20 @@ Object.defineProperties(galaxies.Insecticlyde.prototype, {
         set: function (value) {
             this._headAngle = value;
 
-            this.head.rotation.z = value + Math.PI / 2;
+            this.object.rotation.z = value + Math.PI / 2;
+        }
+    },
+    mouthOpenAmount: {
+        get: function () {
+            return this._mouthOpenAmount;
+        },
+        set: function (value) {
+            this._mouthOpenAmount = value;
+
+            var scalar = value - 0.8;
+
+            this.leftMandible.rotation.z = scalar * Math.PI / 4;
+            this.rightMandible.rotation.z = scalar * -Math.PI / 4;
         }
     },
     scale: {
@@ -235,6 +248,29 @@ galaxies.Insecticlyde.prototype.initModel = function () {
         segment.object.position.set(-0.45 - i * 0.9, 0, (i + 1) * -0.01);
     }
 
+    var leftMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible", true),
+        rightMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible", true);
+
+    this.leftMandible = new THREE.Object3D();
+    this.rightMandible = new THREE.Object3D();
+
+    leftMandibleSprite.scale.set(-0.29, 0.73, 1);
+    rightMandibleSprite.scale.set(0.29, 0.73, 1);
+
+    leftMandibleSprite.material.side = THREE.BackSide;
+
+    leftMandibleSprite.position.set(-0.095, -0.195, 0);
+    rightMandibleSprite.position.set(0.095, -0.195, 0);
+
+    this.leftMandible.add(leftMandibleSprite);
+    this.rightMandible.add(rightMandibleSprite);
+
+    this.leftMandible.position.set(0.48, -0.32, -0.01);
+    this.rightMandible.position.set(-0.48, -0.32, -0.01);
+
+    this.object.add(this.leftMandible);
+    this.object.add(this.rightMandible);
+
     galaxies.engine.rootObject.add(this.object);
 };
 
@@ -248,6 +284,7 @@ galaxies.Insecticlyde.prototype.reset = function () {
     this.object.visible = true;
 
     this.headAngle = 0;
+    this.mouthOpenAmount = 0.5;
     this.activeSegments = this.maxSegments;
     this.timeToNextShot = 0;
 
@@ -317,7 +354,7 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
             this.timeToNextShot -= delta;
 
             if (this.timeToNextShot <= 0) {
-                this.timeToNextShot = 0.125;
+                this.timeToNextShot = 0.25;
 
                 var position = this.object.position.clone()
                     .add(new THREE.Vector3(Math.cos(this.headAngle), Math.sin(this.headAngle), 0)
@@ -388,7 +425,7 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
     this.object.scale.set(newScale, newScale, newScale);
 
-    var speed = newScale * 5;
+    var speed = newScale * 3;
 
     if (this.movementController) {
         this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);
