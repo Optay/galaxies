@@ -165,6 +165,8 @@ galaxies.engine.OBSTACLE_GRAVITY = -0.5;
 
 galaxies.engine.SHOOT_TIME = 0.5; // 0.4 in original
 
+galaxies.engine.HOLD_THRESHOLD = 0.18;
+
 galaxies.engine.POWERUP_DURATION = 40; // time in seconds
 galaxies.engine.POWERUP_CHARGED = 3300;//3300; // powerup spawns when this many points are earned, set low for easier testing of powerups
 galaxies.engine.powerups = ['clone', 'spread', 'golden', 'seeker', 'timeWarp', 'shield'];
@@ -961,9 +963,9 @@ galaxies.engine.commonInteractMove = function (event) {
 };
 
 galaxies.engine.commonInteractEnd = function (event) {
+  galaxies.engine.isFiring = !galaxies.engine.bIsAiming && galaxies.engine.downTime < galaxies.engine.HOLD_THRESHOLD;
   galaxies.engine.bIsDown = false;
   galaxies.engine.bIsAiming = false;
-  galaxies.engine.isFiring = false;
 
   galaxies.ui.updateReticlePosition(event);
 };
@@ -1266,7 +1268,7 @@ galaxies.engine.update = function() {
   if (galaxies.engine.bIsDown && !galaxies.engine.bIsAiming && !galaxies.engine.isFiring) {
     galaxies.engine.downTime += delta;
 
-    if (galaxies.engine.downTime > 0.25) {
+    if (galaxies.engine.downTime > galaxies.engine.HOLD_THRESHOLD) {
       galaxies.engine.isFiring = true;
     }
   }
@@ -1496,6 +1498,10 @@ galaxies.engine.update = function() {
     }
 
     galaxies.engine.shootFunction();
+
+    if (!galaxies.engine.bIsDown) {
+      galaxies.engine.isFiring = false;
+    }
   }
   //
 
