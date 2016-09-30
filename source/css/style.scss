@@ -530,6 +530,8 @@ body {
   color: $score-color;
   font-size: 27px;
   text-align: center;
+
+  transition: opacity 0.5s ease;
 }
 
 .level-results {

@@ -405,7 +405,7 @@ galaxies.ui = (function() {
   };
 
   var showCaption = function (captionText, time) {
-    caption.classList.remove("hidden");
+    caption.classList.remove("invisible");
 
     caption.innerHTML = '';
 
@@ -426,7 +426,7 @@ galaxies.ui = (function() {
     }
 
     tween.wait(time * 1000)
-        .call(function() {caption.classList.add("hidden")});
+        .call(function() {caption.classList.add("invisible")});
   };
 
   var showLevelResults = function (bonusScore, roundAccuracy) {
