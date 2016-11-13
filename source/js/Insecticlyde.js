@@ -387,8 +387,8 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
 };
 
 galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force) {
-    var taperAt = this.activeSegments - this.taperCount,
-        taperPlusOne = this.taperCount + 1,
+    var /*taperAt = this.activeSegments - this.taperCount,
+        taperPlusOne = this.taperCount + 1,*/
         outerScale = this.scale;
 
     this.segments.forEach(function (segment, index) {
@@ -399,11 +399,11 @@ galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force
 
             var targetScale;
 
-            if (index >= taperAt) {
+            /*if (index >= taperAt) {
                 targetScale = (0.25 + 0.75 * (1 - (index - taperAt + 1) / taperPlusOne)) * outerScale;
-            } else {
+            } else {*/
                 targetScale = outerScale;
-            }
+            //}
 
             if (force) {
                 segment.scale = targetScale;
@@ -425,7 +425,7 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
     this.object.scale.set(newScale, newScale, newScale);
 
-    var speed = newScale * 3;
+    var speed = newScale * 5;
 
     if (this.movementController) {
         this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);
