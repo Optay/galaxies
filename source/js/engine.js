@@ -1973,6 +1973,8 @@ galaxies.engine.addInputListeners = function() {
 }
 galaxies.engine.removeInputListeners = function() {
   galaxies.engine.isFiring = false;
+  galaxies.engine.bIsDown = false;
+  galaxies.engine.bIsAiming = false;
 
   document.removeEventListener( 'mousedown', galaxies.engine.onDocumentMouseDown, false );
   document.removeEventListener( 'mouseup', galaxies.engine.onDocumentMouseUp, false );
