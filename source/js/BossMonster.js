@@ -188,7 +188,7 @@ galaxies.BossMonster.prototype.openEyes = function () {
 };
 
 galaxies.BossMonster.prototype.reset = function () {
-    galaxies.ui.levelClearText = "OCULARRY DEFEATED";
+    galaxies.ui.levelClearText = this.name.toUpperCase() + " DEFEATED";
 
     this.eyes.forEach(function (eye) {
         eye.eyeball.visible = true;

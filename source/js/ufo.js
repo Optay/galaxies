@@ -475,6 +475,8 @@ this.galaxies.Ufo = function() {
         objectPosition = this.object.position,
         self = this;
 
+    createjs.Tween.removeTweens(objectPosition);
+
     anchor.rotation.set(0, 0, 0);
 
     model.rotation.set(Math.PI / 8, Math.PI, 0);
