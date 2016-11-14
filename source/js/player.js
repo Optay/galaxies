@@ -13,167 +13,74 @@ this.galaxies.Player = function() {
   rootObject.add(characterRotator);
 
   var characterMap = new THREE.Texture( galaxies.queue.getResult('lux') );
-  var baseAnimator = new galaxies.SpriteSheet(
-    characterMap,
-    [
-      [0,0,232,339,0,23,143],
-      [232,0,232,339,0,23,143],
-      [464,0,232,339,0,23,143],
-      [696,0,232,339,0,23,143],
-      [0,339,232,339,0,23,143],
-      [232,339,232,339,0,23,143],
-      [464,339,232,339,0,23,143],
-      [696,339,232,339,0,23,143],
-      [0,678,232,339,0,23,143],
-      [232,678,232,339,0,23,143],
-      [464,678,232,339,0,23,143],
-      [696,678,232,339,0,23,143],
-      [0,1017,232,339,0,23,143],
-      [232,1017,232,339,0,23,143],
-      [464,1017,232,339,0,23,143],
-      [696,1017,232,339,0,23,143],
-      
-      ], 
-    30
-    );
   characterMap.needsUpdate = true;
-  var baseAspectRatio = 232/339;
+
+  var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0));
+
+  var baseAnimator = new galaxies.SpriteSheet(characterMap, frames, 30);
+  var baseAspectRatio = 1;
+
   var baseTeleportMap = new THREE.Texture( galaxies.queue.getResult('lux') );
   baseTeleportMap.needsUpdate = true;
-  var baseTeleport = new galaxies.SpriteSheet(
-    baseTeleportMap,
-    [
-      [0,1356,232,339,0,23,143],
-      [232,1356,232,339,0,23,143],
-      [464,1356,232,339,0,23,143],
-      [696,1356,232,339,0,23,143]
-     ], 
-    30
-    );
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(4114, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0));
+
+  var baseTeleport = new galaxies.SpriteSheet(baseTeleportMap, frames, 30);
   
   
   var goldenMap = new THREE.Texture( galaxies.queue.getResult('luxgolden') );
-  var goldenAnimator = new galaxies.SpriteSheet(
-    goldenMap,
-    [
-     [0,0,232,338,0,23,143],
-     [232,0,232,338,0,23,143],
-     [464,0,232,338,0,23,143],
-     [696,0,232,338,0,23,143],
-     [0,338,232,338,0,23,143],
-     [232,338,232,338,0,23,143],
-     [464,338,232,338,0,23,143],
-     [696,338,232,338,0,23,143],
-     [0,676,232,338,0,23,143],
-     [232,676,232,338,0,23,143],
-     [464,676,232,338,0,23,143],
-     [696,676,232,338,0,23,143],
-     [0,1014,232,338,0,23,143],
-     [232,1014,232,338,0,23,143],
-     [464,1014,232,338,0,23,143],
-     [696,1014,232,338,0,23,143],
-
-    ],
-    30
-    );
   goldenMap.needsUpdate = true;
-  var goldenAspectRatio = 232/338;
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0));
+
+  var goldenAnimator = new galaxies.SpriteSheet(goldenMap, frames, 30);
+  var goldenAspectRatio = 1;
+
   var goldenTeleportMap = new THREE.Texture( galaxies.queue.getResult('luxgolden') );
   goldenTeleportMap.needsUpdate = true;
-  var goldenTeleport = new galaxies.SpriteSheet(
-    goldenTeleportMap,
-    [ // NOTE: these values are not the same as in the supplied sprite script, they are offset by four pixels
-      [0,1352,232,338,0,23,143],
-      [232,1352,232,338,0,23,143],
-      [464,1352,232,338,0,23,143],
-      [696,1352,232,338,0,23,143]
-    ], 
-    30
-    );
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(4114, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0));
+
+  var goldenTeleport = new galaxies.SpriteSheet(goldenTeleportMap, frames, 30);
   
   var spreadMap = new THREE.Texture( galaxies.queue.getResult('luxspread') );
-  var spreadAnimator = new galaxies.SpriteSheet(
-    spreadMap,
-    [
-      [0,0,233,339,0,23,143],
-      [233,0,233,339,0,23,143],
-      [466,0,233,339,0,23,143],
-      [699,0,233,339,0,23,143],
-      [0,339,233,339,0,23,143],
-      [233,339,233,339,0,23,143],
-      [466,339,233,339,0,23,143],
-      [699,339,233,339,0,23,143],
-      [0,678,233,339,0,23,143],
-      [233,678,233,339,0,23,143],
-      [466,678,233,339,0,23,143],
-      [699,678,233,339,0,23,143],
-      [0,1017,233,339,0,23,143],
-      [233,1017,233,339,0,23,143],
-      [466,1017,233,339,0,23,143],
-      [699,1017,233,339,0,23,143],
-      [0,1356,233,339,0,23,143],
-      [233,1356,233,339,0,23,143],
-      [466,1356,233,339,0,23,143],
-      [699,1356,233,339,0,23,143],
-  
-    ],
-    30
-    );
   spreadMap.needsUpdate = true;
-  var spreadAspectRatio = 233/339;
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 22, new THREE.Vector2(3, 0));
+
+  var spreadAnimator = new galaxies.SpriteSheet(spreadMap, frames, 30);
+  var spreadAspectRatio = 1;
+
   var spreadTeleportMap = new THREE.Texture( galaxies.queue.getResult('luxspread') );
   spreadTeleportMap.needsUpdate = true;
-  var spreadTeleport = new galaxies.SpriteSheet(
-    spreadTeleportMap,
-    [
-      [0,1695,233,339,0,23,143],
-      [233,1695,233,339,0,23,143],
-      [466,1695,233,339,0,23,143],
-      [699,1695,233,339,0,23,143],
-     ], 
-    30
-    );
-  
-  
-  var cloneMap = new THREE.Texture( galaxies.queue.getResult('luxclone') );
-  var cloneAnimator = new galaxies.SpriteSheet(
-    cloneMap,
-    [
-     [0,0,232,339,0,23,127],
-     [232,0,232,339,0,23,127],
-     [464,0,232,339,0,23,127],
-     [696,0,232,339,0,23,127],
-     [0,339,232,339,0,23,127],
-     [232,339,232,339,0,23,127],
-     [464,339,232,339,0,23,127],
-     [696,339,232,339,0,23,127],
-     [0,678,232,339,0,23,127],
-     [232,678,232,339,0,23,127],
-     [464,678,232,339,0,23,127],
-     [696,678,232,339,0,23,127],
-     [0,1017,232,339,0,23,127],
-     [232,1017,232,339,0,23,127],
-     [464,1017,232,339,0,23,127],
-     [696,1017,232,339,0,23,127],
 
-    ], 
-    30
-    );
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(5698, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(3, 0));
+
+  var spreadTeleport = new galaxies.SpriteSheet(spreadTeleportMap, frames, 30);
+
+  var cloneMap = new THREE.Texture( galaxies.queue.getResult('luxclone') );
   cloneMap.needsUpdate = true;
-  var cloneAspectRatio = 164/229;
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(62, 0));
+
+  var cloneAnimator = new galaxies.SpriteSheet(cloneMap, frames, 30);
+  var cloneAspectRatio = 1;
+
   var cloneTeleportMap = new THREE.Texture( galaxies.queue.getResult('luxclone') );
-  var cloneTeleportAnimator = new galaxies.SpriteSheet(
-    cloneTeleportMap,
-    [
-      [0,1356,232,339,0,23,127],
-      [232,1356,232,339,0,23,127],
-      [464,1356,232,339,0,23,127],
-      [696,1356,232,339,0,23,127]
-     ], 
-    30
-    );
   cloneTeleportMap.needsUpdate = true;
-  
+
+  frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(5073, 0), new THREE.Vector2(256, 256),
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(62, 0));
+
+  var cloneTeleportAnimator = new galaxies.SpriteSheet(cloneTeleportMap, frames, 30);
+
   // teleport
   var teleportSprite;
   var teleportAnimator;
@@ -256,7 +163,7 @@ this.galaxies.Player = function() {
   var clone = new THREE.Sprite( cloneMaterial );
   var cloneRotator = new THREE.Object3D();
   var cloneScale = cloneAspectRatio * galaxies.engine.CHARACTER_HEIGHT;
-  clone.position.set( cloneScale * 0.15, galaxies.engine.CHARACTER_POSITION, 0 );
+  clone.position.set( 0, galaxies.engine.CHARACTER_POSITION, 0 );
   clone.scale.set(cloneScale, galaxies.engine.CHARACTER_HEIGHT, cloneScale);
 
   cloneRotator.add(clone);
@@ -280,8 +187,8 @@ this.galaxies.Player = function() {
     opacity: 0.0
   } );
   var cloneTeleportSprite = new THREE.Sprite( cloneTeleportMaterial );
-  cloneTeleportSprite.position.z = 0.1; // must appear in front of base character sprite      
-  
+  cloneTeleportSprite.position.z = 0.1; // must appear in front of base character sprite
+
   // Clone AI data
   var cloneAIData = {
       shotCooldown: 0,
@@ -781,7 +688,7 @@ this.galaxies.Player = function() {
     teleportSprite.material.map = characters[powerup].teleportMap;
     teleportAnimator = characters[powerup].teleportAnimator;
     
-    character.position.set( characters[powerup].scale * 0.15, galaxies.engine.CHARACTER_POSITION, 0 ); // note that character is offset horizontally because sprites are not centered
+    character.position.set( 0, galaxies.engine.CHARACTER_POSITION, 0 ); // note that character is offset horizontally because sprites are not centered
     character.scale.set( characters[powerup].scale, galaxies.engine.CHARACTER_HEIGHT, characters[powerup].scale);
     
   }

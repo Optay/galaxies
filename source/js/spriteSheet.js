@@ -14,7 +14,7 @@ galaxies.SpriteSheet = function( texture, frames, frameRate ) {
   
   var width = texture.image.width;
   var height = texture.image.height;
-  
+
   this.texture = texture;
   
   this.updateFrame = function( index ) {

@@ -317,19 +317,21 @@ galaxies.utils.getNormalizedScreenPosition = function (v3) {
     return new THREE.Vector2(0.5 + v3.x * 0.5, 0.5 + v3.y * 0.5);
 };
 
-galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames) {
+galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames, frameGap) {
     var frames = [],
         xPos = startPoint.x,
         yPos = startPoint.y;
 
+    frameGap = frameGap || new THREE.Vector2();
+
     for (var i = 0; i < numFrames; ++i) {
         frames.push([xPos, yPos, frameSize.x, frameSize.y]);
 
-        xPos += frameSize.x;
+        xPos += frameSize.x + frameGap.x;
 
         if (xPos >= texSize.x) {
             xPos = 0;
-            yPos += frameSize.y;
+            yPos += frameSize.y + frameGap.y;
         }
     }
 

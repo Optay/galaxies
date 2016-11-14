@@ -178,7 +178,7 @@ galaxies.engine.powerupMessagesShown = {};
 
 galaxies.engine.PLANET_RADIUS = 1;
 galaxies.engine.CHARACTER_HEIGHT = 4.5;
-galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.62 * galaxies.engine.CHARACTER_HEIGHT/2 );
+galaxies.engine.CHARACTER_POSITION = galaxies.engine.PLANET_RADIUS + (0.85 * galaxies.engine.CHARACTER_HEIGHT/2 );
 
 galaxies.engine.CAMERA_SLOPE = Math.tan( galaxies.engine.CAMERA_VIEW_ANGLE*Math.PI/360 );
 galaxies.engine.VISIBLE_RADIUS = galaxies.engine.CAMERA_Z * galaxies.engine.CONE_SLOPE * galaxies.engine.CAMERA_SLOPE/ (galaxies.engine.CONE_SLOPE + galaxies.engine.CAMERA_SLOPE);
