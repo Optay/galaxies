@@ -130,10 +130,14 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
         segmentCenter.x -= Math.cos(lastSegment.angle) * lastSegment.scale;
         segmentCenter.y -= Math.sin(lastSegment.angle) * lastSegment.scale;
 
+        galaxies.fx.shakeCamera(0.7, 1);
         galaxies.engine.showCombo(500, 1, lastSegment.object);
-        galaxies.fx.explode(segmentCenter, "green", this.scale);
+        galaxies.fx.explode(segmentCenter, "green", this.scale * 2);
+        galaxies.fx.tintScreen(0x00FF00, 0.3, 200, 500);
 
-        --this.activeSegments;
+        if (--this.activeSegments === 0) {
+            this.movementController.speed *= 1.6;
+        }
     }
 };
 
@@ -293,6 +297,7 @@ galaxies.Insecticlyde.prototype.reset = function () {
 
     if (this.movementController) {
         this.movementController.reset();
+        this.movementController.speed = this.scale * 5;
     }
 
     this.updateSegments(0, true);
@@ -425,7 +430,7 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
 
     this.object.scale.set(newScale, newScale, newScale);
 
-    var speed = newScale * 5;
+    var speed = newScale * (this.activeSegments === 0 ? 8 : 5);
 
     if (this.movementController) {
         this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);

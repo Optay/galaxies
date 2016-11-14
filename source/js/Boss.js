@@ -52,6 +52,11 @@ galaxies.Boss.prototype = {
     },
 
     reset: function () {
+        var endings = ["DEFEATED", "DECOMMISSIONED", "DESTROYED", "DECIMATED"];
+
+        galaxies.ui.levelClearText = this.name.toUpperCase() + " " +
+            endings[Math.round(Math.random() * (endings.length - 1))];
+
         this.state = "preEntry";
         this.object.visible = false;
         this.invincible = true;
