@@ -3,13 +3,13 @@
 this.galaxies = this.galaxies || {};
 
 galaxies.Boss = function () {
+    this.name = '';
+
     this.initModel();
     this.initAudio();
     this.reset();
 
     this.disable();
-
-    this.name = '';
 };
 
 galaxies.Boss.prototype = {
