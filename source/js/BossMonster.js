@@ -3,7 +3,6 @@
 this.galaxies = this.galaxies || {};
 
 galaxies.BossMonster = function () {
-    this.maxXVel = 0.5;
     this.roarTime = 5;
     this.cinematicAsteroids = [];
 
@@ -54,6 +53,8 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
         this.eyeVel.x = -this.eyeVel.x;
     }
 
+    galaxies.fx.shakeCamera(0.7, 1);
+
     this.ouchAudio.startSound();
 
     this.closeEyes();
@@ -62,7 +63,11 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
 
     galaxies.engine.showCombo(2000, 1, eye.eyeball);
 
-    if (--this.livesLeft === 0) {
+    --this.livesLeft;
+
+    if (this.livesLeft === 1) {
+        this.maxXVel = 0.8;
+    } else if (this.livesLeft === 0) {
         this.defeat(6000);
     }
 };
@@ -188,6 +193,8 @@ galaxies.BossMonster.prototype.openEyes = function () {
 };
 
 galaxies.BossMonster.prototype.reset = function () {
+    this.maxXVel = 0.5;
+
     this.eyes.forEach(function (eye) {
         eye.eyeball.visible = true;
     });
@@ -476,7 +483,7 @@ galaxies.BossMonster.prototype.updateRoar = function (delta) {
 
             this.state = "idle";
 
-            this.timeToNextRoar = 2 + Math.random() * 3;
+            this.timeToNextRoar = (this.livesLeft === 1 ? 2 : 0) + Math.random() * 3;
         }
     } else if (this.roarTimer > 1) {
         if (this.mouthOpenAmount !== 1) {
