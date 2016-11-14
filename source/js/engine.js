@@ -358,7 +358,7 @@ galaxies.engine.initScene = function() {
   galaxies.engine.rootObject.add(galaxies.engine.camera);
   
   galaxies.engine.light = new THREE.DirectionalLight( 0xffffff, 1 );
-  galaxies.engine.ambientLight = new THREE.AmbientLight( 0x404040 );
+  galaxies.engine.ambientLight = new THREE.AmbientLight( 0x303030 );
   galaxies.engine.rootObject.add( galaxies.engine.light );
   galaxies.engine.rootObject.add( galaxies.engine.ambientLight );
 

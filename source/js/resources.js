@@ -142,7 +142,6 @@ galaxies.Resources = function() {
   this.materials['asteroid'] = new THREE.MeshPhongMaterial( {
       color: 0xffffff,
       specular: 0x000000,
-      opacity: 0.4,
       transparent: false,
       map: asteroidColor,
       normalMap: asteroidNormal,
@@ -226,7 +225,6 @@ galaxies.Resources = function() {
       color: 0xffffff,
       specular: 0x202020,
       shininess: 50,
-      opacity: 0.4,
       transparent: false,
       map: satColor,
       shading: THREE.SmoothShading
@@ -293,7 +291,6 @@ galaxies.Resources = function() {
     color: 0x999999,
     specular: 0x202020,
     shininess: 50,
-    opacity: 1,
     transparent: true,
     shading: THREE.SmoothShading
   });
