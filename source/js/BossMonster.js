@@ -56,6 +56,7 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
     galaxies.fx.shakeCamera(0.7, 1);
 
     this.ouchAudio.startSound();
+    this.splatAudio.startSound();
 
     this.closeEyes();
 
@@ -86,6 +87,12 @@ galaxies.BossMonster.prototype.initAudio = function () {
         loop: false,
         start: false,
         baseVolume: 3
+    });
+
+    this.splatAudio = new galaxies.audio.SimpleSound({
+        source: galaxies.audio.getSound('squishsplat'),
+        loop: false,
+        start: false
     });
 };
 

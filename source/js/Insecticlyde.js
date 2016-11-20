@@ -135,6 +135,8 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
         galaxies.fx.explode(segmentCenter, "green", this.scale * 2);
         galaxies.fx.tintScreen(0x00FF00, 0.3, 200, 500);
 
+        this.splatAudio.startSound();
+
         if (--this.activeSegments === 0) {
             this.movementController.speed *= 1.6;
         }
@@ -276,6 +278,16 @@ galaxies.Insecticlyde.prototype.initModel = function () {
     this.object.add(this.rightMandible);
 
     galaxies.engine.rootObject.add(this.object);
+};
+
+galaxies.Insecticlyde.prototype.initAudio = function () {
+    galaxies.Boss.prototype.initAudio.call(this);
+
+    this.splatAudio = new galaxies.audio.SimpleSound({
+        source: galaxies.audio.getSound('squishsplat'),
+        loop: false,
+        start: false
+    });
 };
 
 galaxies.Insecticlyde.prototype.reset = function () {

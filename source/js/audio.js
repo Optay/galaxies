@@ -67,7 +67,8 @@ galaxies.audio.sounds = {
   'unleashthebeast': ['unleashthebeast'],
   'elephatronhitsuccess': ['elephatronhitsuccess'],
   'elephatronhitfail': ['elephatronhitfail'],
-  'elephatronroar': ['elephatronroar']
+  'elephatronroar': ['elephatronroar'],
+  'squishsplat': ['squishsplat']
 }
 
 // Decode and package loaded audio data into exhaustive array objects.
