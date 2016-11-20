@@ -8,7 +8,7 @@ galaxies.BossMonster = function () {
 
     galaxies.Boss.call(this);
 
-    this.name = "Occularry";
+    this.name = "Ocularry";
 };
 
 galaxies.BossMonster.prototype = Object.create(galaxies.Boss.prototype);
