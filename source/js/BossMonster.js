@@ -226,6 +226,10 @@ galaxies.BossMonster.prototype.reset = function () {
 galaxies.BossMonster.prototype.update = function (delta) {
     galaxies.Boss.prototype.update.call(this, delta);
 
+    if (this.state === "inactive") {
+        return;
+    }
+
     var cameraRootPos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
 
     galaxies.fx.updateSprite(this.bloodSpurt, cameraRootPos, delta);

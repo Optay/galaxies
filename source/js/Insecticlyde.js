@@ -321,6 +321,12 @@ galaxies.Insecticlyde.prototype.triggerLaserBlast = function (position) {
 };
 
 galaxies.Insecticlyde.prototype.update = function (delta) {
+    galaxies.Boss.prototype.update.call(this, delta);
+
+    if (this.state === "inactive") {
+        return;
+    }
+
     this.updateMovement(delta);
 
     // TODO: movements
@@ -388,7 +394,9 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
         }
     });
 
-    this.checkCollisions();
+    if (this.state !== "preEntry") {
+        this.checkCollisions();
+    }
 };
 
 galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force) {
