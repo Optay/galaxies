@@ -118,6 +118,12 @@ galaxies.Elephatron.prototype.initAudio = function () {
         loop: false,
         start: false
     });
+
+    this.explodeAudio = new galaxies.audio.SimpleSound({
+        source: galaxies.audio.getSound('satellitesplode'),
+        loop: false,
+        start: false
+    });
 };
 
 galaxies.Elephatron.prototype.initModel = function () {
@@ -461,6 +467,8 @@ galaxies.Elephatron.prototype.update = function (delta) {
     if (health === 0) {
         if (prevHealth > 0) {
             this.defeat(9000);
+
+            this.explodeAudio.startSound();
         }
     } else if (prevHealth !== health) {
         galaxies.fx.shakeCamera(1, 1.5);
