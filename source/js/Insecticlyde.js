@@ -12,12 +12,11 @@ galaxies.Insecticlyde = function () {
     this.position = new THREE.Vector2();
 
     this.patterns = [
-        [{x: 0.6, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.75, y: -0.2}],
-        [{x: 0.25, y: -0.2}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.2}],
-        [{x: 1.2, y: -0.2}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.2, y: 1.2}],
-        [{x: 0.2, y: 1.2}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.2}]
+        [{x: 0.5, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.5, y: -0.5}],
+        [{x: 0.25, y: -0.2}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.5}],
+        [{x: 1.2, y: -0.2}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.35, y: 1.35}],
+        [{x: 0.2, y: 1.2}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.5}]
     ];
-    this.patternIndex = 0;
 
     this.fillPools();
 
@@ -78,6 +77,19 @@ Object.defineProperties(galaxies.Insecticlyde.prototype, {
         }
     }
 });
+
+galaxies.Insecticlyde.prototype.addRandomPattern = function () {
+    var chosenPattern = this.lastUsedPattern,
+        validIndices = this.patterns.length - 1;
+
+    while (chosenPattern === this.lastUsedPattern) {
+        chosenPattern = Math.round(Math.random() * validIndices)
+    }
+
+    this.movementController.addPath(this.patterns[chosenPattern]);
+
+    this.lastUsedPattern = chosenPattern;
+};
 
 galaxies.Insecticlyde.prototype.checkCollisions = function () {
     var hitLast = false,
@@ -162,7 +174,8 @@ galaxies.Insecticlyde.prototype.disable = function () {
 galaxies.Insecticlyde.prototype.enter = function () {
     galaxies.Boss.prototype.enter.call(this);
 
-    this.movementController.addPoints([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1, y: 1.2}]);
+    this.movementController.addPath([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1.35, y: 1.35}]);
+    this.addRandomPattern();
 
     this.laserBlastPool.forEach(function (blast) {
         blast.sprite.visible = false;
@@ -290,6 +303,19 @@ galaxies.Insecticlyde.prototype.initAudio = function () {
     });
 };
 
+galaxies.Insecticlyde.prototype.onNewPath = function () {
+    this.position = this.movementController.getCurrentPosition();
+    this.headAngle = this.movementController.getCurrentFacingAngle();
+
+    if (this.state === "entering") {
+        this.state = "moving";
+    }
+
+    this.updateSegments(0, true, true);
+
+    this.addRandomPattern();
+};
+
 galaxies.Insecticlyde.prototype.reset = function () {
     galaxies.Boss.prototype.reset.call(this);
 
@@ -303,6 +329,7 @@ galaxies.Insecticlyde.prototype.reset = function () {
     this.mouthOpenAmount = 0.5;
     this.activeSegments = this.maxSegments;
     this.timeToNextShot = 0;
+    this.lastUsedPattern = -1;
 
     this.position.x = this.leftEdge - this.scale * 2;
     this.position.y = this.topEdge - this.scale * 2;
@@ -340,19 +367,6 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
     }
 
     this.updateMovement(delta);
-
-    // TODO: movements
-    if (this.state !== "preEntry" && this.movementController.numPoints < 3) {
-        if (this.state === "entering") {
-            this.state = "moving";
-        }
-
-        this.movementController.addPoints(this.patterns[this.patternIndex]);
-
-        if (++this.patternIndex >= this.patterns.length) {
-            this.patternIndex = 0;
-        }
-    }
 
     if ((this.state !== "preEntry") && (this.state !== "entering")) {
         var firing = false,
@@ -455,7 +469,7 @@ galaxies.Insecticlyde.prototype.updateCoordinates = function () {
     if (this.movementController) {
         this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);
     } else {
-        this.movementController = new galaxies.BossMover(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge,
+        this.movementController = new galaxies.BossMover(this.onNewPath.bind(this), this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge,
             speed);
     }
 
@@ -480,7 +494,7 @@ galaxies.Insecticlyde.prototype.updateMovement = function (delta, skipAngleUpdat
         return;
     }
 
-    var dataChanged = this.movementController.update(delta);
+    this.movementController.update(delta);
 
     var pos = this.movementController.getCurrentPosition(),
         angle = this.movementController.getCurrentFacingAngle();
@@ -490,11 +504,12 @@ galaxies.Insecticlyde.prototype.updateMovement = function (delta, skipAngleUpdat
         this.headAngle = angle;
     }
 
-    this.updateSegments(delta, skipAngleUpdate || !dataChanged);
+    this.updateSegments(delta, skipAngleUpdate || !pos);
 };
 
-galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdate) {
+galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdate, reorient) {
     delta = delta || 0;
+    reorient = reorient || false;
 
     var mad = this.maxAngleDiff,
         prevSegment;
@@ -521,7 +536,9 @@ galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdat
         so.position.x = startFrom.x - Math.cos(angle) * scalar;
         so.position.y = startFrom.y - Math.sin(angle) * scalar;
 
-        if (!skipAngleUpdate) {
+        if (reorient) {
+            segment.angle = this.headAngle;
+        } else if (!skipAngleUpdate) {
             pos.sub(so.position).multiplyScalar(-1);
 
             lookAngle = Math.atan2(pos.y, pos.x);
