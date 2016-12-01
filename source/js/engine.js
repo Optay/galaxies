@@ -1650,7 +1650,7 @@ galaxies.engine.updateTutorial = function (delta) {
     galaxies.engine.tutorialData.exitIn -= delta;
 
     if (galaxies.engine.tutorialData.exitIn <= 0) {
-      galaxies.engine.endTutorial();
+      galaxies.ui.hideSkipButton();
     }
   }
 };
@@ -1661,8 +1661,6 @@ galaxies.engine.skipSequence = function () {
   } else if (galaxies.engine.inTutorial) {
     galaxies.engine.endTutorial();
   }
-
-  galaxies.ui.hideSkipButton();
 };
 
 galaxies.engine.endTutorial = function () {
@@ -1677,6 +1675,7 @@ galaxies.engine.endTutorial = function () {
   galaxies.engine.clearLevel();
   galaxies.engine.initRootRotation();
   galaxies.engine.planetTransition();
+  galaxies.ui.hideSkipButton();
 };
 
 // Calculate the results of an elastic collision between two obstacles.
