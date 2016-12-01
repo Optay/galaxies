@@ -96,6 +96,9 @@ galaxies.fx = (function() {
   var collectEffectPool = [];
   var collectEffectPoolSize = 3;
   var collectEffectIndex = 0;
+  var appearEffectPool = [];
+  var appearEffectPoolSize = 3;
+  var appearEffectIndex = 0;
 
   var rainbowJetGroup;
   var purpleTrailGroup;
@@ -206,6 +209,12 @@ galaxies.fx = (function() {
 
     for (i = 0; i < collectEffectPoolSize; ++i) {
       collectEffectPool.push(createGradatedSprite('powerupcollecteffect', new THREE.Vector2(2.5, 2.5), frames));
+    }
+
+    frames = frames.slice().reverse();
+
+    for (i = 0; i < appearEffectPoolSize; ++i) {
+      appearEffectPool.push(createGradatedSprite('powerupcollecteffect', new THREE.Vector2(2.5, 2.5), frames));
     }
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
@@ -773,17 +782,31 @@ galaxies.fx = (function() {
         });
   };
 
+  var powerupAppear = function (position, type) {
+    var effect = appearEffectPool[appearEffectIndex],
+        grad = gradients[type] || gradients['star'];
+
+    if (++appearEffectIndex >= appearEffectPoolSize) {
+      appearEffectIndex = 0;
+    }
+
+    effect.spriteSheet.play();
+    effect.material.uniforms.tGradient.value = grad;
+    effect.sprite.visible = true;
+    effect.sprite.position.copy(position);
+    effect.rotation = galaxies.utils.flatAngle(position);
+
+    return effect;
+  };
+
   var showStaricles = function( position, type ) {
-    var emitter = staricles[type],
-        grad = gradients[type],
+    var emitter = staricles[type] || staricles['star'],
+        grad = gradients[type] || gradients['star'],
         effect = collectEffectPool[collectEffectIndex];
 
     if (++collectEffectIndex >= collectEffectPoolSize) {
       collectEffectIndex = 0;
     }
-
-    if ( !emitter ) { emitter = staricles['star']; }
-    if ( !grad ) { grad = gradients['star']; }
 
     emitter.position.value = emitter.position.value.copy( position );
     emitter.rotation.center = emitter.rotation.center.copy( position );
@@ -996,6 +1019,10 @@ galaxies.fx = (function() {
 
     explosionPoofPool.forEach(function (poof) {
       updateSprite(poof, cameraRootPos, delta);
+    });
+
+    appearEffectPool.forEach(function (effect) {
+      updateSprite(effect, cameraRootPos, delta);
     });
     
     collectEffectPool.forEach(function (effect) {
@@ -1264,6 +1291,7 @@ galaxies.fx = (function() {
     shakeCamera: shakeCamera,
     showDebris: showDebris,
     addGlowbject: addGlowbject,
+    powerupAppear: powerupAppear,
     showStaricles: showStaricles,
     getRainbowEmitter: getRainbowEmitter,
     getPurpleTrailEmitter: getPurpleTrailEmitter,

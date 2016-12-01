@@ -54,7 +54,8 @@ galaxies.Capsule = function( powerupType ) {
   galaxies.engine.planeSweep.add(this);
 
   this.hitThreshold = 0.3;
-  
+
+  this.appearEffect = null;
   this.lifetime = 10;
   
   this.typeInterval = this.lifetime/galaxies.engine.powerups.length;
@@ -113,6 +114,7 @@ galaxies.Capsule.prototype.hit = function() {
 
 galaxies.Capsule.prototype.clear = function() {
   console.log("clear capsule");
+  this.model.material.opacity = 0;
   galaxies.engine.inactiveNeutrals.push(this);
   galaxies.engine.rootObject.remove( this.object );
   galaxies.engine.powerupCapsules.splice(galaxies.engine.powerupCapsules.indexOf(this), 1);
@@ -124,13 +126,13 @@ galaxies.Capsule.prototype.appear = function() {
                      Math.sin(this.angle) * this.distance,
                      0 );
   this.orbitAngle = 0;
-  
-  // fade in
-  createjs.Tween.removeTweens( this.model.material );
-  createjs.Tween.get( this.model.material )
-    .to( { opacity: 1 }, 500 )
-    .call( this.activate, null, this );
-}
+
+  this.appearEffect = galaxies.fx.powerupAppear(this.object.position, this.powerup);
+  createjs.Tween.get(this.model.material)
+      .wait(1500)
+      .to({opacity: 1})
+      .call(this.activate, null, this);
+};
 
 galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
   /*if ( this.powerupIndex >= 0 ) {
@@ -209,6 +211,14 @@ galaxies.Capsule.prototype.update = function( delta ) {
     0 );
   
   galaxies.utils.conify( this.object );
+
+  if (this.appearEffect) {
+    if (!this.appearEffect.spriteSheet.isPlaying()) {
+      this.appearEffect = null;
+    } else {
+      this.appearEffect.sprite.position.copy(this.object.position);
+    }
+  }
   
 }
 
@@ -254,10 +264,10 @@ galaxies.Star = function( angle ) {
   this.speed = 1;
   
   // fade in
-  createjs.Tween.removeTweens( this.model.material );
-  createjs.Tween.get( this.model.material )
-    .to( { opacity: 1 }, 500 )
-    .call( this.activate, null, this );
+  galaxies.fx.powerupAppear(this.object.position, 'star');
+  createjs.Tween.get(this.model.material)
+      .wait(1500)
+      .to({opacity: 1});
 }
 galaxies.Star.prototype = Object.create( galaxies.BaseTarget.prototype );
 galaxies.Star.prototype.constructor = galaxies.Star;

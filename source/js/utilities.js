@@ -320,18 +320,23 @@ galaxies.utils.getNormalizedScreenPosition = function (v3) {
 galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames, frameGap) {
     var frames = [],
         xPos = startPoint.x,
-        yPos = startPoint.y;
+        yPos = startPoint.y,
+        xJump = frameSize.x,
+        yJump = frameSize.y;
 
-    frameGap = frameGap || new THREE.Vector2();
+    if (!!frameGap) {
+        xJump += frameGap.x;
+        yJump += frameGap.y;
+    }
 
     for (var i = 0; i < numFrames; ++i) {
         frames.push([xPos, yPos, frameSize.x, frameSize.y]);
 
-        xPos += frameSize.x + frameGap.x;
+        xPos += xJump;
 
         if (xPos >= texSize.x) {
             xPos = 0;
-            yPos += frameSize.y + frameGap.y;
+            yPos += yJump;
         }
     }
 

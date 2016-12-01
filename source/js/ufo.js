@@ -525,14 +525,18 @@ this.galaxies.Ufo = function() {
           galaxies.engine.boss.enter();
           galaxies.engine.addInputListeners();
           galaxies.ui.showReticle();
-          createjs.Tween.get(model.rotation).to({x: -Math.PI / 2}, 2000, createjs.Ease.cubicIn);
           galaxies.ui.hideSkipButton();
         })
         .to({x: -12}, 2000, createjs.Ease.cubicIn)
         .call(function () {
           galaxies.engine.rootObject.remove(anchor);
-          model.rotation.set(Math.PI,0,-Math.PI/2);
           objectPosition.set(0, 0, 0);
+        });
+
+    createjs.Tween.get(model.rotation)
+        .to({x: -Math.PI / 2}, 2000, createjs.Ease.cubicIn)
+        .call(function () {
+          model.rotation.set(Math.PI,0,-Math.PI/2);
         });
   };
 
