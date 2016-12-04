@@ -930,17 +930,6 @@ galaxies.engine.setLightPosition = function( angles ) {
 }
 
 
-galaxies.engine.commonInteractStart = function (event) {
-  galaxies.engine.bIsDown = true;
-  galaxies.engine.bIsAiming = false;
-  galaxies.engine.isFiring = false;
-  galaxies.engine.downPoint.x = event.clientX;
-  galaxies.engine.downPoint.y = event.clientY;
-  galaxies.engine.downTime = 0;
-
-  galaxies.ui.updateReticlePosition(event);
-};
-
 galaxies.engine.commonInteractMove = function (event) {
   var relativeX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
       relativeY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
@@ -975,7 +964,11 @@ galaxies.engine.onDocumentMouseDown = function( event ) {
     // FX text selectable.
 	//event.preventDefault();
 
-    galaxies.engine.commonInteractStart(event);
+    galaxies.engine.bIsDown = true;
+    galaxies.engine.bIsAiming = false;
+    galaxies.engine.isFiring = true;
+
+    galaxies.ui.updateReticlePosition(event);
 };
 
 galaxies.engine.averageTouchLocation = function (event) {
@@ -1004,7 +997,14 @@ galaxies.engine.onDocumentTouchStart = function( event ) {
 
     var touchAverage = galaxies.engine.averageTouchLocation(event);
 
-    galaxies.engine.commonInteractStart(touchAverage);
+    galaxies.engine.bIsDown = true;
+    galaxies.engine.bIsAiming = false;
+    galaxies.engine.isFiring = false;
+    galaxies.engine.downPoint.x = touchAverage.clientX;
+    galaxies.engine.downPoint.y = touchAverage.clientY;
+    galaxies.engine.downTime = 0;
+
+    galaxies.ui.updateReticlePosition(event);
 };
 
 

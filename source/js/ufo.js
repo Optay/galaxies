@@ -518,6 +518,7 @@ this.galaxies.Ufo = function() {
     var model = this.model,
         objectPosition = this.object.position;
 
+    createjs.Tween.removeTweens(model.rotation);
     createjs.Tween.removeTweens(objectPosition);
 
     createjs.Tween.get(objectPosition)

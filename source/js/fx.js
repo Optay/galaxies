@@ -128,10 +128,10 @@ galaxies.fx = (function() {
     duration: 0.05
   };
 
-  var createGradatedSprite = function (texName, spritePhysicalSize, frames) {
+  var createGradatedSprite = function (texName, spritePhysicalSize, frames, frameRate) {
     var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
         remapToGradient = galaxies.shaders.materials.remapToGradient,
-        sheet = new galaxies.SpriteSheet(tex, frames, 30),
+        sheet = new galaxies.SpriteSheet(tex, frames, frameRate || 30),
         mat = new THREE.ShaderMaterial({
           uniforms: remapToGradient.getUniforms(),
           vertexShader: remapToGradient.vertexShader,
