@@ -64,6 +64,7 @@ window.addEventListener("load", function(event) {
     BossMonster: function () {galaxies.engine.addBoss('monster');},
     ElephaTRON: function () {galaxies.engine.addBoss('elephatron');},
     InsectiClyde: function () {galaxies.engine.addBoss('insecticlyde');},
+    InsectiClydeSegments: 10,
     MiniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
     UFO: galaxies.engine.addUfo,
     MoonColor: "#FFFFFF",
@@ -137,6 +138,11 @@ window.addEventListener("load", function(event) {
   bosses.add(userValues, 'BossMonster' );
   bosses.add(userValues, 'ElephaTRON' );
   bosses.add(userValues, 'InsectiClyde' );
+  var segmentController = bosses.add(userValues, 'InsectiClydeSegments');
+
+  segmentController.onChange(function (value) {
+    galaxies.engine.bosses.insecticlyde.maxSegments = value;
+  });
 
   var ufos = datgui.addFolder("UFOs");
 

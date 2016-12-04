@@ -150,7 +150,7 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
         this.splatAudio.startSound();
 
         if (--this.activeSegments === 0) {
-            this.movementController.speed *= 1.6;
+            this.movementController.speed *= 2.3;
         }
     }
 };
