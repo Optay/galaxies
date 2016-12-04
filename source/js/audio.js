@@ -60,6 +60,8 @@ galaxies.audio.sounds = {
   'heartcollect': ['heartcollect'],
   'starcollect': ['starcollect'],
   'powerupcollect': ['powerupcollect'],
+  'powerupappear': ['powerupappear'],
+  'powerupwarning': ['powerupwarning'],
   'aliengrowl': ['aliengrowl'],
   'tripleraquet': ['tripleraquet'],
   'monsterouch': ['monsterouch1'],

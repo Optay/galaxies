@@ -67,6 +67,8 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'starcollect', src:'fx/collectible/star', type: createjs.AbstractLoader.BINARY },
     { id: 'heartcollect', src:'fx/collectible/heart', type: createjs.AbstractLoader.BINARY },
     { id: 'powerupcollect', src: 'fx/collectible/powerup', type: createjs.AbstractLoader.BINARY },
+    { id: 'powerupappear', src: 'fx/collectible/powerup_appear', type: createjs.AbstractLoader.BINARY },
+    { id: 'powerupwarning', src: 'fx/collectible/warning-signal_01', type: createjs.AbstractLoader.BINARY },
     { id: 'bossmusic', src: 'music/music_round3', type: createjs.AbstractLoader.BINARY },
     { id: 'aliengrowl', src: 'characters/alien_growl', type: createjs.AbstractLoader.BINARY },
     { id: 'tripleraquet', src: 'fx/weapon/triple_raquet_fire', type: createjs.AbstractLoader.BINARY },

@@ -57,7 +57,9 @@ galaxies.Capsule = function( powerupType ) {
 
   this.appearEffect = null;
   this.lifetime = 10;
-  
+  this.warningTime = this.lifetime - 2.4;
+  this.warningInterval = 0.4;
+
   this.typeInterval = this.lifetime/galaxies.engine.powerups.length;
   if ( powerupType === "heart" ) {
     this.typeTime = Number.POSITIVE_INFINITY;
@@ -131,7 +133,14 @@ galaxies.Capsule.prototype.appear = function() {
   createjs.Tween.get(this.model.material)
       .wait(1500)
       .to({opacity: 1})
-      .call(this.activate, null, this);
+      .call(function () {
+        new galaxies.audio.SimpleSound({
+          source: galaxies.audio.getSound("powerupappear"),
+          loop: false
+        });
+
+        this.activate();
+      }, null, this);
 };
 
 galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
@@ -181,17 +190,37 @@ galaxies.Capsule.prototype.updatePowerup = function(powerupType) {
 }
 
 galaxies.Capsule.prototype.update = function( delta ) {
-  
+  if (!this.isActive) {
+    return;
+  }
+
   this.timer += delta;
-  if ( this.isActive && (this.timer > this.lifetime) ) {
+
+  if (this.timer > this.lifetime) {
     // fade out
     this.isActive = false;
     createjs.Tween.removeTweens( this.model.material );
+    this.model.material.opacity = 1.0;
     createjs.Tween.get( this.model.material )
       .to( { opacity: 0 }, 500 )
       .call( this.clear, null, this );
     
     return;
+  } else if (this.timer > this.warningTime) {
+    var intervalProgress = ((this.timer - this.warningTime) % this.warningInterval) / this.warningInterval,
+        newOpacity = intervalProgress > 0.5 ? 1 : 0,
+        modelMat = this.model.material;
+
+    if (newOpacity != modelMat.opacity) {
+      modelMat.opacity = newOpacity;
+
+      if (newOpacity === 0) {
+        new galaxies.audio.SimpleSound({
+          source: galaxies.audio.getSound("powerupwarning"),
+          loop: false
+        });
+      }
+    }
   }
   
   /*if ( this.timer > this.typeTime ) {
