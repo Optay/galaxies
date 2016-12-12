@@ -296,7 +296,8 @@ galaxies.Star = function( angle ) {
   galaxies.fx.powerupAppear(this.object.position, 'star');
   createjs.Tween.get(this.model.material)
       .wait(1500)
-      .to({opacity: 1});
+      .to({opacity: 1})
+      .call(this.activate, null, this);
 }
 galaxies.Star.prototype = Object.create( galaxies.BaseTarget.prototype );
 galaxies.Star.prototype.constructor = galaxies.Star;

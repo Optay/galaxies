@@ -179,7 +179,7 @@ galaxies.fx = (function() {
     texture.needsUpdate = true;
 
     var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
-            new THREE.Vector2(256, 8192), 20);
+            new THREE.Vector2(256, 8192), 20, new THREE.Vector2(0, 0), 0.5);
 
     for (var i=0; i<projHitPoolSize; i++ ) {
       var particleGroup = new SPE.Group({
@@ -205,7 +205,7 @@ galaxies.fx = (function() {
     });
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
-        new THREE.Vector2(4096, 4096), 57);
+        new THREE.Vector2(4096, 4096), 57, new THREE.Vector2(0, 0), 0.5);
 
     for (i = 0; i < collectEffectPoolSize; ++i) {
       collectEffectPool.push(createGradatedSprite('powerupcollecteffect', new THREE.Vector2(2.5, 2.5), frames));
@@ -218,14 +218,14 @@ galaxies.fx = (function() {
     }
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
-        new THREE.Vector2(4096, 4096), 53);
+        new THREE.Vector2(4096, 4096), 53, new THREE.Vector2(0, 0), 0.5);
 
     for (i = 0; i < fireExplosionPoolSize; ++i) {
       fireExplosionPool.push(createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames));
     }
 
     frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
-        new THREE.Vector2(2048, 4096), 25);
+        new THREE.Vector2(2048, 4096), 25, new THREE.Vector2(0, 0), 0.5);
 
     var planetExplodeTex = new THREE.Texture(galaxies.queue.getResult('planetexplosion')),
         planetExplodeSheet = new galaxies.SpriteSheet(planetExplodeTex, frames, 30),

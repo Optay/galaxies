@@ -929,20 +929,23 @@ galaxies.engine.setLightPosition = function( angles ) {
   galaxies.engine.light.position.set( cazi * calt, sazi * calt, salt );
 }
 
-
-galaxies.engine.commonInteractMove = function (event) {
+galaxies.engine.updatePlayerAngle = function (event) {
   var relativeX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
       relativeY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
 
   galaxies.engine.targetAngle = -(Math.atan2(relativeY, relativeX) + Math.PI/2); // sprite is offset
   galaxies.ui.updateReticlePosition(event);
+};
+
+galaxies.engine.commonInteractMove = function (event) {
+  galaxies.engine.updatePlayerAngle(event);
 
   if (!galaxies.engine.bIsDown || galaxies.engine.isFiring || galaxies.engine.bIsAiming) {
     return;
   }
 
   var currentPoint = new THREE.Vector2(event.clientX, event.clientY),
-      threshold = Math.min(galaxies.engine.canvasWidth, galaxies.engine.canvasHeight) * 0.01;
+      threshold = Math.max(galaxies.engine.canvasWidth, galaxies.engine.canvasHeight) * 0.01;
 
   threshold *= threshold;
 
@@ -956,7 +959,7 @@ galaxies.engine.commonInteractEnd = function (event) {
   galaxies.engine.bIsDown = false;
   galaxies.engine.bIsAiming = false;
 
-  galaxies.ui.updateReticlePosition(event);
+  galaxies.engine.updatePlayerAngle(event);
 };
 
 galaxies.engine.onDocumentMouseDown = function( event ) {
@@ -968,13 +971,13 @@ galaxies.engine.onDocumentMouseDown = function( event ) {
     galaxies.engine.bIsAiming = false;
     galaxies.engine.isFiring = true;
 
-    galaxies.ui.updateReticlePosition(event);
+    galaxies.engine.updatePlayerAngle(event);
 };
 
 galaxies.engine.averageTouchLocation = function (event) {
   var totalX = 0,
       totalY = 0,
-      touches = event.touches,
+      touches = event.changedTouches,
       numTouches = touches.length,
       i, touch;
 
@@ -1004,7 +1007,7 @@ galaxies.engine.onDocumentTouchStart = function( event ) {
     galaxies.engine.downPoint.y = touchAverage.clientY;
     galaxies.engine.downTime = 0;
 
-    galaxies.ui.updateReticlePosition(event);
+    galaxies.engine.updatePlayerAngle(touchAverage);
 };
 
 
@@ -1015,7 +1018,7 @@ galaxies.engine.onDocumentMouseUp = function( event ) {
 galaxies.engine.onDocumentTouchEnd = function (event) {
   var touchAverage = galaxies.engine.averageTouchLocation(event);
 
-  if (event.changedTouches.length === event.touches.length) {
+  if (event.changedTouches.length === event.touches.length || event.touches.length === 0) {
     galaxies.engine.commonInteractEnd(touchAverage);
   } else {
     galaxies.engine.commonInteractMove(touchAverage);
@@ -1650,7 +1653,7 @@ galaxies.engine.updateTutorial = function (delta) {
     galaxies.engine.tutorialData.exitIn -= delta;
 
     if (galaxies.engine.tutorialData.exitIn <= 0) {
-      galaxies.ui.hideSkipButton();
+      galaxies.engine.endTutorial();
     }
   }
 };

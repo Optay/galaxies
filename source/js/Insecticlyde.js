@@ -185,7 +185,8 @@ galaxies.Insecticlyde.prototype.enter = function () {
 };
 
 galaxies.Insecticlyde.prototype.fillPools = function () {
-    var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8),
+    var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8, {x: 0, y: 0},
+            0.5),
         i, tex, mat, sheet, sprite;
 
     this.laserBlastPool = [];

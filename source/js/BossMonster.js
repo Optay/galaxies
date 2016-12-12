@@ -184,7 +184,7 @@ galaxies.BossMonster.prototype.initModel = function () {
     }
 
     var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
-        new THREE.Vector2(4096, 4096), 53);
+        new THREE.Vector2(4096, 4096), 53, new THREE.Vector2(0, 0), 0.5);
 
     this.bloodSpurt = galaxies.fx.createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames);
 

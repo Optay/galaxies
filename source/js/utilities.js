@@ -66,10 +66,15 @@ galaxies.utils.isWindows = function() {
   return ( /Windows/.test(agt) && !/phone/i.test(agt) );
 }
 
+galaxies.utils._isMobile = true;
+
 galaxies.utils.isMobile = function() {
-  var agt = navigator.userAgent;
-  return /iPhone|iPad|iPod|Android|windows phone|iemobile|\bsilk\b/i.test(agt);
-}
+  if (galaxies.utils._isMobile === null) {
+    galaxies.utils._isMobile = /iPhone|iPad|iPod|Android|windows phone|iemobile|\bsilk\b/i.test(navigator.userAgent);
+  }
+
+  return galaxies.utils._isMobile;
+};
 
 // Identify which audio format to use.
 galaxies.utils.testAudioSupport = function( callback ) {
@@ -317,24 +322,42 @@ galaxies.utils.getNormalizedScreenPosition = function (v3) {
     return new THREE.Vector2(0.5 + v3.x * 0.5, 0.5 + v3.y * 0.5);
 };
 
-galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames, frameGap) {
+galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, numFrames, frameGap, mobileScale) {
     var frames = [],
         xPos = startPoint.x,
         yPos = startPoint.y,
         xJump = frameSize.x,
-        yJump = frameSize.y;
+        yJump = frameSize.y,
+        width = frameSize.x,
+        height = frameSize.y,
+        scaledTex = new THREE.Vector2(texSize.x, texSize.y);
+
+    if (typeof mobileScale !== "number") {
+        mobileScale = mobileScale || 1;
+    }
 
     if (!!frameGap) {
         xJump += frameGap.x;
         yJump += frameGap.y;
     }
 
+    if (galaxies.utils.isMobile() && mobileScale !== 1) {
+        xPos *= mobileScale;
+        yPos *= mobileScale;
+        xJump *= mobileScale;
+        yJump *= mobileScale;
+        width *= mobileScale;
+        height *= mobileScale;
+
+        scaledTex.multiplyScalar(mobileScale);
+    }
+
     for (var i = 0; i < numFrames; ++i) {
-        frames.push([xPos, yPos, frameSize.x, frameSize.y]);
+        frames.push([xPos, yPos, width, height]);
 
         xPos += xJump;
 
-        if (xPos >= texSize.x) {
+        if (xPos >= scaledTex.x) {
             xPos = 0;
             yPos += yJump;
         }

@@ -16,7 +16,7 @@ this.galaxies.Player = function() {
   characterMap.needsUpdate = true;
 
   var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0));
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0), 0.5);
 
   var baseAnimator = new galaxies.SpriteSheet(characterMap, frames, 30);
   var baseAspectRatio = 1;
@@ -25,7 +25,7 @@ this.galaxies.Player = function() {
   baseTeleportMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(4114, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0));
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0), 0.5);
 
   var baseTeleport = new galaxies.SpriteSheet(baseTeleportMap, frames, 30);
   
@@ -34,7 +34,7 @@ this.galaxies.Player = function() {
   goldenMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0));
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(0, 0), 0.5);
 
   var goldenAnimator = new galaxies.SpriteSheet(goldenMap, frames, 30);
   var goldenAspectRatio = 1;
@@ -43,7 +43,7 @@ this.galaxies.Player = function() {
   goldenTeleportMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(4114, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0));
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(0, 0), 0.5);
 
   var goldenTeleport = new galaxies.SpriteSheet(goldenTeleportMap, frames, 30);
   
@@ -51,7 +51,7 @@ this.galaxies.Player = function() {
   spreadMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 22, new THREE.Vector2(3, 0));
+      new THREE.Vector2(8192, 256), 22, new THREE.Vector2(3, 0), 0.5);
 
   var spreadAnimator = new galaxies.SpriteSheet(spreadMap, frames, 30);
   var spreadAspectRatio = 1;
@@ -60,7 +60,7 @@ this.galaxies.Player = function() {
   spreadTeleportMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(5698, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(3, 0));
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(3, 0), 0.5);
 
   var spreadTeleport = new galaxies.SpriteSheet(spreadTeleportMap, frames, 30);
 
@@ -68,7 +68,7 @@ this.galaxies.Player = function() {
   cloneMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(62, 0));
+      new THREE.Vector2(8192, 256), 16, new THREE.Vector2(62, 0), 0.5);
 
   var cloneAnimator = new galaxies.SpriteSheet(cloneMap, frames, 30);
   var cloneAspectRatio = 1;
@@ -77,7 +77,7 @@ this.galaxies.Player = function() {
   cloneTeleportMap.needsUpdate = true;
 
   frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(5073, 0), new THREE.Vector2(256, 256),
-      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(62, 0));
+      new THREE.Vector2(8192, 256), 4, new THREE.Vector2(62, 0), 0.5);
 
   var cloneTeleportAnimator = new galaxies.SpriteSheet(cloneTeleportMap, frames, 30);
 
