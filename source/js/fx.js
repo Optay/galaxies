@@ -1268,7 +1268,7 @@ galaxies.fx = (function() {
     toonExplosion.sprite.visible = true;
     toonExplosion.sprite.position.copy(position);
 
-    toonExplosion.sprite.position.z += 0.1;
+    toonExplosion.sprite.position.z += 0.5;
 
     toonExplosion.sprite.scale.set(scale, scale, scale);
     toonExplosion.rotation = galaxies.utils.flatAngle(position) + Math.PI;

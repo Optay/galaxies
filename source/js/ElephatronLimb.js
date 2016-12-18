@@ -302,7 +302,7 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
 
     galaxies.engine.rootObject.add(smokeGroup.mesh);
 
-    smokeGroup.mesh.position.z = 0.1;
+    smokeGroup.mesh.position.z = 0.5;
 
     this.opacityValues = smokeEmitter.opacity.value;
     this.smokeEmitter = smokeEmitter;
