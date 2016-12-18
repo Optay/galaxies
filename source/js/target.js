@@ -57,8 +57,6 @@ galaxies.Capsule = function( powerupType ) {
 
   this.appearEffect = null;
   this.lifetime = 10;
-  this.warningTime = this.lifetime - 2.4;
-  this.warningInterval = 0.4;
 
   this.typeInterval = this.lifetime/galaxies.engine.powerups.length;
   if ( powerupType === "heart" ) {
@@ -69,6 +67,10 @@ galaxies.Capsule = function( powerupType ) {
     this.typeTime = this.typeInterval;
     this.powerupIndex = Math.round(Math.random()* (galaxies.engine.powerups.length - 1) );
   }
+
+  this.warningTime = this.lifetime - 2.4;
+  this.warningInterval = 0.4;
+
   this.updatePowerup(powerupType);
   
   this.angle = 0;
