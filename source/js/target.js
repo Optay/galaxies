@@ -135,7 +135,10 @@ galaxies.Capsule.prototype.appear = function() {
   this.position.set( Math.cos(this.angle) * this.distance,
                      Math.sin(this.angle) * this.distance,
                      0 );
+  this.object.position.copy(this.position);
   this.orbitAngle = 0;
+
+  galaxies.utils.conify( this.object );
 
   this.appearEffect = galaxies.fx.powerupAppear(this.object.position, this.powerup);
   createjs.Tween.get(this.model.material)
@@ -242,10 +245,12 @@ galaxies.Capsule.prototype.update = function( delta ) {
 
   this.orbitAngle = Math.sin( this.timer*this.orbitVelocity) * this.orbitRadius;
 
-  this.object.position.set(
+  this.position.set(
     Math.cos(this.angle + this.orbitAngle) * this.distance,
     Math.sin(this.angle + this.orbitAngle) * this.distance,
     0 );
+
+  this.object.position.copy(this.position);
   
   galaxies.utils.conify( this.object );
 
