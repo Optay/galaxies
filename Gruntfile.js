@@ -36,6 +36,12 @@ module.exports = function(grunt) {
         expand: true,
         flatten: true
       },
+      update: {
+        src: '<%=dirs.src %>/html/update/*.php',
+        dest: '<%=dirs.dest %>/update/',
+        expand: true,
+        flatten: true
+      },
       plainJS: {
         cwd: '<%=dirs.src %>/js/plain',
         src: '**/*',
