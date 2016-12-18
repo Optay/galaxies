@@ -66,7 +66,7 @@ galaxies.utils.isWindows = function() {
   return ( /Windows/.test(agt) && !/phone/i.test(agt) );
 }
 
-galaxies.utils._isMobile = true;
+galaxies.utils._isMobile = null;
 
 galaxies.utils.isMobile = function() {
   if (galaxies.utils._isMobile === null) {
