@@ -116,9 +116,15 @@ galaxies.Capsule.prototype.hit = function() {
 
 galaxies.Capsule.prototype.clear = function() {
   console.log("clear capsule");
+
+  if (galaxies.engine.inTutorial && this.timer > this.lifetime) {
+    galaxies.engine.endTutorial();
+  }
+
   this.model.material.opacity = 0;
   galaxies.engine.inactiveNeutrals.push(this);
   galaxies.engine.rootObject.remove( this.object );
+
   galaxies.engine.powerupCapsules.splice(galaxies.engine.powerupCapsules.indexOf(this), 1);
 }
 
@@ -204,7 +210,7 @@ galaxies.Capsule.prototype.update = function( delta ) {
     createjs.Tween.get( this.model.material )
       .to( { opacity: 0 }, 500 )
       .call( this.clear, null, this );
-    
+
     return;
   } else if (this.timer > this.warningTime) {
     var intervalProgress = ((this.timer - this.warningTime) % this.warningInterval) / this.warningInterval,
