@@ -57,6 +57,8 @@ galaxies.LaserBullet.prototype = {
     },
 
     removeFromScene: function () {
+        galaxies.engine.planeSweep.remove(this);
+
         galaxies.engine.rootObject.remove(this.object);
 
         this.impactCallbacks = [];

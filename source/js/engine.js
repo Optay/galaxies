@@ -1311,7 +1311,7 @@ galaxies.engine.update = function() {
   });
 
   galaxies.engine.inactiveObstacles.forEach(function (obstacle) {
-    galaxies.engine.planeSweep.remove(obstacle);
+    obstacle.remove();
 
     var obsIdx = galaxies.engine.obstacles.indexOf(obstacle);
 
@@ -1333,8 +1333,6 @@ galaxies.engine.update = function() {
   });
 
   expiredProjectiles.forEach(function (proj) {
-    galaxies.engine.planeSweep.remove(proj);
-
     var projIdx = galaxies.engine.projectiles.indexOf(proj);
 
     if (projIdx !== -1) {
@@ -1356,7 +1354,6 @@ galaxies.engine.update = function() {
     laserBullet.removeFromScene();
 
     galaxies.engine.laserBulletPool.push(laserBullet);
-    galaxies.engine.planeSweep.remove(laserBullet);
   });
 
   galaxies.engine.inactiveObstacles = [];
