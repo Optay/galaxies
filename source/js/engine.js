@@ -405,7 +405,7 @@ galaxies.engine.initScene = function() {
   var bgStarSprite, scale, point;
 
   for (var i = 0; i < 60; ++i) {
-    bgStarSprite = galaxies.utils.makeSprite('bgstar', true);
+    bgStarSprite = galaxies.utils.makeSprite('bgstar');
 
     point = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
         .multiplyScalar(180 + Math.random() * 15);

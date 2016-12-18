@@ -247,7 +247,7 @@ galaxies.Insecticlyde.prototype.fireLaserPellet = function (position, angle) {
 galaxies.Insecticlyde.prototype.initModel = function () {
     galaxies.Boss.prototype.initModel.call(this);
 
-    this.head = galaxies.utils.makeSprite("insecticlydeface", true);
+    this.head = galaxies.utils.makeSprite("insecticlydeface");
 
     this.head.scale.set(1.58, 1.27, 1);
 
@@ -267,8 +267,8 @@ galaxies.Insecticlyde.prototype.initModel = function () {
         segment.object.position.set(-0.45 - i * 0.9, 0, (i + 1) * -0.01);
     }
 
-    var leftMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible", true),
-        rightMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible", true);
+    var leftMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible"),
+        rightMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible");
 
     this.leftMandible = new THREE.Object3D();
     this.rightMandible = new THREE.Object3D();

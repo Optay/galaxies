@@ -101,22 +101,22 @@ galaxies.BossMonster.prototype.initModel = function () {
 
     var mainObject = this.object,
         topObject = new THREE.Object3D(),
-        bottomSprite = galaxies.utils.makeSprite('bossbottom', true),
-        middleSprite = galaxies.utils.makeSprite('bossmiddle', true),
-        topSprite = galaxies.utils.makeSprite('bosstop', true),
+        bottomSprite = galaxies.utils.makeSprite('bossbottom'),
+        middleSprite = galaxies.utils.makeSprite('bossmiddle'),
+        topSprite = galaxies.utils.makeSprite('bosstop'),
         eyeSprites = [
-            galaxies.utils.makeSprite('bosseye1', true),
-            galaxies.utils.makeSprite('bosseye2', true),
-            galaxies.utils.makeSprite('bosseye3', true),
-            galaxies.utils.makeSprite('bosseye4', true)
+            galaxies.utils.makeSprite('bosseye1'),
+            galaxies.utils.makeSprite('bosseye2'),
+            galaxies.utils.makeSprite('bosseye3'),
+            galaxies.utils.makeSprite('bosseye4')
         ],
         eyelidSprites = [
-            galaxies.utils.makeSprite('bosseyelid1', true),
-            galaxies.utils.makeSprite('bosseyelid2', true),
-            galaxies.utils.makeSprite('bosseyelid3', true),
-            galaxies.utils.makeSprite('bosseyelid4', true)
+            galaxies.utils.makeSprite('bosseyelid1'),
+            galaxies.utils.makeSprite('bosseyelid2'),
+            galaxies.utils.makeSprite('bosseyelid3'),
+            galaxies.utils.makeSprite('bosseyelid4')
         ],
-        detachedEyeball = galaxies.utils.makeSprite('bosseyeball', true);
+        detachedEyeball = galaxies.utils.makeSprite('bosseyeball');
 
     bottomSprite.scale.set(3.44, 2.09, 1);
     middleSprite.scale.set(2.19, 3.92, 1);

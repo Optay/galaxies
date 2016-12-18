@@ -51,7 +51,7 @@ galaxies.InsectSegment.prototype.didGetHit = function (projectile) {
 };
 
 galaxies.InsectSegment.prototype.initModel = function () {
-    this.segment = galaxies.utils.makeSprite("insecticlydesegment", true);
+    this.segment = galaxies.utils.makeSprite("insecticlydesegment");
 
     this.segment.scale.set(2.24, 1.09, 1);
     this.segment.position.set(0, 0.54, 0);

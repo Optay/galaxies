@@ -127,14 +127,15 @@ this.galaxies.Player = function() {
   
   // CHARACTER SPRITE
   var activeAnimator = baseAnimator;
-  var characterMaterial = new THREE.SpriteMaterial({
+  /*var characterMaterial = new THREE.SpriteMaterial({
     map: characterMap,
     color: 0xffffff,
     transparent: true,
     opacity: 1.0
-  } );
+  } );*/
   //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
-  var character = new THREE.Sprite( characterMaterial );
+  //var character = new THREE.Sprite( characterMaterial );
+  var character = galaxies.utils.makeSprite("lux");
   characterRotator.add( character );
 
   var characterShadowMap = new THREE.Texture(galaxies.queue.getResult("charactershadow"));

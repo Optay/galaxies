@@ -131,21 +131,21 @@ galaxies.Elephatron.prototype.initModel = function () {
     galaxies.Boss.prototype.initModel.call(this);
 
     var mainObject = this.object,
-        eyeGlow = galaxies.utils.makeSprite("elephatroneyeglow", true),
-        body = galaxies.utils.makeSprite("elephatronbody", true),
-        topTeeth = galaxies.utils.makeSprite("elephatronteeth", true),
-        bottomTeeth = galaxies.utils.makeSprite("elephatronteeth", true),
-        throat = galaxies.utils.makeSprite("elephatronthroat", true),
+        eyeGlow = galaxies.utils.makeSprite("elephatroneyeglow"),
+        body = galaxies.utils.makeSprite("elephatronbody"),
+        topTeeth = galaxies.utils.makeSprite("elephatronteeth"),
+        bottomTeeth = galaxies.utils.makeSprite("elephatronteeth"),
+        throat = galaxies.utils.makeSprite("elephatronthroat"),
         leftLeg = new THREE.Object3D(),
-        leftLegSprite = galaxies.utils.makeSprite("elephatronleg", true),
-        leftLegFlame = galaxies.utils.makeSprite("elephatronlegflame", true),
+        leftLegSprite = galaxies.utils.makeSprite("elephatronleg"),
+        leftLegFlame = galaxies.utils.makeSprite("elephatronlegflame"),
         rightLeg = new THREE.Object3D(),
-        rightLegSprite = galaxies.utils.makeSprite("elephatronleg", true),
-        rightLegFlame = galaxies.utils.makeSprite("elephatronlegflame", true),
-        leftEar = galaxies.utils.makeSprite("elephatronleftear", true),
-        rightEar = galaxies.utils.makeSprite("elephatronrightear", true),
-        antennaGlow = galaxies.utils.makeSprite("elephatronantennaglow", true),
-        antenna = galaxies.utils.makeSprite("elephatronantenna", true);
+        rightLegSprite = galaxies.utils.makeSprite("elephatronleg"),
+        rightLegFlame = galaxies.utils.makeSprite("elephatronlegflame"),
+        leftEar = galaxies.utils.makeSprite("elephatronleftear"),
+        rightEar = galaxies.utils.makeSprite("elephatronrightear"),
+        antennaGlow = galaxies.utils.makeSprite("elephatronantennaglow"),
+        antenna = galaxies.utils.makeSprite("elephatronantenna");
 
     leftLegSprite.material.side = THREE.BackSide;
     leftLegFlame.material.side = THREE.BackSide;

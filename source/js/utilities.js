@@ -370,7 +370,7 @@ galaxies.utils.makeSprite = function (texName, transparent, depthTest, depthWrit
     var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
         mat = new THREE.MeshBasicMaterial({
             map: tex,
-            transparent: typeof transparent === "boolean" ? transparent  : false,
+            transparent: typeof transparent === "boolean" ? transparent  : true,
             depthTest: typeof depthTest === "boolean" ? depthTest  : true,
             depthWrite: typeof depthWrite === "boolean" ? depthWrite  : true
         }),
