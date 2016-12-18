@@ -121,8 +121,7 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
             if (!destroyedHead && this.activeSegments === 0) {
                 destroyedHead = true;
 
-                this.state = "inactive";
-                this.object.visible = false;
+                this.disable();
 
                 galaxies.engine.showCombo(8000, 1, this.object);
                 galaxies.fx.explode(this.object.position, "green", this.scale * 3);
