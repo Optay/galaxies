@@ -33,7 +33,7 @@ galaxies.generator = (function() {
         galaxies.engine.addStar( currentLevel[0].angle );
         break;
       case 'ufo':
-        galaxies.engine.addUfo();
+        galaxies.engine.addUfo(currentLevel[0].mode);
         break;
       case 'powerup':
         galaxies.engine.addPowerup(currentLevel[0].powerup);
@@ -119,7 +119,8 @@ galaxies.generator = (function() {
           powerup: wave.powerup,
           bossType: wave.bossType,
           value: wave.value,
-          displayFor: wave.displayFor
+          displayFor: wave.displayFor,
+          mode: wave.mode
         };
         if ( wave.random ) {
           entry.angle = THREE.Math.randFloat(wave.startAngle, wave.endAngle) * Math.PI/180;

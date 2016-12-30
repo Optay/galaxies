@@ -1103,9 +1103,9 @@ galaxies.engine.addStar = function( angle ) {
   galaxies.engine.stars++;
   return star;
 }
-galaxies.engine.addUfo = function() {
+galaxies.engine.addUfo = function(ufoMode) {
   if ( galaxies.engine.ufo.state === 'inactive' ) {
-    galaxies.engine.ufo.activate();
+    galaxies.engine.ufo.activate(ufoMode);
   }
 }
 

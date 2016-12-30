@@ -222,7 +222,10 @@ this.galaxies.Player = function() {
     if ( !createjs.Tween.hasActiveTweens( character.position ) ) {
       createjs.Tween.get( character.position )
         .to({y:galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT}, 250, createjs.Ease.quadOut)
-        .to({y:this.baseHeight}, 250, createjs.Ease.quadOut);
+        .to({y:this.baseHeight}, 250, createjs.Ease.quadOut)
+        .call(function () {
+            character.position.y = this.baseHeight;
+        }, null, this);
     }
   }
   var clearTweens = function() {

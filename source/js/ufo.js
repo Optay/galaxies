@@ -234,15 +234,7 @@ this.galaxies.Ufo = function() {
         transitionTime = 4;
         stepTimer = 0;
         lastPosition = this.object.position.clone();
-
-        switch (this.mode)
-        {
-            case "laser":
-              targetPosition = orbitPositions[1];
-              break;
-            case "pickup":
-              targetPosition = orbitPositions[3];
-        }
+        targetPosition = orbitPositions[1];
 
         // Starting angle is set so ufo stays to right or left as it flies in.
         angle = Math.round(Math.random()) * Math.PI - Math.PI/4;
@@ -283,18 +275,17 @@ this.galaxies.Ufo = function() {
         stepTimer = 0;
         step = 0;
         lastPosition = this.object.position.clone();
+        targetPosition = orbitPositions[1];
 
         switch (this.mode)
         {
             case "laser":
                 stepTime = 1;//(Math.PI*2/3)/angularSpeed; // time between shots
                 this.state = 'laserOrbit';
-                targetPosition = orbitPositions[1];
                 break;
-            case "pickup":
+            case "tractorBeam":
                 stepTime = 10;
-                this.state = 'pickupOrbit';
-                targetPosition = orbitPositions[3];
+                this.state = 'tractorBeamOrbit';
                 beamRingPool.forEach(function (ring, index) {
                     this.waggler.add(ring.sprite);
                     ring.age = -index / (numBeamRings - 1);
@@ -354,7 +345,7 @@ this.galaxies.Ufo = function() {
       }
       
       break;
-    case 'pickupOrbit':
+    case 'tractorBeamOrbit':
       angle += angularSpeed * delta;
 
       var adjustedAngle = angle - Math.PI / 2,
@@ -376,9 +367,9 @@ this.galaxies.Ufo = function() {
         } else {
           ring.mat.uniforms.opacity.value = 1;
 
-          ring.sprite.position.x = ring.age - 1.5;
+          ring.sprite.position.x = THREE.Math.lerp(-2, -0.5, ring.age);
 
-          var scale = 1 - (ring.age * 0.66);
+          var scale = THREE.Math.lerp(1, 0.33, ring.age);
 
           ring.sprite.scale.set(scale, scale, scale);
         }
@@ -406,15 +397,11 @@ this.galaxies.Ufo = function() {
 
         var timeScalar = THREE.Math.clamp(this.commandeerTime / 4, 0, 1);
 
-        galaxies.engine.player.baseHeight = galaxies.engine.CHARACTER_POSITION + timeScalar;
-        galaxies.engine.targetAngle = adjustedAngle + Math.cos(this.commandeerTime * 50) * timeScalar * 0.15;
+        galaxies.engine.player.baseHeight = galaxies.engine.CHARACTER_POSITION + timeScalar * (1.5 + Math.cos(this.commandeerTime * 35) * 0.2);
+        galaxies.engine.targetAngle = adjustedAngle + Math.cos(this.commandeerTime * 50) * timeScalar * 0.2;
       }
 
-      if ( stepTimer >= stepTime || timeScalar === 1) {
-        if (timeScalar === 1) {
-          galaxies.engine.hitPlayer();
-        }
-
+      if ( stepTimer >= stepTime) {
         this.leave();
       }
       break;
@@ -548,9 +535,21 @@ this.galaxies.Ufo = function() {
   }
   
   // bring it in
-  this.reset = function() {
+  this.reset = function(mode) {
     this.state = 'idle';
-    this.mode = (Math.random() < 0.5) ? 'laser' : 'pickup';
+
+    if (typeof mode === "string") {
+      this.mode = mode;
+
+      switch (mode) {
+          case "tractorBeam":
+            HITS = 2;
+            break;
+          default:
+            HITS = 3;
+      }
+    }
+
     stepTimer = 0;
 
     hitCounter = 0;
@@ -597,8 +596,8 @@ this.galaxies.Ufo = function() {
     
   }
   
-  this.activate = function() {
-    this.reset();
+  this.activate = function(mode) {
+    this.reset(mode);
     
     galaxies.engine.rootObject.add( anchor );
     galaxies.engine.planeSweep.add(this);

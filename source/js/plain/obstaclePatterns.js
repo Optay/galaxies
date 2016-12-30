@@ -10,7 +10,7 @@ galaxies.generator.rawPatterns = [
 
 
     [ // Pluto 1-1
-        // { time: 0, type: 'ufo' }, // TEST
+        // { time: 0, type: 'ufo', mode: 'tractorBeam' }, // TEST
         //      { time: 0, duration: 10, startAngle: 0, endAngle: 360, quantity: 6, type: 'miniUFO', random: true },
         { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 12, type: 'asteroid', random: true },
         { time: 16, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' },
@@ -21,7 +21,7 @@ galaxies.generator.rawPatterns = [
 
     ],
     [ // Pluto 1-2
-        //{ time: 0, type: 'ufo' }, //TEST
+        //{ time: 0, type: 'ufo', mode: 'tractorBeam' }, //TEST
 
         { time: 0, duration: 0, startAngle: 0, endAngle: -45, quantity: 3, type: 'asteroid' },
         { time: 1, duration: 0, quantity: 1, type: 'powerup', powerup: 'spread' },
@@ -37,15 +37,15 @@ galaxies.generator.rawPatterns = [
         { time: 28, duration: 6, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroidice', random: true },
         { time: 34, startAngle: 45, quantity: 1, type: 'comet' },
         { time: 36, duration: 0, startAngle: 90, endAngle: 180, quantity: 5, type: 'asteroid' },
-        { time: 34, type: 'ufo' },
+        { time: 34, type: 'ufo', mode: 'tractorBeam' },
     ],
     [ // Pluto 1-3
-        //{ time: 0, type: 'ufo' }, // TEST
+        //{ time: 0, type: 'ufo', mode: 'tractorBeam' }, // TEST
         { time: 0, duration: 12, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroid', random: true },
         { time: 0, duration: 12, startAngle: 0, endAngle: 360, quantity: 8, type: 'asteroidice', random: true },
         { time: 6, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 16, duration: 0, startAngle: 0, endAngle: 90, quantity: 5, type: 'asteroid' },
-        { time: 18, type: 'ufo' },
+        { time: 18, type: 'ufo', mode: 'tractorBeam' },
         { time: 20, duration: 6, startAngle: 0, endAngle: 360, quantity: 3, type: 'asteroid', random: true },
         { time: 20, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: 'asteroidice', random: true },
         { time: 26, duration: 10, startAngle: 0, endAngle: 360, quantity: 1, type: 'miniUFO', random: true },
@@ -64,7 +64,7 @@ galaxies.generator.rawPatterns = [
         { time: 13, duration: 5, startAngle: 90, endAngle: 90, quantity: 5, type: 'asteroid' },
         { time: 18, duration: 5, startAngle: -90, endAngle: -90, quantity: 5, type: 'asteroid' }, // line
         { time: 23, startAngle: 0, endAngle: 360, type: 'star', random: true },
-        { time: 24, type: 'ufo' }, // TEST
+        { time: 24, type: 'ufo', mode: 'laser' }, // TEST
         { time: 25, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroidice 50', 'asteroid 50'], random: true },
         { time: 28, duration: 10, startAngle: 0, endAngle: 360, quantity: 1, type: 'miniUFO', random: true },
         { time: 33, duration: 10, startAngle: 0, endAngle: 360, quantity: 4, type: 'miniUFO', random: true },
@@ -78,7 +78,7 @@ galaxies.generator.rawPatterns = [
         { time: 6, duration: 5, startAngle: 180, endAngle: 180, quantity: 5, type: 'asteroid' }, // line
         { time: 15, duration: 5, startAngle: 0, endAngle: 0, quantity: 5, type: 'asteroid' }, // line
         { time: 17, startAngle: 0, endAngle: 360, type: 'star', random: true },
-        { time: 18, type: 'ufo' },
+        { time: 18, type: 'ufo', mode: 'laser' },
         { time: 22, duration: 0, startAngle: 180, endAngle: 270, quantity: 5, type: 'asteroid' }, // arc
         { time: 25, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroid 75', 'asteroidrad 25'], random: true },
         { time: 33, duration: 0, startAngle: 90, endAngle: 180, quantity: 5, type: 'asteroid' }, // arc
@@ -87,12 +87,12 @@ galaxies.generator.rawPatterns = [
         { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 5, type: ['asteroid 40', 'asteroidice 20', 'asteroidrad 40'], random: true },
         { time: 3, duration: 0, quantity: 1, type: 'powerup', powerup: ['clone', 'spread'] },
         { time: 12, duration: 6, startAngle: 0, endAngle: 360, quantity: 5, type: ['asteroid 40', 'asteroidice 10', 'asteroidrad 50'], random: true },
-        { time: 12, type: 'ufo' },
+        { time: 12, type: 'ufo', mode: 'laser' },
         { time: 17, duration: 0, quantity: 1, type: 'powerup', powerup: 'shield' },
         { time: 20, duration: 15, startAngle: 0, endAngle: 360, quantity: 1, type: 'miniUFO', random: true },
         { time: 22, duration: 0, startAngle: 0, endAngle: 90, quantity: 5, type: 'asteroid' }, // arc
         { time: 24, startAngle: 0, endAngle: 360, type: 'star', random: true },
-        { time: 24, type: 'ufo' },
+        { time: 24, type: 'ufo', mode: 'laser' },
         { time: 30, duration: 6, startAngle: 0, endAngle: 360, quantity: 5, type: ['asteroidice 60', 'asteroidrad 40'], random: true },
         { time: 35, duration: 0, quantity: 1, type: 'powerup', powerup: 'spread' },
         { time: 40, duration: 0, startAngle: 180, endAngle: 270, quantity: 5, type: 'asteroid' }, // arc
@@ -124,7 +124,7 @@ galaxies.generator.rawPatterns = [
         { time: 9, duration: 5, startAngle: 180, endAngle: 180, quantity: 5, type: 'asteroid' }, // line
         { time: 13, duration: 5, startAngle: 0, endAngle: 0, quantity: 5, type: 'asteroid' }, // line
         { time: 13, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
-        { time: 16, type: 'ufo' },
+        { time: 16, type: 'ufo', mode: 'laser' },
         { time: 16.5, duration: 0, quantity: 1, type: 'powerup', powerup: 'timeWarp' }, // TIMEWARP POWERUP
         { time: 17, duration: 0, startAngle: 0, endAngle: 360, quantity: 12, type: ['asteroidrad 10', 'asteroidice 50', 'asteroid 40'], random: true }, // LOTS OF ASTEROIDS
         { time: 21, startAngle: -80, quantity: 1, type: 'comet' },
@@ -165,7 +165,7 @@ galaxies.generator.rawPatterns = [
         { time: 51, duration: 0, quantity: 1, type: 'powerup', powerup: 'shield' },
         { time: 53, startAngle: 0, endAngle: 360, quantity: 2, type: 'comet', random: true },
         { time: 53.5, duration: 0, quantity: 1, type: 'powerup', powerup: 'clone' },
-        { time: 54, type: 'ufo' },
+        { time: 54, type: 'ufo', mode: 'laser' },
     ],
     [ // Uranus 3-4
         {time: 0, type: 'boss', bossType: 'monster'},
@@ -185,7 +185,7 @@ galaxies.generator.rawPatterns = [
         { time: 23.5, duration: 1, startAngle: 0, endAngle: 360, quantity: 5, type: 'miniUFO', random: true },
         { time: 23.5, duration: 0, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroidrad 10', 'asteroidice 80', 'asteroid 10'], random: true }, // LOTS OF ASTEROIDS
         { time: 25, startAngle: 90, endAngle: 180, quantity: 1, type: 'comet', random: true },
-        { time: 25, type: 'ufo' },
+        { time: 25, type: 'ufo', mode: 'laser' },
         { time: 26, duration: 0, startAngle: 135, endAngle: 225, quantity: 5, type: 'asteroid' }, // arc
         { time: 29, duration: 3, startAngle: 0, endAngle: 360, quantity: 9, type: ['asteroidrad 80', 'asteroid 20'], random: true },
         { time: 31, startAngle: 0, endAngle: 360, quantity: 2, type: 'comet', random: true },
@@ -202,12 +202,12 @@ galaxies.generator.rawPatterns = [
 
         { time: 0, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroidrad 20', 'asteroidice 50', 'asteroid 30'], random: true },
         { time: 3, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
-        { time: 3, type: 'ufo' },
+        { time: 3, type: 'ufo', mode: 'laser' },
         { time: 11, duration: 12, startAngle: 90, endAngle: -270, quantity: 12, type: 'asteroid' }, // sweep
         { time: 17, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 28, duration: 5, startAngle: 0, endAngle: 0, quantity: 5, type: 'asteroid' }, // line
         { time: 28, startAngle: -75, quantity: 1, type: 'comet' },
-        { time: 30, type: 'ufo' },
+        { time: 30, type: 'ufo', mode: 'laser' },
         { time: 38, duration: 0, startAngle: 0, endAngle: -90, quantity: 5, type: 'asteroid' }, // arc
         { time: 43, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: ['asteroid 20', 'asteroidice 50', 'asteroidrad 30'], random: true },
         { time: 46, startAngle: 0, endAngle: 360, type: 'star', random: true },
@@ -220,11 +220,11 @@ galaxies.generator.rawPatterns = [
         { time: 8, duration: 8, startAngle: 0, endAngle: 360, quantity: 4, type: ['asteroid 5', 'asteroidice 15', 'asteroidrad 80'], random: true },
         { time: 12, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 21, duration: 0, startAngle: -45, endAngle: 45, quantity: 5, type: 'asteroid' }, // arc
-        { time: 21, type: 'ufo' },
+        { time: 21, type: 'ufo', mode: 'laser' },
         { time: 26, duration: 6, startAngle: 0, endAngle: 360, quantity: 4, type: ['asteroid 0', 'asteroidice 60', 'asteroidrad 40'], random: true },
         { time: 29, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 37, duration: 0, startAngle: 135, endAngle: 255, quantity: 5, type: 'asteroid' }, // arc
-        { time: 40, type: 'ufo' },
+        { time: 40, type: 'ufo', mode: 'laser' },
         { time: 42, duration: 12, startAngle: 90, endAngle: 450, quantity: 12, type: 'asteroid' }, // sweep
         { time: 45, startAngle: 0, endAngle: 360, type: 'star', random: true },
         { time: 59, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' }, // arc
