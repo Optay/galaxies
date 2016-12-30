@@ -37,7 +37,8 @@ this.galaxies.Ufo = function() {
   var anchor = new THREE.Object3D();
   anchor.add( this.object );
   
-  this.state = 'inactive'; // values for state: idle, in, orbit, out, inactive
+  this.state = 'inactive'; // values for state: idle, in, laserOrbit, pickupOrbit, out, inactive
+  this.mode = 'laser'; // can be laser, or pickup
   var stepTimer = 0;
   var prevStepTimer = 0;
   var stepTime = 0;
@@ -151,6 +152,44 @@ this.galaxies.Ufo = function() {
   var laserBeam = new THREE.Mesh( laserGeometry, laserMaterial );
   laserBeam.position.set(0.5, 0, 0);
   laserOrient.add( laserBeam );
+
+  var beamRingTexture = new THREE.Texture(galaxies.queue.getResult("liftring"));
+  var ringGradient = new THREE.Texture(galaxies.queue.getResult("greengradient"));
+  var remapToGradient = galaxies.shaders.materials.remapToGradient;
+
+  var beamRingPool = [];
+  var numBeamRings = 6;
+
+  beamRingTexture.needsUpdate = true;
+  ringGradient.needsUpdate = true;
+
+  for (var i = 0; i < numBeamRings; ++i)
+  {
+    var beamRingMat = new THREE.ShaderMaterial({
+      uniforms: remapToGradient.getUniforms(),
+      vertexShader: remapToGradient.vertexShader,
+      fragmentShader: remapToGradient.fragmentShader,
+      shading: THREE.FlatShading,
+      depthWrite: false,
+      depthTest: false,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.doubleSided
+    });
+
+    beamRingMat.uniforms.tDiffuse.value = beamRingTexture;
+    beamRingMat.uniforms.tGradient.value = ringGradient;
+
+    var beamRingSprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), beamRingMat);
+
+    beamRingSprite.rotation.y = Math.PI / 3;
+
+    beamRingPool.push({
+      sprite: beamRingSprite,
+      mat: beamRingMat,
+      age: 0
+    });
+  }
   
   // Sound!
   this.ufoSound = new galaxies.audio.ObjectSound( galaxies.audio.getSound('ufo'), this.object, 0 );
@@ -159,16 +198,7 @@ this.galaxies.Ufo = function() {
   var idleZ = galaxies.engine.CAMERA_Z + 10;
   var idlePosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 1.8,0,idleZ);
 
-  var orbitPositions = [
-    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS,0,0),
-    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
-    new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.75,0,0)
-  ];
-  orbitPositions[0].z = galaxies.utils.getConifiedDepth( orbitPositions[0] );
-  orbitPositions[1].z = galaxies.utils.getConifiedDepth( orbitPositions[1] );
-  orbitPositions[2].z = galaxies.utils.getConifiedDepth( orbitPositions[2] );
-  var orbitPosition = orbitPositions[1];
-  
+  var orbitPositions;
   
   var tween = createjs.Ease.quadInOut;
   var inTween;
@@ -185,6 +215,8 @@ this.galaxies.Ufo = function() {
   this.isHittable = false;
   this.alive = true;
   this.spinOut = false;
+  this.commandeeredPlayer = false;
+  this.commandeerTime = 0;
   
   this.update = function( delta ) {
     if (this.state === "inactive") {
@@ -202,9 +234,16 @@ this.galaxies.Ufo = function() {
         transitionTime = 4;
         stepTimer = 0;
         lastPosition = this.object.position.clone();
-        //targetPosition = orbitPositions[0];
-        targetPosition = orbitPosition;
-        
+
+        switch (this.mode)
+        {
+            case "laser":
+              targetPosition = orbitPositions[1];
+              break;
+            case "pickup":
+              targetPosition = orbitPositions[3];
+        }
+
         // Starting angle is set so ufo stays to right or left as it flies in.
         angle = Math.round(Math.random()) * Math.PI - Math.PI/4;
         
@@ -240,16 +279,34 @@ this.galaxies.Ufo = function() {
       }
       
       if ( stepTimer >= stepTime ) {
-        this.state = 'orbit';
-        stepTime = 1;//(Math.PI*2/3)/angularSpeed; // time between shots
         transitionTime = stepTime/4;
         stepTimer = 0;
         step = 0;
         lastPosition = this.object.position.clone();
-        targetPosition = orbitPosition;
+
+        switch (this.mode)
+        {
+            case "laser":
+                stepTime = 1;//(Math.PI*2/3)/angularSpeed; // time between shots
+                this.state = 'laserOrbit';
+                targetPosition = orbitPositions[1];
+                break;
+            case "pickup":
+                stepTime = 10;
+                this.state = 'pickupOrbit';
+                targetPosition = orbitPositions[3];
+                beamRingPool.forEach(function (ring, index) {
+                    this.waggler.add(ring.sprite);
+                    ring.age = -index / (numBeamRings - 1);
+                    ring.mat.uniforms.opacity.value = 0;
+
+                    ring.sprite.position.x = -1.5;
+                }, this);
+                break;
+        }
       }
       break;
-    case 'orbit':
+    case 'laserOrbit':
       angle += angularSpeed * delta;
       
       if ( stepTimer >= stepTime ) {
@@ -297,6 +354,70 @@ this.galaxies.Ufo = function() {
       }
       
       break;
+    case 'pickupOrbit':
+      angle += angularSpeed * delta;
+
+      var adjustedAngle = angle - Math.PI / 2,
+          nearEnd = (stepTime - stepTimer) < 1.2;
+
+      beamRingPool.forEach(function (ring) {
+        ring.age += delta;
+
+        if (ring.age > 1) {
+          if (nearEnd) {
+            ring.age = -5;
+          } else {
+            ring.age -= 1 + (1 / (numBeamRings - 1));
+          }
+        }
+
+        if (ring.age < 0) {
+          ring.mat.uniforms.opacity.value = 0;
+        } else {
+          ring.mat.uniforms.opacity.value = 1;
+
+          ring.sprite.position.x = ring.age - 1.5;
+
+          var scale = 1 - (ring.age * 0.66);
+
+          ring.sprite.scale.set(scale, scale, scale);
+        }
+      });
+
+      if (!this.commandeeredPlayer) {
+        var angleDiff = adjustedAngle - galaxies.engine.angle;
+
+        while (angleDiff > Math.PI) {
+          angleDiff -= Math.PI * 2;
+        }
+
+        while (angleDiff < -Math.PI) {
+          angleDiff += Math.PI * 2;
+        }
+
+        if (Math.abs(angleDiff) < 0.2) {
+          this.commandeeredPlayer = true;
+          this.commandeerTime = 0;
+        }
+      }
+
+      if (this.commandeeredPlayer) {
+        this.commandeerTime += delta;
+
+        var timeScalar = THREE.Math.clamp(this.commandeerTime / 4, 0, 1);
+
+        galaxies.engine.player.baseHeight = galaxies.engine.CHARACTER_POSITION + timeScalar;
+        galaxies.engine.targetAngle = adjustedAngle + Math.cos(this.commandeerTime * 50) * timeScalar * 0.15;
+      }
+
+      if ( stepTimer >= stepTime || timeScalar === 1) {
+        if (timeScalar === 1) {
+          galaxies.engine.hitPlayer();
+        }
+
+        this.leave();
+      }
+      break;
     case 'out':
       angle = THREE.Math.mapLinear( stepTimer, 0, transitionTime/2, lastAngle, targetAngle );
         
@@ -336,6 +457,22 @@ this.galaxies.Ufo = function() {
   }
   
   this.leave = function() {
+    if (this.commandeeredPlayer) {
+      this.commandeeredPlayer = false;
+
+      galaxies.engine.player.baseHeight = galaxies.engine.CHARACTER_POSITION;
+
+      if (!createjs.Tween.hasActiveTweens(galaxies.engine.player.sprite.position)) {
+        galaxies.engine.player.sprite.position.y = galaxies.engine.player.baseHeight;
+      }
+
+      beamRingPool.forEach(function (ring) {
+        if (ring.sprite.parent === this.waggler) {
+          this.waggler.remove(ring.sprite);
+        }
+      }, this);
+    }
+
     this.state = 'out';
     stepTimer = 0;
     stepTime = 4;
@@ -413,13 +550,15 @@ this.galaxies.Ufo = function() {
   // bring it in
   this.reset = function() {
     this.state = 'idle';
+    this.mode = (Math.random() < 0.5) ? 'laser' : 'pickup';
     stepTimer = 0;
-    
+
     hitCounter = 0;
     smokeEmitter.disable();
 
     this.waggler.rotation.z = 0;
     this.spinOut = false;
+    this.commandeeredPlayer = false;
     
     if ( galaxies.engine.isGameOver ) {
       this.deactivate();
@@ -431,8 +570,17 @@ this.galaxies.Ufo = function() {
     this.isHittable = false;
     
     // Update positions to work with variable camera position
-    orbitPosition = new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
-    orbitPosition.z = galaxies.utils.getConifiedDepth( orbitPosition );
+    orbitPositions = [
+        new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS,0,0),
+        new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.9,0,0),
+        new THREE.Vector3(galaxies.engine.VISIBLE_RADIUS * 0.75,0,0),
+        new THREE.Vector3(galaxies.engine.PLANET_RADIUS + 1.35,0,0)
+    ];
+
+    orbitPositions.forEach(function (pos) {
+        pos.z = galaxies.utils.getConifiedDepth(pos);
+    });
+
     var idleZ = galaxies.engine.CAMERA_Z + 10;
     idlePosition = new THREE.Vector3( galaxies.engine.VISIBLE_RADIUS * 1.8, 0, idleZ );//new THREE.Vector3( orbitPosition.x, 0, idleZ );
     //

@@ -98,9 +98,7 @@ this.galaxies.Player = function() {
   } );
   teleportSprite = new THREE.Sprite( teleportMaterial );
   teleportSprite.position.z = 0.1; // must appear in front of base character sprite
-  
-  
-  
+
   characters['golden'] = {
     map: goldenMap,
     animator: goldenAnimator,
@@ -224,7 +222,7 @@ this.galaxies.Player = function() {
     if ( !createjs.Tween.hasActiveTweens( character.position ) ) {
       createjs.Tween.get( character.position )
         .to({y:galaxies.engine.PLANET_RADIUS + galaxies.engine.CHARACTER_HEIGHT}, 250, createjs.Ease.quadOut)
-        .to({y:galaxies.engine.CHARACTER_POSITION}, 250, createjs.Ease.quadOut);
+        .to({y:this.baseHeight}, 250, createjs.Ease.quadOut);
     }
   }
   var clearTweens = function() {
@@ -465,6 +463,10 @@ this.galaxies.Player = function() {
     character.material.rotation = angle;
     characterShadow.material.rotation = angle - Math.PI/60;
     activeAnimator.update( delta );
+
+    if (galaxies.engine.ufo.commandeeredPlayer && !createjs.Tween.hasActiveTweens(character.position)) {
+        character.position.y = this.baseHeight;
+    }
     
     if ( cloneRotator.parent !== null && !teleportingClone && !spinningOutClone ) {
       var cloneDefaultAngle = angle + Math.PI;
@@ -534,7 +536,9 @@ this.galaxies.Player = function() {
     activeAnimator.stop();
     activeAnimator = baseAnimator;
     activeAnimator.updateFrame(0);
-    
+
+    this.baseHeight = galaxies.engine.CHARACTER_POSITION;
+
     character.rotation.set(0,0,0);
     character.material.rotation = angle;
     character.position.y = galaxies.engine.CHARACTER_POSITION;
@@ -729,6 +733,7 @@ this.galaxies.Player = function() {
   
   return {
     name: "Luxamillion",
+    baseHeight: galaxies.engine.CHARACTER_POSITION,
     root: rootObject,
     sprite: character,
     cloneSprite: clone,

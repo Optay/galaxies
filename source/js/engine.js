@@ -933,7 +933,9 @@ galaxies.engine.updatePlayerAngle = function (event) {
   var relativeX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
       relativeY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
 
-  galaxies.engine.targetAngle = -(Math.atan2(relativeY, relativeX) + Math.PI/2); // sprite is offset
+  if (!galaxies.engine.ufo.commandeeredPlayer) {
+    galaxies.engine.targetAngle = -(Math.atan2(relativeY, relativeX) + Math.PI / 2); // sprite is offset
+  }
   galaxies.ui.updateReticlePosition(event);
 };
 

@@ -143,6 +143,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'sparkle', src: 'effects/sparticle.png' },
     { id: 'smoke', src: 'effects/smokeparticle.png' },
     { id: 'lensFlare', src: 'effects/lensflare3.png' },
+    { id: 'liftring', src: 'effects/lift_ring.png' },
     { id: 'sun', src: 'environment/sun_on_black.jpg' },
     { id: 'charactershadow', src: 'sprites/character_shadow.png' },
     { id: 'explosionpoof', src: (isMobile ? 'sprites/mobile' : 'sprites') + '/powerup_explosion_bw.png' },

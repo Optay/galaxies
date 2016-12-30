@@ -121,7 +121,8 @@ galaxies.shaders = {
                 return {
                     "tDiffuse":     { type: "t", value: null },
                     "offsetRepeat": { type: "v4", value: new THREE.Vector4(0, 0, 1, 1) },
-                    "tGradient":    { type: "t", value: null }
+                    "tGradient":    { type: "t", value: null },
+                    "opacity":      { type: "f", value: 1 }
                 };
             },
             vertexShader: [
@@ -136,13 +137,14 @@ galaxies.shaders = {
             fragmentShader: [
                 "uniform sampler2D tDiffuse;",
                 "uniform sampler2D tGradient;",
+                "uniform float opacity;",
 
                 "varying vec2 vUv;",
 
                 "void main() {",
                 "  vec4 srcColor = texture2D(tDiffuse, vUv);",
                 "  float scalar = 0.21 * srcColor.r + 0.72 * srcColor.g + 0.07 * srcColor.b;",
-                "  gl_FragColor = vec4(texture2D(tGradient, vec2(scalar, scalar)).rgb, srcColor.a);",
+                "  gl_FragColor = vec4(texture2D(tGradient, vec2(scalar, scalar)).rgb, srcColor.a * opacity);",
                 "}"
             ].join('\n')
         }
