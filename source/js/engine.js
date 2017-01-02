@@ -1671,6 +1671,7 @@ galaxies.engine.endTutorial = function () {
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
 
   galaxies.ui.updateLife(galaxies.engine.playerLife);
+  galaxies.ui.hideInteractionMessage();
 
   ++galaxies.engine.levelNumber;
 
