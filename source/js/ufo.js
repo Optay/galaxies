@@ -346,10 +346,8 @@ this.galaxies.Ufo = function() {
       
       break;
     case 'tractorBeamOrbit':
-      angle += angularSpeed * delta;
-
-      var adjustedAngle = angle - Math.PI / 2,
-          nearEnd = (stepTime - stepTimer) < 1.2;
+      var nearEnd = (stepTime - stepTimer) < 1.2,
+          adjustedAngle;
 
       beamRingPool.forEach(function (ring) {
         ring.age += delta;
@@ -367,7 +365,7 @@ this.galaxies.Ufo = function() {
         } else {
           ring.mat.uniforms.opacity.value = 1;
 
-          ring.sprite.position.x = THREE.Math.lerp(-2, -0.5, ring.age);
+          ring.sprite.position.x = THREE.Math.lerp(-2.25, -0.5, ring.age);
 
           var scale = THREE.Math.lerp(1, 0.33, ring.age);
 
@@ -376,6 +374,9 @@ this.galaxies.Ufo = function() {
       });
 
       if (!this.commandeeredPlayer) {
+        angle += angularSpeed * delta;
+        adjustedAngle = angle - Math.PI / 2;
+
         var angleDiff = adjustedAngle - galaxies.engine.angle;
 
         while (angleDiff > Math.PI) {
@@ -394,6 +395,7 @@ this.galaxies.Ufo = function() {
 
       if (this.commandeeredPlayer) {
         this.commandeerTime += delta;
+        adjustedAngle = angle - Math.PI / 2;
 
         var timeScalar = THREE.Math.clamp(this.commandeerTime / 4, 0, 1);
 
