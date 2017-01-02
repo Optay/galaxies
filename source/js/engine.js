@@ -24,7 +24,7 @@ galaxies.engine.tutorialData = {
   exitIn: 0
 };
 
-galaxies.engine.completedTutorial = galaxies.utils.isLocalStorageAvailable() ? localStorage.completedTutorial : false;
+galaxies.engine.completedTutorial = false;
 
 galaxies.engine.canvasWidth = 0;
 galaxies.engine.canvasHeight = 0;
@@ -327,6 +327,10 @@ galaxies.engine.init = function() {
   // It would be nice not to be using both of these.
   // create.js ticker for tweens
   createjs.Ticker.framerate = 60;
+
+  if (galaxies.utils.isLocalStorageAvailable()) {
+      galaxies.engine.completedTutorial = localStorage.completedTutorial || false;
+  }
     
   // three.js clock for delta time
   galaxies.engine.clock = new THREE.Clock();

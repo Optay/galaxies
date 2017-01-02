@@ -76,6 +76,23 @@ galaxies.utils.isMobile = function() {
   return galaxies.utils._isMobile;
 };
 
+galaxies.utils._isLocalStorageAvailable = null;
+
+galaxies.utils.isLocalStorageAvailable = function () {
+    if (galaxies.utils._isLocalStorageAvailable === null) {
+        var test = 'test';
+        try {
+            localStorage.setItem(test, test);
+            localStorage.removeItem(test);
+            galaxies.utils._isLocalStorageAvailable = true;
+        } catch (e) {
+            galaxies.utils._isLocalStorageAvailable = false;
+        }
+    }
+
+    return galaxies.utils._isLocalStorageAvailable;
+};
+
 // Identify which audio format to use.
 galaxies.utils.testAudioSupport = function( callback ) {
   // Has test been run?
@@ -589,6 +606,3 @@ SPE.Emitter.prototype.randomizeExistingVelocityVector3OnSphere = function( v, ba
             .multiplyScalar( this.randomFloat( speed, speedSpread ) );
             //.multiplyScalar( Math.abs( this.randomFloat( speed, speedSpread ) ) );
 };
-
-
-
