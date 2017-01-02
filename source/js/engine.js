@@ -24,6 +24,8 @@ galaxies.engine.tutorialData = {
   exitIn: 0
 };
 
+galaxies.engine.completedTutorial = galaxies.utils.isLocalStorageAvailable() ? localStorage.completedTutorial : false;
+
 galaxies.engine.canvasWidth = 0;
 galaxies.engine.canvasHeight = 0;
 galaxies.engine.canvasHalfWidth = 0;
@@ -540,7 +542,7 @@ galaxies.engine.startGame = function() {
   var urlParams = galaxies.debug.urlParams,
       hasStartPoint = urlParams.hasOwnProperty("startAt");
 
-  if (!hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
+  if (!galaxies.engine.completedTutorial && !hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
     galaxies.engine.inTutorial = true;
   }
 
@@ -1670,8 +1672,13 @@ galaxies.engine.skipSequence = function () {
 };
 
 galaxies.engine.endTutorial = function () {
+  if (galaxies.utils.isLocalStorageAvailable()) {
+    localStorage.completedTutorial = true;
+  }
+
   galaxies.engine.roundScore = 0;
   galaxies.engine.inTutorial = false;
+  galaxies.engine.completedTutorial = true;
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
 
   galaxies.ui.updateLife(galaxies.engine.playerLife);
