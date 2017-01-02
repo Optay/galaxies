@@ -930,8 +930,8 @@ galaxies.engine.setLightPosition = function( angles ) {
 }
 
 galaxies.engine.updatePlayerAngle = function (event) {
-  var relativeX = ( event.clientX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
-      relativeY = ( event.clientY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
+  var relativeX = ( event.pageX - galaxies.engine.planetScreenPoint.x * galaxies.engine.canvasWidth ),
+      relativeY = ( event.pageY - galaxies.engine.planetScreenPoint.y * galaxies.engine.canvasHeight );
 
   if (!galaxies.engine.ufo.commandeeredPlayer) {
     galaxies.engine.targetAngle = -(Math.atan2(relativeY, relativeX) + Math.PI / 2); // sprite is offset
@@ -946,7 +946,7 @@ galaxies.engine.commonInteractMove = function (event) {
     return;
   }
 
-  var currentPoint = new THREE.Vector2(event.clientX, event.clientY),
+  var currentPoint = new THREE.Vector2(event.pageX, event.pageY),
       threshold = Math.max(galaxies.engine.canvasWidth, galaxies.engine.canvasHeight) * 0.01;
 
   threshold *= threshold;
@@ -986,11 +986,11 @@ galaxies.engine.averageTouchLocation = function (event) {
   for (i = 0; i < numTouches; ++i) {
     touch = touches[i];
 
-    totalX += touch.clientX;
-    totalY += touch.clientY;
+    totalX += touch.pageX;
+    totalY += touch.pageY;
   }
 
-  return {clientX: totalX / numTouches, clientY: totalY / numTouches};
+  return {pageX: totalX / numTouches, pageY: totalY / numTouches};
 };
 
 galaxies.engine.onDocumentTouchStart = function( event ) {
@@ -1005,8 +1005,8 @@ galaxies.engine.onDocumentTouchStart = function( event ) {
     galaxies.engine.bIsDown = true;
     galaxies.engine.bIsAiming = false;
     galaxies.engine.isFiring = false;
-    galaxies.engine.downPoint.x = touchAverage.clientX;
-    galaxies.engine.downPoint.y = touchAverage.clientY;
+    galaxies.engine.downPoint.x = touchAverage.pageX;
+    galaxies.engine.downPoint.y = touchAverage.pageY;
     galaxies.engine.downTime = 0;
 
     galaxies.engine.updatePlayerAngle(touchAverage);
@@ -1104,8 +1104,12 @@ galaxies.engine.addStar = function( angle ) {
   return star;
 }
 galaxies.engine.addUfo = function(ufoMode) {
+  if (typeof ufoMode !== "string") {
+    ufoMode = "laser"
+  }
+
   if ( galaxies.engine.ufo.state === 'inactive' ) {
-    galaxies.engine.ufo.activate(ufoMode);
+    galaxies.engine.ufo.activate();
   }
 }
 
@@ -1671,7 +1675,6 @@ galaxies.engine.endTutorial = function () {
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
 
   galaxies.ui.updateLife(galaxies.engine.playerLife);
-  galaxies.ui.hideInteractionMessage();
 
   ++galaxies.engine.levelNumber;
 
