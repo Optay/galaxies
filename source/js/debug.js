@@ -66,7 +66,8 @@ window.addEventListener("load", function(event) {
     InsectiClyde: function () {galaxies.engine.addBoss('insecticlyde');},
     InsectiClydeSegments: 10,
     MiniUFO: function () {galaxies.engine.addObstacle("miniUFO")},
-    UFO: galaxies.engine.addUfo,
+    LaserUFO: function () {galaxies.engine.addUfo("laser")},
+    TractorBeamUFO: function () {galaxies.engine.addUfo("tractorBeam")},
     MoonColor: "#FFFFFF",
     invulnerable: false
   };
@@ -146,7 +147,8 @@ window.addEventListener("load", function(event) {
 
   var ufos = datgui.addFolder("UFOs");
 
-  ufos.add(userValues, 'UFO' );
+  ufos.add(userValues, 'LaserUFO' );
+  ufos.add(userValues, 'TractorBeamUFO' );
   ufos.add(userValues, 'MiniUFO' );
 
   var colorChanger = datgui.addColor(userValues, 'MoonColor');

@@ -1115,7 +1115,7 @@ galaxies.engine.addUfo = function(ufoMode) {
   }
 
   if ( galaxies.engine.ufo.state === 'inactive' ) {
-    galaxies.engine.ufo.activate();
+    galaxies.engine.ufo.activate(ufoMode);
   }
 }
 
