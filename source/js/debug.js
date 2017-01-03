@@ -33,6 +33,13 @@ window.addEventListener("load", function(event) {
 
   var userValues = {
     Location: urlParams.startAt || "1-1",
+    ClearStorage: function () {
+      galaxies.engine.completedTutorial = false;
+
+      if (galaxies.utils.isLocalStorageAvailable()) {
+        localStorage.clear()
+      }
+    },
     Pluto: function() { setLevel(1); },
     Neptune: function() { setLevel(1 + galaxies.engine.ROUNDS_PER_PLANET); },
     Uranus: function() { setLevel(1 + 2 * galaxies.engine.ROUNDS_PER_PLANET); },
@@ -108,6 +115,8 @@ window.addEventListener("load", function(event) {
   };
 
   locationController.onChange(galaxies.debug.changeLocation);
+
+  datgui.add(userValues, "ClearStorage");
 
   var planets = datgui.addFolder("Planets");
 
