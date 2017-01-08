@@ -14,7 +14,7 @@ galaxies.generator.rawPatterns = [
         //      { time: 0, duration: 10, startAngle: 0, endAngle: 360, quantity: 6, type: 'miniUFO', random: true },
         { time: 0, duration: 15, startAngle: 0, endAngle: 360, quantity: 12, type: 'asteroid', random: true },
         { time: 16, duration: 0, startAngle: 45, endAngle: 135, quantity: 5, type: 'asteroid' },
-        { time: 0, startAngle: 0, endAngle: 360, type: 'star', random: true },
+        { time: 18, startAngle: 0, endAngle: 360, type: 'star', random: true },
         { time: 22, duration: 6, startAngle: 0, endAngle: 360, quantity: 6, type: 'asteroid', random: true },
         { time: 22, startAngle: 0, endAngle: 360, quantity: 1, type: 'comet', random: true },
         { time: 28, duration: 8, startAngle: 0, endAngle: 360, quantity: 8, type: 'asteroid', random: true },
