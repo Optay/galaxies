@@ -202,7 +202,7 @@ galaxies.Projectile.prototype.updatePosition = function (newAngle) {
 };
 
 galaxies.Projectile.prototype.hit = function () {
-  galaxies.fx.showHit(this.object.position, this.type);
+  galaxies.FX.ShowHit(this.object.position, this.type);
 
   if (galaxies.utils.inShotGroup(this)) {
     ++galaxies.engine.projectilesHitRound;

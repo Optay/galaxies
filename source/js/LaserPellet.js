@@ -40,10 +40,10 @@ galaxies.LaserPellet.prototype.addToScene = function (position, direction) {
 galaxies.LaserPellet.prototype.impact = function (hitPlayer) {
     this.state = "inactive";
 
-    galaxies.fx.showHit(this.object.position, "heart");
+    galaxies.FX.ShowHit(this.object.position, "heart");
 
     if (hitPlayer) {
-        galaxies.fx.shakeCamera(0.7, 1);
+        galaxies.FX.ShakeCamera(0.7, 1);
 
         galaxies.engine.hitPlayer();
     }

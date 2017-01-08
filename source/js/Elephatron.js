@@ -472,7 +472,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
             this.explodeAudio.startSound();
         }
     } else if (prevHealth !== health) {
-        galaxies.fx.shakeCamera(1, 1.5);
+        galaxies.FX.ShakeCamera(1, 1.5);
 
         maxHealth = this.maxHealth;
 

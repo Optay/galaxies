@@ -149,8 +149,8 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
 
         pos.z += 0.5;
 
-        galaxies.fx.explode(this.damageColliders[0].rootPosition, 'ufoFire', 5);
-        galaxies.fx.tintScreen(0xFFAA00, 0.3, 200, 500);
+        galaxies.FX.ShowExplosion(this.damageColliders[0].rootPosition, 'ufoFire', 5);
+        galaxies.FX.TintScreen(0xFFAA00, 0.3, 200, 500);
 
         this.limbSprite.material.map = this.limbDamagedTexture;
 

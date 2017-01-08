@@ -264,11 +264,11 @@ galaxies.engine.ensureCanvasSize = function() {
   galaxies.engine.updateView();
 
   if (galaxies.passes.warpBubble) {
-    galaxies.fx.updateWarpBubble();
+    galaxies.FX.UpdateWarpBubble();
   }
 
   if (galaxies.passes.focus) {
-    galaxies.fx.updateFocus();
+    galaxies.FX.UpdateFocus();
   }
 
   canvas.style.width = "100%";
@@ -517,9 +517,9 @@ galaxies.engine.initGame = function() {
   
   galaxies.engine.addInputListeners();
 
-  galaxies.fx.init( galaxies.engine.scene );
+  galaxies.FX.Init();
 
-  galaxies.engine.shieldBubble = galaxies.fx.getShield();
+  galaxies.engine.shieldBubble = galaxies.FX.GetShield();
 
   galaxies.engine.fillPools();
 
@@ -1140,7 +1140,7 @@ galaxies.engine.shoot = function( indestructible ) {
   }
 
   // Instantiate shot object
-  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.fx.getRainbowEmitter() : null);
+  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, indestructible, indestructible ? galaxies.FX.GetRainbowEmitter() : null);
 
   galaxies.utils.addShotGroup(proj);
     
@@ -1161,7 +1161,7 @@ galaxies.engine.shoot2 = function() {
   ++galaxies.engine.projectilesLaunchedRound;
 
   // Instantiate shot object
-  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, false, galaxies.fx.getPurpleTrailEmitter());
+  var proj = galaxies.engine.getProjectile(galaxies.engine.angle, 0, false, galaxies.FX.GetPurpleTrailEmitter());
 
   galaxies.utils.addShotGroup(proj);
 
@@ -1218,7 +1218,7 @@ galaxies.engine.shoot3 = function() {
 
   for ( var i=-1; i<=1; i++ ) {
     // Instantiate shot object
-    var proj = galaxies.engine.getProjectile(galaxies.engine.angle, i * Math.PI / 6, false, galaxies.fx.getSmallFlameJet(i === 0));
+    var proj = galaxies.engine.getProjectile(galaxies.engine.angle, i * Math.PI / 6, false, galaxies.FX.GetSmallFlameJet(i === 0));
 
     projs.push(proj);
       
@@ -1537,7 +1537,7 @@ galaxies.engine.update = function() {
   galaxies.engine.driftObject.rotateOnAxis(galaxies.engine.driftAxis, galaxies.engine.driftSpeed * delta );
 
   // update fx
-  galaxies.fx.update(scaledDelta);
+  galaxies.FX.Update(scaledDelta);
 
   if (galaxies.engine.slomoDuration > 0) {
     if (galaxies.engine.slomoDuration <= delta) {
@@ -1560,7 +1560,7 @@ galaxies.engine.update = function() {
       galaxies.engine.timeDilation = 1.0 - 1.8 * galaxies.engine.slomoDuration;
 
       if (galaxies.engine.slomoDuration === 0) {
-        galaxies.fx.hideTimeDilation();
+        galaxies.FX.HideTimeDilation();
       }
     }
   }
@@ -1759,7 +1759,7 @@ galaxies.engine.hitPlayer = function() {
   
   galaxies.engine.playerLife--;
   galaxies.ui.updateLife( galaxies.engine.playerLife );
-  galaxies.fx.loseHeart(galaxies.engine.angle);
+  galaxies.FX.ShowHeartLoss(galaxies.engine.angle);
   
   if ((!galaxies.engine.invulnerable) && (galaxies.engine.playerLife<=0)) {
     galaxies.engine.player.clearTweens();
@@ -1787,7 +1787,7 @@ galaxies.engine.hitShield = function (damage) {
   if (galaxies.engine.shieldStrength <= 0) {
     galaxies.engine.shielded = false;
     galaxies.engine.shieldBubble.disable();
-    galaxies.fx.popBubble();
+    galaxies.FX.ShowShieldPop();
   }
 };
 
@@ -1864,9 +1864,10 @@ galaxies.engine.gameOver = function( isWin ) {
   if ( isWin ) {
     galaxies.ui.showGameOver( isWin, galaxies.engine.score, bonusScore, accuracy );
   } else {
-  
-    galaxies.fx.showPlanetSplode();
-    galaxies.fx.shakeCamera(2, 2);
+
+    galaxies.engine.player.die();
+    galaxies.FX.ShowPlanetExplosion();
+    galaxies.FX.ShakeCamera(2, 2);
     
     for( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
       galaxies.engine.obstacles[i].retreat();
@@ -1890,7 +1891,7 @@ galaxies.engine.endGame = function() {
     galaxies.engine.planet.parent.remove(galaxies.engine.planet);
   }
   galaxies.engine.rootObject.remove( galaxies.engine.player.root );
-  
+
   galaxies.ui.showMenu();
 }
 
@@ -1926,7 +1927,9 @@ galaxies.engine.resetGame = function() {
     galaxies.engine.planetNumber = 0;
     galaxies.engine.roundNumber = 0;
   }
-  
+
+  galaxies.FX.Cleanup();
+
   // Reset star counter
   galaxies.engine.starsCollectedRound = 0;
   galaxies.ui.updateStars( galaxies.engine.starsCollectedRound );
@@ -2256,12 +2259,12 @@ galaxies.engine.setPowerup = function ( newPowerup, fromObject ) {
 
   if (newPowerup === "timeWarp") {
     galaxies.engine.slomoDuration += 10;
-    galaxies.fx.showTimeDilation();
+    galaxies.FX.ShowTimeDilation();
   } else if (newPowerup === "shield") {
     if (!galaxies.engine.shielded) {
       galaxies.engine.shieldStrength = 5;
 
-      galaxies.fx.bringBubbleIn();
+      galaxies.FX.ShowShieldAppear();
 
       createjs.Tween.get(galaxies.engine)
           .wait(500)

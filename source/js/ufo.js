@@ -173,8 +173,7 @@ this.galaxies.Ufo = function() {
       depthWrite: false,
       depthTest: false,
       transparent: true,
-      blending: THREE.AdditiveBlending,
-      side: THREE.doubleSided
+      blending: THREE.AdditiveBlending
     });
 
     beamRingMat.uniforms.tDiffuse.value = beamRingTexture;
@@ -267,7 +266,7 @@ this.galaxies.Ufo = function() {
       angle = inTween( stepTimer );
 
       if (stepTimer >= 1.5 && prevStepTimer < 1.5) {
-        galaxies.fx.shakeCamera(1, 1.5);
+        galaxies.FX.ShakeCamera(1, 1.5);
       }
       
       if ( stepTimer >= stepTime ) {
@@ -325,7 +324,7 @@ this.galaxies.Ufo = function() {
 
             galaxies.engine.hitPlayer();
 
-            galaxies.fx.showHit(new THREE.Vector3(Math.cos(anchor.rotation.z), Math.sin(anchor.rotation.z), 0).multiplyScalar(galaxies.engine.PLANET_DISTANCE), "green");
+            galaxies.FX.ShowHit(new THREE.Vector3(Math.cos(anchor.rotation.z), Math.sin(anchor.rotation.z), 0).multiplyScalar(galaxies.engine.PLANET_DISTANCE), "green");
 
             new galaxies.audio.PositionedSound({
               source: galaxies.audio.getSound('trunkfordlaugh'),
@@ -414,7 +413,7 @@ this.galaxies.Ufo = function() {
         this.waggler.rotation.z -= delta * 3 * Math.PI; // 90 RPM
       } else {
         if (stepTimer >= 1 && prevStepTimer < 1) {
-          galaxies.fx.shakeCamera(1, 1.5);
+          galaxies.FX.ShakeCamera(1, 1.5);
         }
       }
       
@@ -507,8 +506,8 @@ this.galaxies.Ufo = function() {
       this.leave();
 
       galaxies.engine.showCombo( this.points, 1, this.object );
-      galaxies.fx.explode(this.rootPosition, 'ufoFire');
-      galaxies.fx.tintScreen(0xFFAA00, 0.3, 200, 500);
+      galaxies.FX.ShowExplosion(this.rootPosition, 'ufoFire');
+      galaxies.FX.TintScreen(0xFFAA00, 0.3, 200, 500);
     } else {
       // waggle
       this.waggler.rotation.z = Math.PI/4;

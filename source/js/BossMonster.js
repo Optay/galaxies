@@ -36,7 +36,7 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
     position.add(new THREE.Vector3(0, 0, 0.02));
 
     this.bloodSpurt.spriteSheet.play();
-    this.bloodSpurt.material.uniforms.tGradient.value = galaxies.fx.gradients.blood;
+    this.bloodSpurt.material.uniforms.tGradient.value = galaxies.FX.gradients["blood"];
     this.bloodSpurt.sprite.visible = true;
     this.bloodSpurt.sprite.position.copy(position);
     this.bloodSpurt.sprite.scale.set(0.8, 0.8, 0.8);
@@ -53,7 +53,7 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
         this.eyeVel.x = -this.eyeVel.x;
     }
 
-    galaxies.fx.shakeCamera(0.7, 1);
+    galaxies.FX.ShakeCamera(0.7, 1);
 
     this.ouchAudio.startSound();
     this.splatAudio.startSound();
@@ -186,7 +186,7 @@ galaxies.BossMonster.prototype.initModel = function () {
     var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
         new THREE.Vector2(4096, 4096), 53, new THREE.Vector2(0, 0), 0.5);
 
-    this.bloodSpurt = galaxies.fx.createGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames);
+    this.bloodSpurt = galaxies.FX.CreateGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames);
 
     THREE.SceneUtils.detach(this.bloodSpurt.sprite, galaxies.engine.rootObject, this.object);
 };
@@ -239,7 +239,7 @@ galaxies.BossMonster.prototype.update = function (delta) {
 
     var cameraRootPos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
 
-    galaxies.fx.updateSprite(this.bloodSpurt, cameraRootPos, delta);
+    galaxies.FX.UpdateSprite(this.bloodSpurt, cameraRootPos, delta);
 
     if (this.state === "roar") {
         this.updateRoar(delta);

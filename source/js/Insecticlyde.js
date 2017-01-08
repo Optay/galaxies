@@ -124,8 +124,8 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
                 this.disable();
 
                 galaxies.engine.showCombo(8000, 1, this.object);
-                galaxies.fx.explode(this.object.position, "green", this.scale * 3);
-                galaxies.fx.tintScreen(0x00FF00, 0.3, 200, 500);
+                galaxies.FX.ShowExplosion(this.object.position, "green", this.scale * 3);
+                galaxies.FX.TintScreen(0x00FF00, 0.3, 200, 500);
             }
         }
 
@@ -141,10 +141,10 @@ galaxies.Insecticlyde.prototype.checkCollisions = function () {
         segmentCenter.x -= Math.cos(lastSegment.angle) * lastSegment.scale;
         segmentCenter.y -= Math.sin(lastSegment.angle) * lastSegment.scale;
 
-        galaxies.fx.shakeCamera(0.7, 1);
+        galaxies.FX.ShakeCamera(0.7, 1);
         galaxies.engine.showCombo(500, 1, lastSegment.object);
-        galaxies.fx.explode(segmentCenter, "green", this.scale * 2);
-        galaxies.fx.tintScreen(0x00FF00, 0.3, 200, 500);
+        galaxies.FX.ShowExplosion(segmentCenter, "green", this.scale * 2);
+        galaxies.FX.TintScreen(0x00FF00, 0.3, 200, 500);
 
         this.splatAudio.startSound();
 

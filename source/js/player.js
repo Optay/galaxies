@@ -261,7 +261,7 @@ this.galaxies.Player = function() {
     var projMesh = new THREE.Mesh(galaxies.resources.geometries['proj'], galaxies.resources.materials['proj']);
     projMesh.scale.set(0.1, 0.1, 0.1);
 
-    var proj = new galaxies.Projectile("clone", projMesh, cloneAIData.angle, 0, false, galaxies.fx.getPurpleTrailEmitter());
+    var proj = new galaxies.Projectile("clone", projMesh, cloneAIData.angle, 0, false, galaxies.FX.GetPurpleTrailEmitter());
     galaxies.engine.projectiles.push(proj);
 
     proj.firedByClone = true;
@@ -507,7 +507,7 @@ this.galaxies.Player = function() {
       var v3 = new THREE.Vector3(),
           normCloneScreenPos;
 
-      galaxies.fx.spinOutClone(delta);
+      galaxies.FX.SpinOutClone(delta);
 
       v3.setFromMatrixPosition(clone.matrixWorld);
 

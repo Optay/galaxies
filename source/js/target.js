@@ -98,7 +98,7 @@ galaxies.Capsule.prototype.hit = function() {
   // release the powerup
   console.log("Capsule.hit");
   galaxies.engine.setPowerup( this.powerup, this.object );
-  galaxies.fx.tintScreen(colors.hasOwnProperty(this.powerup) ? colors[this.powerup] : 0xFFFFFF, 0.25, 200, 500);
+  galaxies.FX.TintScreen(colors.hasOwnProperty(this.powerup) ? colors[this.powerup] : 0xFFFFFF, 0.25, 200, 500);
 
   var soundId = 'powerupcollect';
   if ( this.powerup === 'heart' ) {
@@ -111,7 +111,7 @@ galaxies.Capsule.prototype.hit = function() {
     loop: false
   });
 
-  galaxies.fx.showStaricles(this.object.position, this.powerup);
+  galaxies.FX.ShowStaricles(this.object.position, this.powerup);
 
   this.clear();
 }
@@ -140,7 +140,7 @@ galaxies.Capsule.prototype.appear = function() {
 
   galaxies.utils.conify( this.object );
 
-  this.appearEffect = galaxies.fx.powerupAppear(this.object.position, this.powerup);
+  this.appearEffect = galaxies.FX.ShowPowerupAppear(this.object.position, this.powerup);
   createjs.Tween.get(this.model.material)
       .wait(1500)
       .to({opacity: 1})
@@ -306,7 +306,7 @@ galaxies.Star = function( angle ) {
   this.speed = 1;
   
   // fade in
-  galaxies.fx.powerupAppear(this.object.position, 'star');
+  galaxies.FX.ShowPowerupAppear(this.object.position, 'star');
   createjs.Tween.get(this.model.material)
       .wait(1500)
       .to({opacity: 1})
@@ -323,8 +323,8 @@ galaxies.Star.prototype.hit = function() {
     loop: false
   });
   
-  galaxies.fx.showStaricles( this.object.position );
-  galaxies.fx.tintScreen(0xFFFF00, 0.25, 200, 500);
+  galaxies.FX.ShowStaricles(this.object.position);
+  galaxies.FX.TintScreen(0xFFFF00, 0.25, 200, 500);
   
   this.clear();
 }

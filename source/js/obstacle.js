@@ -286,7 +286,7 @@ galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, force
 
 galaxies.Obstacle.prototype.impact = function () {
   if (this.explosionGradient) {
-    galaxies.fx.showHit(this.object.position, this.explosionGradient, this.explosionPoofSize);
+    galaxies.FX.ShowHit(this.object.position, this.explosionGradient, this.explosionPoofSize);
   }
 
   this.splode(false);
@@ -307,14 +307,14 @@ galaxies.Obstacle.prototype.splode = function( spawn ) {
     loop: false
   });
   
-  galaxies.fx.shakeCamera(this.shakeAmount);
+  galaxies.FX.ShakeCamera(this.shakeAmount);
   
   var c = Math.cos(this.angle);
   var s = Math.sin(this.angle);
   var velocity = new THREE.Vector3( c * this.velocityRadial - s * this.velocityTangential,
                                     s * this.velocityRadial + c * this.velocityTangential,
                                     0 );
-  galaxies.fx.showRubble( this.rubbleType, this.object.position, velocity );
+  galaxies.FX.ShowRubble( this.object.position, this.rubbleType, velocity );
   
   if ( spawn ) {
     for (var i=0; i<this.spawnNumber; i++ ) {
@@ -399,7 +399,7 @@ galaxies.ObstacleIce.prototype.hit = function( hitPosition, damage, multiply, fo
     var velocity = new THREE.Vector3( c * this.velocityRadial - s * this.velocityTangential,
                                       s * this.velocityRadial + c * this.velocityTangential,
                                       1 );
-    galaxies.fx.showRubble( 'ice', this.object.position, velocity );
+    galaxies.FX.ShowRubble( this.object.position, 'ice', velocity );
   }
 }
 galaxies.ObstacleIce.prototype.reset = function() {
@@ -452,7 +452,7 @@ galaxies.ObstacleComet.prototype.remove = function () {
 galaxies.ObstacleComet.prototype.reset = function () {
   galaxies.Obstacle.prototype.reset.call(this);
 
-  this.particleEmitter = galaxies.fx.getComet();
+  this.particleEmitter = galaxies.FX.GetComet();
   this.particleEmitter.enable();
 };
 galaxies.ObstacleComet.prototype.update = function(delta) {
@@ -485,7 +485,7 @@ galaxies.ObstacleComet.prototype.update = function(delta) {
 galaxies.ObstacleComet.prototype.splode = function() {
   galaxies.Obstacle.prototype.splode.call( this, false );
   
-  galaxies.fx.showFireworks( this.object.position );
+  galaxies.FX.ShowFireworks( this.object.position );
   
   // hit all obstacles within range of explosion
   for ( var i=0, len=galaxies.engine.obstacles.length; i<len; i++ ) {
@@ -499,8 +499,8 @@ galaxies.ObstacleComet.prototype.splode = function() {
   var worldPos = this.object.localToWorld(new THREE.Vector3()),
       edgePos = this.object.position.clone().normalize().setZ(0).multiplyScalar(8).add(this.object.position);
 
-  galaxies.fx.showWarpBubble(worldPos, edgePos);
-  galaxies.fx.tintScreen(0xFFAA00, 0.3, 300, 400);
+  galaxies.FX.ShowWarpBubble(worldPos, edgePos);
+  galaxies.FX.TintScreen(0xFFAA00, 0.3, 300, 400);
 }
 
 /**
@@ -526,12 +526,17 @@ galaxies.ObstacleRad = function() {
 galaxies.ObstacleRad.prototype = Object.create( galaxies.Obstacle.prototype );
 galaxies.ObstacleRad.prototype.constructor = galaxies.ObstacleRad;
 galaxies.ObstacleRad.prototype.initModel = function() {
-  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroidrad'], galaxies.resources.materials['asteroidrad'] );
-  this.object.scale.set( 0.5, 0.5, 0.5 );
+  this.object = new THREE.Mesh(galaxies.resources.geometries['asteroidrad'], galaxies.resources.materials['asteroidrad']);
+  this.object.scale.set(0.5, 0.5, 0.5);
   
-  galaxies.fx.addGlowbject( this.object, 0x00ff00 );
-  
-}
+  this.glowObject = galaxies.FX.AddGlowObject(this.object, 0x00ff00);
+};
+
+galaxies.ObstacleRad.prototype.update = function (delta) {
+  galaxies.Obstacle.prototype.update.call(this, delta);
+
+  galaxies.FX.UpdateGlowObject(this.glowObject);
+};
 
 /**
  * SON OF RADIOACTIVE ROID
@@ -551,12 +556,17 @@ galaxies.ObstacleRadChild = function() {
 galaxies.ObstacleRadChild.prototype = Object.create( galaxies.Obstacle.prototype );
 galaxies.ObstacleRadChild.prototype.constructor = galaxies.ObstacleRadChild;
 galaxies.ObstacleRadChild.prototype.initModel = function() {
-  this.object = new THREE.Mesh( galaxies.resources.geometries['asteroid'], galaxies.resources.materials['asteroidrad'] );
-  this.object.scale.set( 0.3, 0.3, 0.3 );
+  this.object = new THREE.Mesh(galaxies.resources.geometries['asteroid'], galaxies.resources.materials['asteroidrad']);
+  this.object.scale.set(0.3, 0.3, 0.3);
       
-  galaxies.fx.addGlowbject( this.object, 0x00ff00 );
-  
-}
+  this.glowObject = galaxies.FX.AddGlowObject(this.object, 0x00ff00);
+};
+
+galaxies.ObstacleRadChild.prototype.update = function (delta) {
+    galaxies.Obstacle.prototype.update.call(this, delta);
+
+    galaxies.FX.UpdateGlowObject(this.glowObject);
+};
 
 
 galaxies.ObstacleSpiky = function () {
@@ -621,7 +631,7 @@ galaxies.ObstacleSpiky.prototype.reset = function () {
 galaxies.ObstacleSpiky.prototype.splode = function () {
   galaxies.Obstacle.prototype.splode.call(this);
 
-  galaxies.fx.showBlueExplosion(this.object.position);
+  galaxies.FX.ShowBlueExplosion(this.object.position);
 };
 
 galaxies.MiniUFO = function () {
@@ -710,8 +720,8 @@ galaxies.MiniUFO.prototype.reset = function () {
 galaxies.MiniUFO.prototype.splode = function( spawn ) {
   galaxies.Obstacle.prototype.splode.call(this, spawn);
 
-  galaxies.fx.explode(this.object.position, "ufoFire");
-  galaxies.fx.tintScreen(0xFFAA00, 0.2, 200, 400);
+  galaxies.FX.ShowExplosion(this.object.position, "ufoFire");
+  galaxies.FX.TintScreen(0xFFAA00, 0.2, 200, 400);
 };
 
 galaxies.MiniUFO.prototype.update = function (delta) {

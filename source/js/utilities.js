@@ -595,14 +595,3 @@ galaxies.utils.getBezierTangent = function (p0x, p0y, a0x, a0y, a1x, a1y, p1x, p
 
     return p0.multiplyScalar(invT2).add(p1.multiplyScalar(invT * t)).add(p2.multiplyScalar(t2));
 };
-
-// Patch SPE to allow negative speeds to make sphere particles move inwards.
-// This is used by the UFO laser charge effect.
-// May not be needed in latest version of SPE, but needs to be checked before it can be removed.
-SPE.Emitter.prototype.randomizeExistingVelocityVector3OnSphere = function( v, base, position, speed, speedSpread ) {
-        v.copy( position )
-            .sub( base )
-            .normalize()
-            .multiplyScalar( this.randomFloat( speed, speedSpread ) );
-            //.multiplyScalar( Math.abs( this.randomFloat( speed, speedSpread ) ) );
-};
