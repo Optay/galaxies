@@ -301,7 +301,7 @@ namespace galaxies {
 
                 galaxies.engine.rootObject.add(FX.smokeGroup.mesh);
 
-                FX.smokeGroup.mesh.position.z = 1;
+                FX.smokeGroup.mesh.position.z = 0;
             }
 
             let smallFlameJetGroup = new SPE.Group({

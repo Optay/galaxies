@@ -195,7 +195,7 @@ var galaxies;
                 FX.smokeGroup.addPool(6, smokeSettings, true);
                 FX.particleGroups.push(FX.smokeGroup);
                 galaxies.engine.rootObject.add(FX.smokeGroup.mesh);
-                FX.smokeGroup.mesh.position.z = 1;
+                FX.smokeGroup.mesh.position.z = 0;
             }
             var smallFlameJetGroup = new SPE.Group({
                 texture: { value: FX.smokeTexture },
