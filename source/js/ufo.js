@@ -153,6 +153,18 @@ this.galaxies.Ufo = function() {
   laserBeam.position.set(0.5, 0, 0);
   laserOrient.add( laserBeam );
 
+  var pickupBeamGeo = new THREE.PlaneGeometry(28,  0.5),
+      pickupBeamMat = new THREE.MeshBasicMaterial({
+              color: 0xffffff,
+              opacity: 0.5,
+              transparent: true
+          }),
+      pickupBeam = new THREE.Mesh(pickupBeamGeo, pickupBeamMat);
+
+  pickupBeam.rotation.y = -galaxies.engine.INV_CONE_ANGLE;
+  pickupBeam.position.x = -1.4;
+  pickupBeam.position.z = -2 / galaxies.engine.CONE_SLOPE;
+
   var beamRingTexture = new THREE.Texture(galaxies.queue.getResult("liftring"));
   var ringGradient = new THREE.Texture(galaxies.queue.getResult("greengradient"));
   var remapToGradient = galaxies.shaders.materials.remapToGradient;
@@ -285,6 +297,7 @@ this.galaxies.Ufo = function() {
             case "tractorBeam":
                 stepTime = 10;
                 this.state = 'tractorBeamOrbit';
+                this.waggler.add(pickupBeam);
                 beamRingPool.forEach(function (ring, index) {
                     this.waggler.add(ring.sprite);
                     ring.age = -index / (numBeamRings - 1);
@@ -372,10 +385,10 @@ this.galaxies.Ufo = function() {
         }
       });
 
-      if (!this.commandeeredPlayer) {
-        angle += angularSpeed * delta;
-        adjustedAngle = angle - Math.PI / 2;
+      angle += angularSpeed * delta;
+      adjustedAngle = angle - Math.PI / 2;
 
+      if (!this.commandeeredPlayer) {
         var angleDiff = adjustedAngle - galaxies.engine.angle;
 
         while (angleDiff > Math.PI) {
@@ -395,6 +408,14 @@ this.galaxies.Ufo = function() {
       if (this.commandeeredPlayer) {
         this.commandeerTime += delta;
         adjustedAngle = angle - Math.PI / 2;
+
+        if (angularSpeed > 0) {
+          angularSpeed -= delta;
+
+          if (angularSpeed < 0) {
+            angularSpeed = 0;
+          }
+        }
 
         var timeScalar = THREE.Math.clamp(this.commandeerTime / 4, 0, 1);
 
@@ -453,6 +474,8 @@ this.galaxies.Ufo = function() {
       if (!createjs.Tween.hasActiveTweens(galaxies.engine.player.sprite.position)) {
         galaxies.engine.player.sprite.position.y = galaxies.engine.player.baseHeight;
       }
+
+      this.waggler.remove(pickupBeam);
 
       beamRingPool.forEach(function (ring) {
         if (ring.sprite.parent === this.waggler) {
@@ -590,7 +613,8 @@ this.galaxies.Ufo = function() {
     lastPosition = idlePosition;
     targetPosition = idlePosition;
     this.object.position.copy( idlePosition );
-    
+
+    angularSpeed = 0.7;
     
     // silence it!
     this.ufoSound.volume = 0;
