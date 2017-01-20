@@ -892,7 +892,7 @@ namespace galaxies {
                 FX.UpdateSprite(FX.activeSprites[i], cameraRootPos, delta);
             }
 
-            if (galaxies.engine.isGameOver && (galaxies.engine.planet == null)) {
+            if (galaxies.engine.isGameOver && (galaxies.engine.planet.parent == null)) {
                 let playerSprite = galaxies.engine.player.sprite;
 
                 playerSprite.position.y = playerSprite.position.y + CHARACTER_FLY_SPEED * delta;

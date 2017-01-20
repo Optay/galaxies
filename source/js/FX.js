@@ -644,7 +644,7 @@ var galaxies;
             for (i = FX.activeSprites.length - 1; i > -1; --i) {
                 FX.UpdateSprite(FX.activeSprites[i], cameraRootPos, delta);
             }
-            if (galaxies.engine.isGameOver && (galaxies.engine.planet == null)) {
+            if (galaxies.engine.isGameOver && (galaxies.engine.planet.parent == null)) {
                 var playerSprite = galaxies.engine.player.sprite;
                 playerSprite.position.y = playerSprite.position.y + CHARACTER_FLY_SPEED * delta;
                 playerSprite.rotation.z = playerSprite.rotation.z + CHARACTER_TUMBLE_SPEED * delta;
