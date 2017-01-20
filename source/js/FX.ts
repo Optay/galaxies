@@ -924,7 +924,9 @@ namespace galaxies {
                     spriteData.sprite.rotation.z = spriteData.rotation;
                 }
 
-                spriteData.material.uniforms.offsetRepeat.value.set(tex.offset.x, tex.offset.y, tex.repeat.x, tex.repeat.y);
+                if (!(spriteData.material instanceof THREE.SpriteMaterial)) {
+                    spriteData.material.uniforms.offsetRepeat.value.set(tex.offset.x, tex.offset.y, tex.repeat.x, tex.repeat.y);
+                }
             }
 
             if (!spriteData.spriteSheet.isPlaying()) {
