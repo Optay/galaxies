@@ -142,10 +142,10 @@ Object.defineProperty(galaxies.engine, 'CONE_ANGLE', {
 
     galaxies.engine.CONE_SLOPE = Math.tan(value);
 
-    galaxies.engine.INV_CONE_SLOPE = 1 - value;
+    galaxies.engine.INV_CONE_ANGLE = Math.PI / 2 - value;
 
     galaxies.engine.PROJ_START_Y = galaxies.engine.PLANET_RADIUS +
-        (galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.INV_CONE_SLOPE * 0.14));
+        (galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.INV_CONE_ANGLE * 0.09));
 
     if (galaxies.engine.camera) {
       galaxies.engine.updateView();

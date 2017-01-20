@@ -260,8 +260,7 @@ galaxies.Obstacle.prototype.hit = function( hitPosition, damage, multiply, force
   this.tumbleSpeed += (this.baseTumbleSpeed * angularAmount);
   
   if ( forceDestroy || (this.life <=0 ) ) {
-    var innerDistance = galaxies.engine.PLANET_RADIUS +
-            (galaxies.engine.CHARACTER_HEIGHT * (0.08 + galaxies.engine.INV_CONE_SLOPE * 0.14)),
+    var innerDistance = galaxies.engine.PROJ_START_Y,
         maxIndex = this.points.length - 1,
         pointIndex = Math.round(maxIndex *
             (1 - ((this.radius - innerDistance) / (galaxies.engine.OBSTACLE_VISIBLE_RADIUS - innerDistance))));
