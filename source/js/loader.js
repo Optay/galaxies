@@ -171,6 +171,7 @@ this.galaxies.loadAssets = function( progressCallback, completeCallback, errorCa
     { id: 'bosseyelid2', src: 'bosses/monster/boss_eyelid_2.png' },
     { id: 'bosseyelid3', src: 'bosses/monster/boss_eyelid_3.png' },
     { id: 'bosseyelid4', src: 'bosses/monster/boss_eyelid_4.png' },
+    { id: 'bosstentacle', src: 'bosses/monster/boss_tentacle.png' },
     { id: 'bloodgradient', src: 'gradients/blood.png' },
     { id: 'whitegradient', src: 'gradients/white.png' },
     { id: 'greengradient', src: 'gradients/green.png' },

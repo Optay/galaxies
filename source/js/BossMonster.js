@@ -4,12 +4,17 @@ this.galaxies = this.galaxies || {};
 
 galaxies.BossMonster = function () {
     this.roarTime = 5;
-    this.cinematicAsteroids = [];
+    this.mouthAsteroids = [];
+    this.leftTentacleAsteroid = null;
+    this.rightTentacleAsteroid = null;
 
     galaxies.Boss.call(this);
 
     this.name = "Ocularry";
 };
+
+galaxies.BossMonster.BONES_COUNT = 8;
+galaxies.BossMonster.SEGMENTS_PER_BONE = 2;
 
 galaxies.BossMonster.prototype = Object.create(galaxies.Boss.prototype);
 galaxies.BossMonster.prototype.constructor = galaxies.BossMonster;
@@ -22,6 +27,61 @@ galaxies.BossMonster.prototype.closeEyes = function () {
             eye.eyelid.visible = true;
         }
     });
+};
+
+galaxies.BossMonster.prototype.createArm = function() {
+    var numBones = galaxies.BossMonster.BONES_COUNT,
+        segmentsPerBone = galaxies.BossMonster.SEGMENTS_PER_BONE,
+        tex = new THREE.Texture(galaxies.queue.getResult("bosstentacle")),
+        mat = new THREE.MeshBasicMaterial({
+            map: tex,
+            skinning: true,
+            transparent: true
+        }),
+        geo = new THREE.PlaneGeometry(0.25, 4, 1, numBones * segmentsPerBone),
+        mesh = new THREE.SkinnedMesh(geo, mat),
+        segmentHeight = 4 / (numBones - 1),
+        bones = [],
+        i, j, k, bone, scalar, invScalar,
+        skeleton;
+
+    tex.needsUpdate = true;
+
+    for (i = 0; i <= numBones; ++i) {
+        bone = new THREE.Bone();
+
+        bone.position.y = i == 0 ? -2 : segmentHeight;
+        
+        // TODO: Currently rigid. More blending between bones, except at ends. Use neighboring bones.
+        if (i > 0) {
+            bones[i - 1].add(bone);
+
+            for (j = 1; j <= segmentsPerBone; ++j) {
+                scalar = j / segmentsPerBone;
+                invScalar = 1 - scalar;
+
+                for (k = 0; k < 2; ++k) {
+                    geo.skinIndices.unshift(new THREE.Vector4(i - 1, i, 0, 0));
+                    geo.skinWeights.unshift(new THREE.Vector4(invScalar, scalar, 0, 0));
+                }
+            }
+        } else {
+            for (k = 0; k < 2; ++k) {
+                geo.skinIndices.unshift(new THREE.Vector4(0, 0, 0, 0));
+                geo.skinWeights.unshift(new THREE.Vector4(1, 0, 0, 0));
+            }
+
+            mesh.add(bone);
+        }
+
+        bones.push(bone);
+    }
+
+    skeleton = new THREE.Skeleton(bones);
+
+    mesh.bind(skeleton);
+
+    return {mesh: mesh, bones: bones, flinging: false, numBones: numBones, progress: 0, wiggleScalar: 0};
 };
 
 galaxies.BossMonster.prototype.hitEye = function (eye) {
@@ -118,6 +178,9 @@ galaxies.BossMonster.prototype.initModel = function () {
         ],
         detachedEyeball = galaxies.utils.makeSprite('bosseyeball');
 
+    this.leftTentacle = this.createArm();
+    this.rightTentacle = this.createArm();
+
     bottomSprite.scale.set(3.44, 2.09, 1);
     middleSprite.scale.set(2.19, 3.92, 1);
     topSprite.scale.set(2.77, 1.82, 1);
@@ -143,6 +206,8 @@ galaxies.BossMonster.prototype.initModel = function () {
         topObject.add(eyelid);
     });
 
+    this.leftTentacle.mesh.position.set(1.2, 2, -0.03);
+    this.rightTentacle.mesh.position.set(-1.2, 2, -0.03);
     middleSprite.position.set(0, -1.69, -0.02);
     bottomSprite.position.set(0, 0.225, -0.01);
     topObject.position.set(0, 1.27, 0);
@@ -157,6 +222,16 @@ galaxies.BossMonster.prototype.initModel = function () {
     eyelidSprites[2].position.set(0.47, 0.59, 0.02);
     eyelidSprites[3].position.set(1.085, 0.295, 0.02);
 
+    this.rightTentacle.bones[0].rotation.z = Math.PI / 4;
+    this.leftTentacle.bones[0].rotation.z = -Math.PI / 4;
+
+    for (i = 1; i < galaxies.BossMonster.BONES_COUNT; ++i) {
+        this.rightTentacle.bones[i].rotation.z = -Math.PI / 8;
+        this.leftTentacle.bones[i].rotation.z = Math.PI / 8;
+    }
+
+    mainObject.add(this.leftTentacle.mesh);
+    mainObject.add(this.rightTentacle.mesh);
     mainObject.add(bottomSprite);
     mainObject.add(topObject);
 
@@ -260,6 +335,9 @@ galaxies.BossMonster.prototype.update = function (delta) {
     if (this.detachedEyeball.visible) {
         this.updateDetachedEye(delta);
     }
+
+    this.leftTentacleAsteroid = this.updateTentacle(delta, this.leftTentacle, this.leftTentacleAsteroid, -Math.PI / 4);
+    this.rightTentacleAsteroid = this.updateTentacle(delta, this.rightTentacle, this.rightTentacleAsteroid, Math.PI / 4);
 };
 
 // TODO: Figure out how to "fling" the asteroids in a way that feels right
@@ -267,7 +345,7 @@ galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
     var basePosition = this.object.position,
         yScale = this.object.scale.y;
 
-    this.cinematicAsteroids = this.cinematicAsteroids.filter(function (data) {
+    this.mouthAsteroids = this.mouthAsteroids.filter(function (data) {
         var asteroid = data.asteroid,
             conePoint;
 
@@ -442,6 +520,14 @@ galaxies.BossMonster.prototype.updateIdle = function (delta) {
         this.state = "roar";
         this.roarTimer = 0;
         this.asteroidTimer = 0;
+
+        var odds = Math.random();
+
+        if (odds < 0.34) {
+            this.leftTentacle.flinging = true;
+        } else if (odds > 0.66) {
+            this.rightTentacle.flinging = true;
+        }
     }
 };
 
@@ -510,7 +596,7 @@ galaxies.BossMonster.prototype.updateRoar = function (delta) {
 
             asteroid.state = "cinematic";
 
-            this.cinematicAsteroids.push({
+            this.mouthAsteroids.push({
                 progress: 0,
                 asteroid: asteroid,
                 targetScale: asteroid.object.scale.clone()
@@ -531,6 +617,88 @@ galaxies.BossMonster.prototype.updateSpriteX = function (value) {
 
 galaxies.BossMonster.prototype.updateSpriteY = function (value) {
     this.object.position.y = this.bottomEdge - value * this.object.scale.y * 3.5;
+};
+
+galaxies.BossMonster.prototype.updateTentacle = function (delta, tentacle, asteroid, restAngle) {
+    var maxDeviation = Math.PI / 12,
+        direction = Math.sign(restAngle),
+        periodicityScalar = 2 * Math.PI / 3,
+        scaledAge = this.age * 20,
+        i;
+
+    if (asteroid != null) {
+        if (tentacle.progress < 1) {
+            tentacle.progress += delta;
+
+            var fromAngle = direction * Math.PI / (2 * tentacle.numBones);
+
+            for (i = 1; i < tentacle.numBones; ++i) {
+                tentacle.bones[i].rotation.z = fromAngle - (direction * tentacle.progress * Math.PI / tentacle.numBones);
+            }
+        }
+
+        if (tentacle.progress >= 1) {
+            asteroid.state = "falling";
+
+            asteroid = null;
+            tentacle.flinging = false;
+        }
+    } else if (tentacle.flinging) {
+        if (tentacle.wiggleScalar > 0) {
+            tentacle.wiggleScalar = Math.max(tentacle.wiggleScalar - delta, 0);
+
+            if (tentacle.wiggleScalar === 0) {
+                tentacle.progress = 0;
+            }
+        }
+
+        if (tentacle.wiggleScalar === 0) {
+            if (tentacle.progress < 1) {
+                tentacle.progress += delta;
+
+                for (i = 1; i < tentacle.numBones; ++i) {
+                    tentacle.bones[i].rotation.z = direction * tentacle.progress * Math.PI / (2 * tentacle.numBones);
+                }
+            } else {
+                tentacle.progress = 0;
+                asteroid = galaxies.engine.addObstacle("asteroid");
+
+                asteroid.state = "cinematic";
+            }
+        }
+    } else {
+        if (tentacle.progress > 0) {
+            tentacle.progress = Math.max(tentacle.progress - delta, 0);
+
+            for (i = 1; i < tentacle.numBones; ++i) {
+                tentacle.bones[i].rotation.z = -direction * tentacle.progress * Math.PI / (2 * tentacle.numBones);
+            }
+        } else if (tentacle.wiggleScalar < 1) {
+            tentacle.wiggleScalar = Math.min(tentacle.wiggleScalar + delta, 1);
+        }
+    }
+
+    if (tentacle.wiggleScalar > 0)
+    {
+        tentacle.bones[0].rotation.z = restAngle + Math.sin(scaledAge) * maxDeviation / 2;
+
+        for (i = 1; i < tentacle.numBones; ++i) {
+            tentacle.bones[i].rotation.z = Math.sin(scaledAge + i * periodicityScalar) * maxDeviation;
+        }
+    }
+
+    if (asteroid) {
+        var conePoint = asteroid.object.parent.worldToLocal(tentacle.bones[tentacle.numBones - 1]
+            .localToWorld(new THREE.Vector3()));
+
+        conePoint = galaxies.utils.projectToCone(conePoint);
+
+        asteroid.angle = Math.atan2(conePoint.y, conePoint.x);
+        asteroid.radius = galaxies.utils.flatLength(conePoint);
+        asteroid.updatePosition();
+    }
+
+    return asteroid;
 };
 
 Object.defineProperties(galaxies.BossMonster.prototype, {
