@@ -24,7 +24,7 @@ galaxies.engine.tutorialData = {
   exitIn: 0
 };
 
-galaxies.engine.completedTutorial = false;
+galaxies.engine.playerData = {};
 
 galaxies.engine.canvasWidth = 0;
 galaxies.engine.canvasHeight = 0;
@@ -113,6 +113,7 @@ Object.defineProperty(galaxies.engine, "bossMode", {
 });
 
 galaxies.engine.START_LEVEL_NUMBER = 1;
+galaxies.engine.TOTAL_PLANETS = 7; // TODO: this should not be a constant
 
 galaxies.engine.levelTimer = 0;
 galaxies.engine.LEVEL_TIME = 15;
@@ -328,8 +329,10 @@ galaxies.engine.init = function() {
   // create.js ticker for tweens
   createjs.Ticker.framerate = 60;
 
+  galaxies.engine.initPlayerData();
+
   if (galaxies.utils.isLocalStorageAvailable()) {
-      galaxies.engine.completedTutorial = localStorage.completedTutorial || false;
+      //galaxies.engine.completedTutorial = localStorage.completedTutorial || false;
   }
     
   // three.js clock for delta time
@@ -340,7 +343,122 @@ galaxies.engine.init = function() {
   
   galaxies.ui.init();
   
-}
+};
+
+galaxies.engine.initPlayerData= function() {
+  var playerData = {},
+      storageAvailable = galaxies.utils.isLocalStorageAvailable();
+
+  galaxies.engine.initTutorialData(playerData, storageAvailable);
+  galaxies.engine.initAllPlanetsData(playerData, storageAvailable);
+
+  galaxies.engine.playerData = playerData;
+};
+
+galaxies.engine.initTutorialData = function (playerData, storageAvailable) {
+  var key = "playerData.completedTutorial";
+
+  playerData._completedTutorial = storageAvailable ? (localStorage.getItem(key) || false) : false;
+
+  Object.defineProperty(playerData, "completedTutorial", {
+    get: function() {
+      return playerData._completedTutorial;
+    },
+    set: function(value) {
+        playerData._completedTutorial = value;
+
+      if (storageAvailable) {
+        localStorage.setItem(key, value);
+      }
+    }
+  });
+};
+
+galaxies.engine.initAllPlanetsData = function (playerData, storageAvailable) {
+  playerData.planets = [];
+
+  for (var i = 0; i < galaxies.engine.TOTAL_PLANETS; ++i) {
+    galaxies.engine.initPlanetData(playerData, i, storageAvailable);
+  }
+};
+
+galaxies.engine.initPlanetData = function (playerData, planet, storageAvailable) {
+  var storageKeyBase = "playerData.planets." + planet+ '.',
+      data = {
+        _completed: false,
+        _accuracy: 0,
+        _score: 0,
+        _starsCollected: 0
+      };
+
+  Object.defineProperties(data, {
+    completed: {
+        get: function () {
+          return data._completed;
+        },
+        set: function (value) {
+          data._completed = value;
+
+          if (storageAvailable) {
+            localStorage.setItem(storageKeyBase + "completed", value);
+          }
+        }
+    },
+    accuracy: {
+      get: function () {
+        return data._score;
+      },
+      set: function (value) {
+        data._score = value;
+
+        if (storageAvailable) {
+          localStorage.setItem(storageKeyBase + "accuracy", value);
+        }
+      }
+    },
+    score: {
+      get: function () {
+        return data._score;
+      },
+      set: function (value) {
+        data._score = value;
+
+        if (storageAvailable) {
+          localStorage.setItem(storageKeyBase + "score", value);
+        }
+      }
+    },
+    starsCollected: {
+      get: function () {
+        return data._starsCollected;
+      },
+      set: function (value) {
+        data._starsCollected = value;
+
+        if (storageAvailable) {
+          localStorage.setItem(storageKeyBase + "starsCollected", value);
+        }
+      }
+    }
+  });
+
+  if (storageAvailable)
+  {
+    data._completed = localStorage.getItem(storageKeyBase + "completed") || false;
+
+    if (data._completed) {
+      data._accuracy = localStorage.getItem(storageKeyBase + "accuracy") || 0;
+      data._score = localStorage.getItem(storageKeyBase + "score") || 0;
+      data._starsCollected = localStorage.getItem(storageKeyBase + "starsCollected") || 0;
+    }
+  }
+
+  playerData.planets[planet] = data;
+};
+
+galaxies.engine.loadPlayerData = function() {
+  //
+};
 
 // Create 3D scene, camera, light, skybox
 galaxies.engine.initScene = function() {
@@ -348,7 +466,6 @@ galaxies.engine.initScene = function() {
   galaxies.resources = new galaxies.Resources();
   
   
-  var mesh;
   galaxies.engine.container = document.getElementById( 'container' );
 
   galaxies.engine.scene = new THREE.Scene();
@@ -546,7 +663,7 @@ galaxies.engine.startGame = function() {
   var urlParams = galaxies.debug.urlParams,
       hasStartPoint = urlParams.hasOwnProperty("startAt");
 
-  if (!galaxies.engine.completedTutorial && !hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
+  if (!galaxies.engine.playerData.completedTutorial && !hasStartPoint && !urlParams.hasOwnProperty("noTutorial")) {
     galaxies.engine.inTutorial = true;
   }
 
@@ -677,16 +794,22 @@ galaxies.engine.nextLevel = function() {
   }
 
   // game ends after earth
-  if ( galaxies.engine.planetNumber > 7 ) {
+  if ( galaxies.engine.planetNumber > galaxies.engine.TOTAL_PLANETS ) {
     galaxies.engine.gameOver( true );
     return;
   }
 
   if ( galaxies.engine.roundNumber === 1 ) {
     var accuracy = galaxies.engine.projectilesHitRound / galaxies.engine.projectilesLaunchedRound,
-        rawScore = galaxies.engine.roundScore;
+        rawScore = galaxies.engine.roundScore,
+        planetData = galaxies.engine.playerData.planets[galaxies.engine.planetNumber - 2];
 
-    galaxies.engine.roundScore = galaxies.utils.calculateRoundScore(galaxies.engine.roundScore, accuracy, galaxies.engine.starsCollected);
+    galaxies.engine.roundScore = galaxies.utils.calculateRoundScore(rawScore, accuracy, galaxies.engine.starsCollected);
+
+    planetData.completed = true;
+    planetData.accuracy = accuracy;
+    planetData.score = galaxies.engine.roundScore;
+    planetData.starsCollected = galaxies.engine.starsCollected;
 
     galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
   }
@@ -1676,13 +1799,9 @@ galaxies.engine.skipSequence = function () {
 };
 
 galaxies.engine.endTutorial = function () {
-  if (galaxies.utils.isLocalStorageAvailable()) {
-    localStorage.completedTutorial = true;
-  }
-
   galaxies.engine.roundScore = 0;
   galaxies.engine.inTutorial = false;
-  galaxies.engine.completedTutorial = true;
+  galaxies.engine.playerData.completedTutorial = true;
   galaxies.engine.playerLife = galaxies.engine.MAX_PLAYER_LIFE;
 
   galaxies.ui.updateLife(galaxies.engine.playerLife);

@@ -34,10 +34,20 @@ window.addEventListener("load", function(event) {
   var userValues = {
     Location: urlParams.startAt || "1-1",
     ClearStorage: function () {
-      galaxies.engine.completedTutorial = false;
-
       if (galaxies.utils.isLocalStorageAvailable()) {
         localStorage.clear()
+      }
+
+        galaxies.engine.initPlayerData();
+    },
+    UnlockAll: function () {
+      var playerData = galaxies.engine.playerData,
+          i;
+
+      playerData.completedTutorial = true;
+
+      for (i = 0; i < galaxies.engine.TOTAL_PLANETS; ++i) {
+        galaxies.engine.playerData.planets[i].completed = true;
       }
     },
     Pluto: function() { setLevel(1); },
@@ -116,7 +126,10 @@ window.addEventListener("load", function(event) {
 
   locationController.onChange(galaxies.debug.changeLocation);
 
-  datgui.add(userValues, "ClearStorage");
+  var storage = datgui.addFolder("Storage");
+
+  storage.add(userValues, "ClearStorage");
+  storage.add(userValues, "UnlockAll");
 
   var planets = datgui.addFolder("Planets");
 
