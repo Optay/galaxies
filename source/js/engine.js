@@ -120,6 +120,8 @@ galaxies.engine.LEVEL_TIME = 15;
 galaxies.engine.levelComplete = false;
 galaxies.engine.levelRunning = false;
 
+galaxies.engine.timeouts = {};
+
 galaxies.engine.obstacleTypes = ['asteroid',
                                  'asteroidice',
                                  'asteroidrad',
@@ -546,7 +548,7 @@ galaxies.engine.initScene = function() {
       age: Math.random() * 10
     });
   }
-  
+
   galaxies.engine.renderer = new THREE.WebGLRenderer({alpha: true, preserveDrawingBuffer: true});
   galaxies.engine.renderer.setPixelRatio( window.devicePixelRatio );
   galaxies.engine.renderer.setSize( galaxies.engine.canvasWidth, galaxies.engine.canvasHeight );
@@ -712,6 +714,8 @@ galaxies.engine.restartGame = function() {
 }
 
 galaxies.engine.initLevel = function() {
+  galaxies.engine.timeouts.initLevel = null;
+
   galaxies.engine.levelTimer = 0;
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
@@ -814,7 +818,14 @@ galaxies.engine.nextLevel = function() {
     galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
   }
 
-  setTimeout(function () {
+  if (galaxies.engine.timeouts.nextLevelTimeout != null) {
+    clearTimeout(galaxies.engine.timeouts.nextLevelTimeout);
+  }
+
+
+  galaxies.engine.timeouts.nextLevelTimeout = setTimeout(function () {
+    galaxies.engine.timeouts.nextLevelTimeout = null;
+
     if ( galaxies.engine.roundNumber == 1 ) {
       galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
 
@@ -1015,7 +1026,11 @@ galaxies.engine.planetMoveComplete = function() {
     loop: false
   });
 
-  setTimeout(galaxies.engine.initLevel, 750);
+  if (galaxies.engine.timeouts.initLevel != null) {
+    clearTimeout(galaxies.engine.timeouts.initLevel);
+  }
+
+  galaxies.engine.timeouts.initLevel = setTimeout(galaxies.engine.initLevel, 750);
 
   if (galaxies.engine.inTutorial) {
     galaxies.ui.startTutorial();
@@ -2097,9 +2112,9 @@ galaxies.engine.clearLevel = function() {
   galaxies.engine.endGracePeriod();
 
   galaxies.engine.levelRunning = false;
-  
+
   galaxies.generator.levelComplete();
-  
+
 }
 
 // Capture events on document to prevent ui from blocking clicks

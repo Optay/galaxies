@@ -566,7 +566,7 @@ this.galaxies.Player = function() {
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
     teleportSprite.material.opacity = 0;
-    teleportAnimator.play(-1); // negative loop count will loop indefinitely
+    teleportAnimator.play(-1); // negative loop count will loop indefinitely f
     
     // fade in and out
     createjs.Tween.removeTweens( teleportSprite.material );
