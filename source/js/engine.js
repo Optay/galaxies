@@ -120,8 +120,6 @@ galaxies.engine.LEVEL_TIME = 15;
 galaxies.engine.levelComplete = false;
 galaxies.engine.levelRunning = false;
 
-galaxies.engine.timeouts = {};
-
 galaxies.engine.obstacleTypes = ['asteroid',
                                  'asteroidice',
                                  'asteroidrad',
@@ -721,8 +719,6 @@ galaxies.engine.restartGame = function() {
 }
 
 galaxies.engine.initLevel = function() {
-  galaxies.engine.timeouts.initLevel = null;
-
   galaxies.engine.levelTimer = 0;
   galaxies.engine.levelComplete = false;
   galaxies.engine.levelRunning = true;
@@ -825,26 +821,23 @@ galaxies.engine.nextLevel = function() {
     galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
   }
 
-  if (galaxies.engine.timeouts.nextLevelTimeout != null) {
-    clearTimeout(galaxies.engine.timeouts.nextLevelTimeout);
-  }
+  createjs.Tween.removeTweens(galaxies.engine.roundNumber);
 
+  createjs.Tween.get(galaxies.engine.roundNumber)
+      .wait(galaxies.engine.roundNumber == 1 ? 6000 : 0)
+      .call(function () {
+          if ( galaxies.engine.roundNumber == 1 ) {
+              galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
 
-  galaxies.engine.timeouts.nextLevelTimeout = setTimeout(function () {
-    galaxies.engine.timeouts.nextLevelTimeout = null;
+              galaxies.ui.updateScore(galaxies.engine.score);
 
-    if ( galaxies.engine.roundNumber == 1 ) {
-      galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
-
-      galaxies.ui.updateScore(galaxies.engine.score);
-
-      galaxies.engine.initRootRotation();
-      galaxies.engine.planetTransition();
-      galaxies.ui.clearLevelResults();
-    } else {
-      galaxies.engine.initLevel();
-    }
-  }, galaxies.engine.roundNumber == 1 ? 6000 : 0);
+              galaxies.engine.initRootRotation();
+              galaxies.engine.planetTransition();
+              galaxies.ui.clearLevelResults();
+          } else {
+              galaxies.engine.initLevel();
+          }
+      });
 };
 
 galaxies.engine.updateBackgroundPlanet = function() {
@@ -945,8 +938,8 @@ galaxies.engine.planetTransition = function() {
     });
     
     // 1500 is the teleport time as defined in FX and foolishly inaccessible.
-    createjs.Tween.removeTweens( galaxies.engine.player.sprite );
-    createjs.Tween.get( galaxies.engine.player.sprite )
+    createjs.Tween.removeTweens( galaxies.engine.planet );
+    createjs.Tween.get( galaxies.engine.planet )
       .wait(1500)
       .call( galaxies.engine.startPlanetMove, null, this );
   } else {
@@ -1008,7 +1001,9 @@ galaxies.engine.startPlanetMove = function() {
   createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
   createjs.Tween.get( galaxies.engine.rootObject.rotation )
     .to({x:targetX}, transitionTimeMilliseconds, createjs.Ease.quadInOut )
-    .call(galaxies.engine.planetMoveComplete);
+    .call(galaxies.engine.planetMoveComplete)
+    .wait(750)
+    .call(galaxies.engine.initLevel);
   
   // Stop drifting in the x-axis to prevent drift rotation from countering transition.
   // This ensures planet will move off-screen during transition.
@@ -1032,12 +1027,6 @@ galaxies.engine.planetMoveComplete = function() {
     baseVolume: 10,
     loop: false
   });
-
-  if (galaxies.engine.timeouts.initLevel != null) {
-    clearTimeout(galaxies.engine.timeouts.initLevel);
-  }
-
-  galaxies.engine.timeouts.initLevel = setTimeout(galaxies.engine.initLevel, 750);
 
   if (galaxies.engine.inTutorial) {
     galaxies.ui.startTutorial();
@@ -2003,10 +1992,8 @@ galaxies.engine.gameOver = function( isWin ) {
   galaxies.engine.score = galaxies.engine.previousTotal + galaxies.engine.roundScore;
   bonusScore = galaxies.engine.roundScore - rawScore;
 
-  setTimeout(function () {
-    galaxies.ui.updateScore(galaxies.engine.score);
-  }, 2000);
-  
+  createjs.Tween.get(galaxies.engine.roundScore).wait(2000).call(galaxies.ui.updateScore, [galaxies.engine.score]);
+
   if ( isWin ) {
     galaxies.ui.showGameOver( isWin, galaxies.engine.score, bonusScore, accuracy );
   } else {
@@ -2111,6 +2098,12 @@ galaxies.engine.resetGame = function() {
   
 }
 galaxies.engine.clearLevel = function() {
+  createjs.Tween.removeTweens( galaxies.engine.camera.position );
+  createjs.Tween.removeTweens( galaxies.engine.planet );
+  createjs.Tween.removeTweens( galaxies.engine.planet.position );
+  createjs.Tween.removeTweens( galaxies.engine.bgPlanet.scale );
+  createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
+
   // Deactivate active obstacles and put them in the pool
   for( var i=0, len = galaxies.engine.obstacles.length; i<len; i++ ) {
     var obstacle = galaxies.engine.obstacles[i];
@@ -2196,8 +2189,8 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   
   divElem.style.top = (screenPos.y - 40) + 'px'; // animate
   divElem.style.opacity = 0;
-  
-  window.setTimeout( galaxies.engine.removeCombo, 2000, divElem );
+
+  divElem.addEventListener("transitionend", galaxies.engine.removeCombo);
 
   if (galaxies.engine.inTutorial) {
     if (galaxies.engine.timeDilation < 1) {
@@ -2228,9 +2221,9 @@ galaxies.engine.showCombo = function( value, multiplier, obj ) {
   
 }
 
-galaxies.engine.removeCombo = function( element ) {
-  element.remove();
-}
+galaxies.engine.removeCombo = function(event) {
+  event.target.remove();
+};
 
 
 

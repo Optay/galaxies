@@ -343,9 +343,7 @@ var galaxies;
                 galaxies.engine.rootObject.add(FX.fireworksSparkleGroup.mesh);
             }
             FX.fireworksExplodeGroup.triggerPoolEmitter(1, position);
-            setTimeout(function () {
-                FX.fireworksSparkleGroup.triggerPoolEmitter(1, position);
-            }, 700);
+            createjs.Tween.get(FX.fireworksExplodeGroup).wait(700).call(FX.fireworksSparkleGroup.triggerPoolEmitter, [1, position]);
         };
         FX.ShowHeartLoss = function (angle) {
             if (!FX.heartSprite) {
