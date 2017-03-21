@@ -43,7 +43,9 @@ var galaxies;
             });
             FX.activeRubble = [];
             FX.particleGroups.forEach(function (particleGroup) {
-                // TODO
+                particleGroup.emitters.forEach(function (emitter) {
+                    emitter.disable();
+                });
             });
             if (galaxies.passes.warpBubble) {
                 FX.HideWarpBubble();

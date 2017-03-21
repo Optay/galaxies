@@ -90,14 +90,8 @@ this.galaxies.Player = function() {
   var teleportingClone = false;
   var spinningOutClone = false;
   
-  var teleportMaterial = new THREE.SpriteMaterial({
-    map: baseTeleportMap,
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.0
-  } );
-  teleportSprite = new THREE.Sprite( teleportMaterial );
-  teleportSprite.position.z = 0.1; // must appear in front of base character sprite
+  teleportSprite = galaxies.utils.makeSprite(baseTeleportMap);
+  teleportSprite.position.z = 0.01; // must appear in front of base character sprite
 
   characters['golden'] = {
     map: goldenMap,
@@ -125,41 +119,19 @@ this.galaxies.Player = function() {
   
   // CHARACTER SPRITE
   var activeAnimator = baseAnimator;
-  /*var characterMaterial = new THREE.SpriteMaterial({
-    map: characterMap,
-    color: 0xffffff,
-    transparent: true,
-    opacity: 1.0
-  } );*/
-  //var characterMaterial = new THREE.SpriteMaterial( { color: 0xffffff } );
-  //var character = new THREE.Sprite( characterMaterial );
   var character = galaxies.utils.makeSprite("lux");
   characterRotator.add( character );
+  character.material.opacity = 0;
 
-  var characterShadowMap = new THREE.Texture(galaxies.queue.getResult("charactershadow"));
-  characterShadowMap.needsUpdate = true;
-
-  var characterShadowMaterial = new THREE.SpriteMaterial({
-      map: characterShadowMap,
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0
-  });
-  var characterShadow = new THREE.Sprite(characterShadowMaterial);
-  characterShadow.scale.set(2.22, 2.22);
+  var characterShadow = galaxies.utils.makeSprite("charactershadow");
+  characterShadow.scale.set(2.22, 2.22, 2.22);
   characterShadow.position.setZ(-0.01);
 
   characterRotator.add(characterShadow);
 
   
   // CLONE SPRITE
-  var cloneMaterial = new THREE.SpriteMaterial({
-    map: cloneMap,
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0
-  } );
-  var clone = new THREE.Sprite( cloneMaterial );
+  var clone = new galaxies.utils.makeSprite(cloneMap);
   var cloneRotator = new THREE.Object3D();
   var cloneScale = cloneAspectRatio * galaxies.engine.CHARACTER_HEIGHT;
   clone.position.set( 0, galaxies.engine.CHARACTER_POSITION, 0 );
@@ -167,26 +139,14 @@ this.galaxies.Player = function() {
 
   cloneRotator.add(clone);
 
-  var cloneShadowMaterial = new THREE.SpriteMaterial({
-      map: characterShadowMap,
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0
-  });
-  var cloneShadow = new THREE.Sprite(cloneShadowMaterial);
-  cloneShadow.scale.set(2.22, 2.22);
+  var cloneShadow = galaxies.utils.makeSprite("charactershadow");
+  cloneShadow.scale.set(2.22, 2.22, 2.22);
   cloneShadow.position.setZ(-0.01);
 
   cloneRotator.add(cloneShadow);
   
-  var cloneTeleportMaterial = new THREE.SpriteMaterial({
-    map: cloneTeleportMap,
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.0
-  } );
-  var cloneTeleportSprite = new THREE.Sprite( cloneTeleportMaterial );
-  cloneTeleportSprite.position.z = 0.1; // must appear in front of base character sprite
+  var cloneTeleportSprite = new galaxies.utils.makeSprite( cloneTeleportMap );
+  cloneTeleportSprite.position.z = 0.01; // must appear in front of base character sprite
 
   // Clone AI data
   var cloneAIData = {
@@ -561,6 +521,12 @@ this.galaxies.Player = function() {
   
   var teleportOut = function() {
     galaxies.ui.hideReticle();
+
+    if (character.material.opacity === 0)
+    {
+        return;
+    }
+
     teleporting = true;
     
     character.add( teleportSprite );
@@ -584,7 +550,7 @@ this.galaxies.Player = function() {
   }
   
   var teleportOutClone = function( callback ) {
-    if ( cloneRotator.parent !== null ) {
+    if ( cloneRotator.parent !== null && (clone.material.opacity > 0)) {
       teleportingClone = true;
       
       clone.add( cloneTeleportSprite );
@@ -626,6 +592,10 @@ this.galaxies.Player = function() {
   }
   
   var teleportIn = function( callback ) {
+    if (teleporting || (character.material.opacity > 0)) {
+        return;
+    }
+
     galaxies.ui.showReticle();
     character.add( teleportSprite );
     teleportSprite.material.rotation = character.material.rotation;
@@ -642,9 +612,12 @@ this.galaxies.Player = function() {
       .call( teleportEffectComplete, this )
       .call( callback, this );
 
-      createjs.Tween.removeTweens(characterShadow.material);
-      createjs.Tween.get(characterShadow.material)
-          .to({opacity: 1}, TELEPORT_TIME_HALF_MS);
+    createjs.Tween.removeTweens(characterShadow.material);
+    createjs.Tween.get(characterShadow.material)
+        .to({opacity: 1}, TELEPORT_TIME_HALF_MS)
+        .call(function () {
+            console.log(characterShadow.position, characterShadow.material.opacity, cloneRotator.position);
+        });
       
     teleporting = true;
     
@@ -655,6 +628,11 @@ this.galaxies.Player = function() {
   }
   
   var teleportInClone = function() {
+    if (teleportingClone || (clone.material.opacity > 0))
+    {
+        return;
+    }
+
     teleportingClone = true;
 
     clone.add( cloneTeleportSprite );

@@ -383,8 +383,8 @@ galaxies.utils.generateSpriteFrames = function (startPoint, frameSize, texSize, 
     return frames;
 };
 
-galaxies.utils.makeSprite = function (texName, transparent, depthTest, depthWrite) {
-    var tex = new THREE.Texture(galaxies.queue.getResult(texName)),
+galaxies.utils.makeSprite = function (texOrName, transparent, depthTest, depthWrite) {
+    var tex = (typeof(texOrName) === "string") ? new THREE.Texture(galaxies.queue.getResult(texOrName)) : texOrName,
         mat = new THREE.MeshBasicMaterial({
             map: tex,
             transparent: typeof transparent === "boolean" ? transparent  : true,

@@ -161,7 +161,7 @@ galaxies.engine.CONE_ANGLE = 15 * Math.PI/360;//11.4 * Math.PI/360; // Half-angl
 galaxies.engine.CAMERA_DISTANCES = [30, 40, 50, 50];
 galaxies.engine.CAMERA_Z = galaxies.engine.CAMERA_DISTANCES[0]; // 40 is original value
 
-galaxies.engine.CAMERA_VIEW_ANGLE = 45; // Will be applied to smallest screen dimension, horizontal or vertical. TODO
+galaxies.engine.CAMERA_VIEW_ANGLE = 45; // Will be applied to smallest screen dimension, horizontal or vertical.
 galaxies.engine.ROUNDS_PER_PLANET = 4; // 3
 
 galaxies.engine.PLANET_DISTANCE = 1.25;
@@ -258,6 +258,13 @@ galaxies.engine.ensureCanvasSize = function() {
   galaxies.engine.canvasHalfHeight = height / 2;
 
   galaxies.engine.camera.aspect = width / height;
+
+  if (width < height) {
+    galaxies.engine.camera.fov = galaxies.engine.CAMERA_VIEW_ANGLE / galaxies.engine.camera.aspect;
+  } else {
+    galaxies.engine.camera.fov = galaxies.engine.CAMERA_VIEW_ANGLE;
+  }
+
   galaxies.engine.camera.updateProjectionMatrix();
 
   galaxies.engine.renderer.setSize( width, height );
@@ -1878,7 +1885,7 @@ galaxies.engine.collide = function( obsA, obsB ) {
 // Randomize the drift rotation
 galaxies.engine.initRootRotation = function() {
   galaxies.engine.driftAxis = new THREE.Vector3( Math.random()*2-1, Math.random()*2-1, Math.random()*2-1);
-  galaxies.engine.driftAxis.normalize;
+  galaxies.engine.driftAxis.normalize();
   
 }
 
@@ -1926,8 +1933,13 @@ galaxies.engine.hitShield = function (damage) {
 };
 
 galaxies.engine.endGracePeriod = function() {
-  galaxies.engine.isGracePeriod = false;
-  galaxies.engine.player.sprite.material.opacity = 1;
+  if (galaxies.engine.isGracePeriod) {
+    galaxies.engine.isGracePeriod = false;
+
+    if (galaxies.engine.player.sprite.material.opacity !== 0) {
+      galaxies.engine.player.sprite.material.opacity = 1;
+    }
+  }
 }
 
 
@@ -2105,6 +2117,11 @@ galaxies.engine.clearLevel = function() {
       obstacle.deactivate();
     galaxies.engine.obstaclePool[obstacle.type].push(obstacle);
   }
+
+  galaxies.engine.powerupCapsules.forEach(function (capsule) {
+      capsule.clear();
+  });
+
   galaxies.engine.obstacles = [];
   
   galaxies.engine.ufo.deactivate();
@@ -2307,7 +2324,7 @@ galaxies.engine.addPowerup = function (powerupType) {
     galaxies.engine.shownPowerups.push(powerupType);
   }
 
-  galaxies.engine.powerupCount++;
+  ++galaxies.engine.powerupCount;
 
   galaxies.engine.powerupCapsules.push(new galaxies.Capsule(powerupType));
 };

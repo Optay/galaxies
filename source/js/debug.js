@@ -50,28 +50,16 @@ window.addEventListener("load", function(event) {
         galaxies.engine.playerData.planets[i].completed = true;
       }
     },
-    Pluto: function() { setLevel(1); },
-    Neptune: function() { setLevel(1 + galaxies.engine.ROUNDS_PER_PLANET); },
-    Uranus: function() { setLevel(1 + 2 * galaxies.engine.ROUNDS_PER_PLANET); },
-    Saturn: function() { setLevel(1 + 3 * galaxies.engine.ROUNDS_PER_PLANET); },
-    Jupiter: function() { setLevel(1 + 4 * galaxies.engine.ROUNDS_PER_PLANET); },
-    Mars: function() { setLevel(1 + 5 * galaxies.engine.ROUNDS_PER_PLANET); },
-    Earth: function() { setLevel(1 + 6 * galaxies.engine.ROUNDS_PER_PLANET); },
-    Round2: function () {
-      galaxies.engine.levelNumber += 2 - galaxies.engine.roundNumber;
-      galaxies.engine.clearLevel();
-      galaxies.engine.initLevel();
-    },
-    Round3: function() {
-      galaxies.engine.levelNumber += 3 - galaxies.engine.roundNumber;
-      galaxies.engine.clearLevel();
-      galaxies.engine.initLevel();
-    },
-    BossRound: function() {
-      galaxies.engine.levelNumber += 4 - galaxies.engine.roundNumber;
-      galaxies.engine.clearLevel();
-      galaxies.engine.initLevel();
-    },
+    Pluto: function() { setPlanet(0); },
+    Neptune: function() { setPlanet(1); },
+    Uranus: function() { setPlanet(2); },
+    Saturn: function() { setPlanet(3); },
+    Jupiter: function() { setPlanet(4); },
+    Mars: function() { setPlanet(5); },
+    Earth: function() { setPlanet(6); },
+    Round2: function () { setRound(2); },
+    Round3: function() { setRound(3); },
+    BossRound: function() { setRound(4); },
     Clone: function() { galaxies.engine.setPowerup('clone'); },
     Spread: function() { galaxies.engine.setPowerup('spread'); },
     Golden: function() { galaxies.engine.setPowerup('golden'); },
@@ -185,12 +173,19 @@ window.addEventListener("load", function(event) {
     galaxies.engine.invulnerable = newValue;
   });
 
-  function setLevel( newLevel ) {
-    galaxies.engine.levelNumber = newLevel;
+  function setPlanet( planetNumber ) {
+    galaxies.engine.levelNumber = 1 + planetNumber * galaxies.engine.ROUNDS_PER_PLANET;
     
     galaxies.engine.clearLevel();
     galaxies.engine.initRootRotation();
     galaxies.engine.planetTransition();
+  }
+
+  function setRound( round ) {
+      galaxies.engine.levelNumber += round - galaxies.engine.roundNumber;
+
+      galaxies.engine.clearLevel();
+      galaxies.engine.initLevel();
   }
 
   if (isDev) {
