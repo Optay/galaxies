@@ -825,9 +825,9 @@ galaxies.engine.nextLevel = function() {
     galaxies.ui.showLevelResults(galaxies.engine.roundScore - rawScore, accuracy);
   }
 
-  createjs.Tween.removeTweens(galaxies.engine.roundNumber);
+  createjs.Tween.removeTweens(galaxies.engine.bgPlanet);
 
-  createjs.Tween.get(galaxies.engine.roundNumber)
+  createjs.Tween.get(galaxies.engine.bgPlanet)
       .wait(galaxies.engine.roundNumber == 1 ? 6000 : 0)
       .call(function () {
           if ( galaxies.engine.roundNumber == 1 ) {
