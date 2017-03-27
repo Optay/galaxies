@@ -99,13 +99,11 @@
 
 .play-button {
   @extend .large-button;
-  
+
+  display: inline-block;
   position: relative;
-  left: $large-button-size/2;
-  top: $large-button-size/2;
-  -webkit-transform: translateX( -50% ) translateY(-50%);
-  transform: translateX( -50% ) translateY(-50%);
-  
+  margin: 0 4px;
+
   background-image: url('../images/interface/button_play_large.png');
 }
 .play-button:hover {
@@ -159,14 +157,18 @@
 .restart-button:hover {
   background-image: url('../images/interface/button_replay_large_rollover.png');
 }
-.quit-button {
+.quit-button, .return-home-button {
   @extend .large-button;
   @extend .bottomed;
 
   background-image: url('../images/interface/button_home_large.png');
 }
-.quit-button:hover {
+.quit-button:hover, .return-home-button:hover {
   background-image: url('../images/interface/button_home_large_rollover.png');
+}
+
+.return-home-button {
+  left: 0;
 }
 
 /* positioning */
@@ -241,4 +243,59 @@
   margin: auto;
   background-size: 100%;
   background-image: url('../images/interface/button_touch_to_start_large.png');
+}
+
+.material-button {
+  color: #8CC1E6;
+  cursor: pointer;
+  border: 10px solid;
+  border-radius: 50%;
+  font-size: 48px;
+  margin: 0 4px;
+  padding: 12px;
+  vertical-align: top;
+}
+
+.material-button:hover {
+  color: white;
+}
+
+.level-select-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: 90%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.planet-button {
+  color: #8CC1E6;
+  display: inline-block;
+  text-align: center;
+  font-size: 48px;
+  position: relative;
+  margin: 12px;
+  border: 8px solid;
+  border-radius: 24px;
+
+  &.active {
+    cursor: pointer;
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  & .lock {
+    color: grey;
+    font-size: 48px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+  }
+}
+
+.planet-button-text {
+  margin: 0 12px;
 }

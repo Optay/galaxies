@@ -9,7 +9,6 @@ this.galaxies = this.galaxies || {};
 galaxies.TitleSequence = function() {
   
   var titleTransition = function() {
-    
     // spin wheel
     createjs.Tween.removeTweens( titleHub.rotation );
     createjs.Tween.get( titleHub.rotation )
@@ -181,8 +180,7 @@ galaxies.TitleSequence = function() {
     titleHub.rotateOnAxis( titleRotationAxis, titleStartAngle );
     
     currentTitleIndex = 0;
-    updateTitleSprite();
-    checkTitleSequence.call(this); // need context in order to set tweens on the titleSequence object
+    showTitleElements.call(this);
    
     if ( titleFrameRequest == null ) {
       animateTitle();
@@ -193,9 +191,6 @@ galaxies.TitleSequence = function() {
     
   }
 
-
-  
-  
   var deactivate = function() {
     //galaxies.engine.composerStack.enablePass(galaxies.passes.indexes.bloom);
 
@@ -213,6 +208,24 @@ galaxies.TitleSequence = function() {
     createjs.Tween.removeTweens( galaxies.engine.rootObject.rotation );
     createjs.Tween.removeTweens( whooshObject.position );
   }
+
+  var hideTitleElements = function () {
+    titleRoot.visible = false;
+
+    createjs.Tween.removeTweens(this);
+    createjs.Tween.removeTweens(whooshObject);
+    createjs.Tween.removeTweens(titleHub.rotation);
+    createjs.Tween.removeTweens(titlePivot.rotation);
+    createjs.Tween.removeTweens(galaxies.engine.rootObject.rotation);
+    createjs.Tween.removeTweens(whooshObject.position);
+  };
+
+  var showTitleElements = function () {
+    titleRoot.visible = true;
+
+    updateTitleSprite();
+    checkTitleSequence.call(this); // need context in order to set tweens on the titleSequence object
+  };
 
   var animateTitle = function() {
     galaxies.engine.ensureCanvasSize();
@@ -244,7 +257,9 @@ galaxies.TitleSequence = function() {
   
   return {
     activate: activate,
-    deactivate: deactivate
+    deactivate: deactivate,
+    hideTitleElements: hideTitleElements,
+    showTitleElements: showTitleElements
   };
   
 };

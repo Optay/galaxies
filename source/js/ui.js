@@ -15,6 +15,12 @@ galaxies.ui = (function() {
   var loadRing = uiHolder.querySelector(".progress-ring");
   var playHolder = uiHolder.querySelector(".play-place");
   var playButton = uiHolder.querySelector(".play-button");
+  var levelSelectButton = uiHolder.querySelector(".level-select-button");
+
+  // level select elements
+  var levelSelectHolder = uiHolder.querySelector(".level-select");
+  var planetSelectButtons = [];
+  var returnToHome = uiHolder.querySelector(".return-home-button");
   
   // recommend buttons
   var recommendSafari = loadingHolder.querySelector(".recommend-safari");
@@ -120,17 +126,24 @@ galaxies.ui = (function() {
 /*      logo.style.width = 0;
       logo.style.height = 0;
       createjs.Tween.get(logo).to({width: 141, height:93 }, 500);*/
-    }    
+    }
 
-    
-    
-      
     // hook button elements
     playButton.addEventListener('click', onClickPlay );
     playButton.addEventListener('mouseover', onOverButton);
     playButton.addEventListener('touchstart', onClickPlay );
     playButton.addEventListener('touchstart', blockEvent );
-    
+
+    levelSelectButton.addEventListener('click', onClickLevelSelect);
+    levelSelectButton.addEventListener('mouseover', onOverButton);
+    levelSelectButton.addEventListener('touchstart', onClickLevelSelect);
+    levelSelectButton.addEventListener('touchstart', blockEvent);
+
+    returnToHome.addEventListener('click', onReturnHomeSelect);
+    returnToHome.addEventListener('mouseover', onOverButton);
+    returnToHome.addEventListener('touchstart', onReturnHomeSelect);
+    returnToHome.addEventListener('touchstart', blockEvent);
+
     muteButton.addEventListener('click', onClickMute );
     muteButton.addEventListener('mousedown', blockEvent );
     muteButton.addEventListener('mouseover', onOverButton);
@@ -186,7 +199,50 @@ galaxies.ui = (function() {
     
     // set background animation keyframe based on window size
     // update this when window is resized
-  }
+  };
+
+  var initLevelSelect = function () {
+      var buttonContainer = document.createElement("div"),
+          planetButton, planetText, overlay, lockIcon;
+
+      buttonContainer.className = "level-select-container";
+
+      for (var p = 0; p < galaxies.engine.TOTAL_PLANETS; ++p) {
+          planetButton = document.createElement("div");
+          planetButton.className = "planet-button";
+          planetButton.dataset.planet = p;
+
+          planetText = document.createElement("span");
+          planetText.className = "planet-button-text";
+          planetText.innerText = galaxies.resources.planetData[p].name;
+
+          overlay = document.createElement("div");
+          overlay.className = "fullscreen";
+
+          lockIcon = document.createElement("i");
+          lockIcon.innerHTML = "lock";
+          lockIcon.className = "material-icons lock";
+
+          overlay.appendChild(lockIcon);
+          planetButton.appendChild(planetText);
+          planetButton.appendChild(overlay);
+          buttonContainer.appendChild(planetButton);
+
+          planetButton.addEventListener("click", onPlanetSelect);
+          planetButton.addEventListener("mouseover", onOverPlanetButton);
+          planetButton.addEventListener("touchstart", onPlanetSelect);
+          planetButton.addEventListener("touchstart", blockEvent);
+
+          planetSelectButtons.push({
+              button: planetButton,
+              text: planetText,
+              overlay: overlay,
+              lock: lockIcon
+          });
+      }
+
+      levelSelectHolder.appendChild(buttonContainer);
+  };
   
   var startLoad = function() {
     
@@ -254,6 +310,7 @@ galaxies.ui = (function() {
     galaxies.audio.soundField.volume = 0.08; // 0.24
     
     // Hide loading logo
+    loadingLogo.classList.remove('hidden');
     loadingLogo.classList.add('fade-out');
     // Initialize the 3D scene
     galaxies.engine.initScene();
@@ -313,6 +370,7 @@ galaxies.ui = (function() {
     loadRing.classList.add("hidden");
     
     playButton.classList.remove("hidden");
+    levelSelectButton.classList.remove("hidden");
   }
   
   var showMenu = function() {
@@ -434,7 +492,7 @@ galaxies.ui = (function() {
 
     hideReticle();
 
-    setTimeout(function() {
+    requestAnimationFrame(function() {
       resultTitle.innerHTML = galaxies.ui.levelClearText || "MOON DEFENDED";
       resultTitle.classList.add("level-done-title-on");
 
@@ -443,10 +501,11 @@ galaxies.ui = (function() {
       for (var i = 0; i < 3; ++i) {
         scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
       }
-    }, 17);
+    });
 
     title.classList.remove("hidden");
 
+      // TODO: Remove setTimeout?
     setTimeout(function () {showRoundScore(bonusScore, roundAccuracy);}, 1600)
   };
 
@@ -459,6 +518,7 @@ galaxies.ui = (function() {
       star.classList.remove("empty");
     }
 
+      // TODO: Remove setTimeout?
     setTimeout(function () {
       var tween = createjs.Tween.get(star, {override: true})
           .to({x: 10}, 1000);
@@ -500,6 +560,7 @@ galaxies.ui = (function() {
       bonusElem.innerHTML = galaxies.utils.addCommas(interimScore);
     });
 
+      // TODO: Remove setTimeout?
     setTimeout(function () {
       accTitle.classList.add("acc-title-on");
 
@@ -521,6 +582,7 @@ galaxies.ui = (function() {
     levelResults.classList.add("fade");
     title.classList.remove("title-on");
 
+      // TODO: Remove setTimeout?
     setTimeout(function () {
       clearTitle();
       levelResults.classList.add("hidden");
@@ -559,7 +621,64 @@ galaxies.ui = (function() {
       galaxies.engine.initGame();
     }
   }
-  
+
+  var onClickLevelSelect = function (e) {
+    e.preventDefault();
+
+    loadingHolder.classList.add('hidden');
+    loadingLogo.classList.add('hidden');
+    titleSequence.hideTitleElements();
+
+    var playerPlanetData = galaxies.engine.playerData.planets;
+
+    planetSelectButtons.forEach(function(item, index) {
+      if (index === 0 || playerPlanetData[index - 1].completed) {
+        item.overlay.classList.add("hidden");
+        item.button.classList.add("active");
+      } else {
+        item.overlay.classList.remove("hidden");
+        item.button.classList.remove("active");
+      }
+    });
+
+    levelSelectHolder.classList.remove('hidden');
+  };
+
+  var onReturnHomeSelect = function(e) {
+    e.preventDefault();
+
+    levelSelectHolder.classList.add('hidden');
+
+    loadingHolder.classList.remove('hidden');
+    titleSequence.showTitleElements();
+  };
+
+  var onPlanetSelect = function (e) {
+    var planet = parseInt(e.currentTarget.dataset.planet);
+
+    if (planet === 0 || galaxies.engine.playerData.planets[planet - 1].completed) {
+      levelSelectHolder.classList.add('hidden');
+      titleSequence.deactivate();
+
+      inGameHolder.classList.remove('hidden');
+      showPauseButton();
+
+      showReticle();
+
+      if ( galaxies.engine.gameInitialized ) {
+        galaxies.engine.restartGame(planet);
+      } else {
+        galaxies.engine.initGame(planet);
+      }
+    }
+  };
+
+  var onOverPlanetButton = function (e) {
+    if (e.target.classList.contains("active")) {
+      onOverButton(e);
+    }
+  };
+
   var onClickMute = function(e) {
     e.preventDefault();
     
@@ -809,14 +928,15 @@ galaxies.ui = (function() {
   var showSkipButton = function () {
     skipSequenceButton.classList.remove("hidden");
 
-    setTimeout(function () {
+    requestAnimationFrame(function () {
       skipSequenceButton.classList.remove("invisible");
-    }, 17);
+    });
   };
 
   var hideSkipButton = function () {
     skipSequenceButton.classList.add("invisible");
 
+      // TODO: Remove setTimeout?
     setTimeout(function () {
       skipSequenceButton.classList.add("hidden");
     }, 500);
@@ -899,6 +1019,7 @@ galaxies.ui = (function() {
 
   return {
     init: init,
+    initLevelSelect: initLevelSelect,
     levelClearText: null,
     gameContainer: gameContainer,
     showMenu: showMenu,

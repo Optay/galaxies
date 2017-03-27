@@ -390,7 +390,7 @@ galaxies.engine.initAllPlanetsData = function (playerData, storageAvailable) {
 };
 
 galaxies.engine.initPlanetData = function (playerData, planet, storageAvailable) {
-  var storageKeyBase = "playerData.planets." + planet+ '.',
+  var storageKeyBase = "playerData.planets." + planet + '.',
       data = {
         _completed: false,
         _accuracy: 0,
@@ -451,7 +451,7 @@ galaxies.engine.initPlanetData = function (playerData, planet, storageAvailable)
 
   if (storageAvailable)
   {
-    data._completed = localStorage.getItem(storageKeyBase + "completed") || false;
+    data._completed = (localStorage.getItem(storageKeyBase + "completed") === "true") || false;
 
     if (data._completed) {
       data._accuracy = localStorage.getItem(storageKeyBase + "accuracy") || 0;
@@ -463,15 +463,11 @@ galaxies.engine.initPlanetData = function (playerData, planet, storageAvailable)
   playerData.planets[planet] = data;
 };
 
-galaxies.engine.loadPlayerData = function() {
-  //
-};
-
 // Create 3D scene, camera, light, skybox
 galaxies.engine.initScene = function() {
   
   galaxies.resources = new galaxies.Resources();
-  
+  galaxies.ui.initLevelSelect();
   
   galaxies.engine.container = document.getElementById( 'container' );
 
@@ -605,7 +601,7 @@ galaxies.engine.initScene = function() {
   //
 }
 
-galaxies.engine.initGame = function() {
+galaxies.engine.initGame = function(startAtPlanet) {
   
   galaxies.engine.planet = new THREE.Mesh( galaxies.resources.geometries['moon'], galaxies.resources.materials['moon'] );
   galaxies.engine.rootObject.add( galaxies.engine.planet );
@@ -647,7 +643,7 @@ galaxies.engine.initGame = function() {
 
   galaxies.engine.fillPools();
 
-  galaxies.engine.startGame();
+  galaxies.engine.startGame(startAtPlanet);
 } // initGame
 
 galaxies.engine.fillPools = function () {
@@ -663,7 +659,7 @@ galaxies.engine.fillPools = function () {
 };
 
 
-galaxies.engine.startGame = function() {
+galaxies.engine.startGame = function(startAtPlanet) {
   // There can be only one!
   galaxies.engine.ufo = new galaxies.Ufo();
 
@@ -674,22 +670,27 @@ galaxies.engine.startGame = function() {
     galaxies.engine.inTutorial = true;
   }
 
+  var levelSupplied = typeof(startAtPlanet) === "number";
+
+  if (hasStartPoint && !levelSupplied) {
+    galaxies.debug.changeLocation(urlParams.startAt);
+  } else {
+      galaxies.engine.levelNumber = levelSupplied ?
+          (startAtPlanet * galaxies.engine.ROUNDS_PER_PLANET + 1) : galaxies.engine.START_LEVEL_NUMBER;
+  }
+
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
   galaxies.engine.planetTransition();
 
   galaxies.engine.gameInitialized = true;
-  
+
   if ( galaxies.engine.animationFrameRequest == null ) {
     galaxies.engine.animate();
   }
-
-  if (hasStartPoint) {
-    galaxies.debug.changeLocation(urlParams.startAt);
-  }
 }
 
-galaxies.engine.restartGame = function() {
+galaxies.engine.restartGame = function(startAtPlanet) {
   galaxies.ui.showPauseButton(); // is hidden by game over menu
   
   // Add character holder.
@@ -704,6 +705,9 @@ galaxies.engine.restartGame = function() {
           galaxies.audio.soundField.volume = galaxies.audio.muteState === 'none' ? 0.1 : 0;
         });
   }
+
+  galaxies.engine.levelNumber = (typeof(startAtPlanet) === "number") ?
+      (startAtPlanet * galaxies.engine.ROUNDS_PER_PLANET + 1) : galaxies.engine.START_LEVEL_NUMBER;
   
   galaxies.engine.resetGame();
   galaxies.engine.removeInputListeners();
@@ -2036,7 +2040,6 @@ galaxies.engine.resetGame = function() {
   galaxies.engine.clearLevel();
 
   galaxies.engine.bossMode = false;
-  galaxies.engine.levelNumber = galaxies.engine.START_LEVEL_NUMBER;
   galaxies.engine.starsCollected = 0;
   galaxies.engine.starsCollectedRound = 0;
   galaxies.engine.stars = 0;

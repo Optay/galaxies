@@ -42,38 +42,45 @@ galaxies.Resources = function() {
   // Background Planets
   this.planetData = [];
   this.planetData[0] = {
+      name: "Pluto",
       texture: new THREE.Texture( galaxies.queue.getResult('planetpluto') ),
       scale: 0.55,
       moonColor: "#c08d9c"
   };
   this.planetData[1] = {
+      name: "Neptune",
       texture: new THREE.Texture( galaxies.queue.getResult('planetneptune') ),
       scale: 1,
       moonColor: "#f5d2c7"
   };
   this.planetData[2] = {
+      name: "Uranus",
       texture: new THREE.Texture( galaxies.queue.getResult('planeturanus') ),
       scale: 1,
       moonColor: "#7ad8ff",
       position: new THREE.Vector3(40, 90, -80)
   };
   this.planetData[3] = {
+      name: "Saturn",
       texture: new THREE.Texture( galaxies.queue.getResult('planetsaturn') ),
       scale: 1.75,
       moonColor: "#87c5af"
   };
   this.planetData[4] = {
+      name: "Jupiter",
       texture: new THREE.Texture( galaxies.queue.getResult('planetjupiter') ),
       scale: 1,
       moonColor: "#e3d781"
   };
   this.planetData[5] = {
+      name: "Mars",
       texture: new THREE.Texture( galaxies.queue.getResult('planetmars') ),
       scale: 1,
       moonColor: "#f2bbaf",
       position: new THREE.Vector3(40, 90, -80)
   };
   this.planetData[6] = {
+      name: "Earth",
       texture: new THREE.Texture( galaxies.queue.getResult('planetearth') ),
       scale: 1,
       moonColor: "#f5eae6"
