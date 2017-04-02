@@ -466,6 +466,16 @@ this.galaxies.Ufo = function() {
   }
   
   this.leave = function() {
+    if (pickupBeam.parent === this.waggler) {
+        this.waggler.remove(pickupBeam);
+    }
+
+    beamRingPool.forEach(function (ring) {
+        if (ring.sprite.parent === this.waggler) {
+            this.waggler.remove(ring.sprite);
+        }
+    }, this);
+
     if (this.commandeeredPlayer) {
       this.commandeeredPlayer = false;
 
@@ -474,14 +484,6 @@ this.galaxies.Ufo = function() {
       if (!createjs.Tween.hasActiveTweens(galaxies.engine.player.sprite.position)) {
         galaxies.engine.player.sprite.position.y = galaxies.engine.player.baseHeight;
       }
-
-      this.waggler.remove(pickupBeam);
-
-      beamRingPool.forEach(function (ring) {
-        if (ring.sprite.parent === this.waggler) {
-          this.waggler.remove(ring.sprite);
-        }
-      }, this);
     }
 
     this.state = 'out';
