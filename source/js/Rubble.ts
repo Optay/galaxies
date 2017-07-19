@@ -1,15 +1,15 @@
-/// <reference path="PoolItem.ts"/>
+/// <reference path="PoolItem.ts" />
 
 "use strict";
 
 namespace galaxies {
     export abstract class Rubble extends PoolItem {
-        public get position(): THREE.Vector3 {
+        get position(): THREE.Vector3 {
             return this.object.position;
         }
 
-        public startScale: number;
-        public velocity: THREE.Vector3;
+        startScale: number;
+        velocity: THREE.Vector3;
 
         protected object: THREE.Mesh;
 
@@ -27,7 +27,7 @@ namespace galaxies {
             this.rotationAxis = new THREE.Vector3();
         }
 
-        public Activate(maxAge: number = 1): void {
+        Activate(maxAge: number = 1): void {
             super.Activate();
 
             this.startScale = THREE.Math.randFloat(this.sourceScale / 2, this.sourceScale * 1.5);
@@ -35,7 +35,9 @@ namespace galaxies {
             this.age = 0;
 
             this.object.scale.set(this.startScale, this.startScale, this.startScale);
-            this.object.rotation.set(THREE.Math.randFloatSpread(Math.PI * 2), THREE.Math.randFloatSpread(Math.PI * 2), THREE.Math.randFloatSpread(Math.PI * 2));
+            this.object.rotation.set(THREE.Math.randFloatSpread(Math.PI * 2),
+                THREE.Math.randFloatSpread(Math.PI * 2),
+                THREE.Math.randFloatSpread(Math.PI * 2));
 
             this.velocity.set(0, 0, 0);
 
@@ -47,20 +49,20 @@ namespace galaxies {
             galaxies.engine.rootObject.add(this.object);
         }
 
-        public Deactivate() {
+        Deactivate() {
             super.Deactivate();
 
             galaxies.engine.rootObject.remove(this.object);
         }
 
-        public Update(delta: number): void {
+        Update(delta: number): void {
             if (!this.IsActive()) {
                 return;
             }
 
             this.age += delta;
 
-            let ageProgress = this.age / this.maxAge;
+            const ageProgress = this.age / this.maxAge;
 
             this.object.rotateOnAxis(this.rotationAxis, this.rotationSpeed * delta);
             this.object.position.addScaledVector(this.velocity, delta);

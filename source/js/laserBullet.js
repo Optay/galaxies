@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.LaserBullet = function () {
+galaxies.LaserBullet = function() {
     this.state = "inactive";
     this.velocity = new THREE.Vector3();
     this.isHittable = false;
@@ -12,11 +12,11 @@ galaxies.LaserBullet = function () {
 };
 
 galaxies.LaserBullet.prototype = {
-    addImpactCallback: function (callback) {
+    addImpactCallback: function(callback) {
         this.impactCallbacks.push(callback);
     },
 
-    addToScene: function (position, direction) {
+    addToScene: function(position, direction) {
         this.state = "active";
         this.isHittable = false;
 
@@ -25,12 +25,12 @@ galaxies.LaserBullet.prototype = {
         this.setStartingPosition(position, direction);
     },
 
-    impact: function (didHitPlayer) {
+    impact: function(didHitPlayer) {
         if (this.state === "inactive") {
             return;
         }
 
-        this.impactCallbacks.forEach(function (callback) {
+        this.impactCallbacks.forEach(function(callback) {
             if (typeof callback === "function") {
                 callback(didHitPlayer);
             }
@@ -41,7 +41,7 @@ galaxies.LaserBullet.prototype = {
         galaxies.FX.ShowLaserHit(this.object.position.clone().add(this.velocity.normalize().multiplyScalar(1.5)));
     },
 
-    initModel: function () {
+    initModel: function() {
         var texture = new THREE.Texture(galaxies.queue.getResult("laserbeam")),
             geometry = new THREE.PlaneGeometry(1, 0.25),
             material = new THREE.MeshBasicMaterial({
@@ -56,7 +56,7 @@ galaxies.LaserBullet.prototype = {
         this.object.scale.set(0.4, 0.4, 0.4);
     },
 
-    removeFromScene: function () {
+    removeFromScene: function() {
         galaxies.engine.planeSweep.remove(this);
 
         galaxies.engine.rootObject.remove(this.object);
@@ -64,7 +64,7 @@ galaxies.LaserBullet.prototype = {
         this.impactCallbacks = [];
     },
 
-    setStartingPosition: function (position, direction) {
+    setStartingPosition: function(position, direction) {
         var angle = Math.atan2(direction.y, direction.x);
 
         this.velocity = direction.clone().normalize().multiplyScalar(25);
@@ -74,7 +74,7 @@ galaxies.LaserBullet.prototype = {
         galaxies.utils.conify(this.object);
     },
 
-    update: function (delta) {
+    update: function(delta) {
         if (this.state === "inactive") {
             return;
         }
@@ -127,7 +127,7 @@ galaxies.LaserBullet.prototype = {
                         if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
                             this.impact(true);
 
-                            galaxies.engine.setPowerup('');
+                            galaxies.engine.setPowerup("");
                         }
                     }
                 }

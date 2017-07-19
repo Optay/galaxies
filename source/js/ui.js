@@ -1,1061 +1,1062 @@
-'use strict';
+"use strict";
 
 this.galaxies = this.galaxies || {};
 
 
 galaxies.ui = (function() {
-  // UI elements
-  var uiHolder = document.getElementById("menuHolder");
-  
-  // loading and title play button
-  var loadingHolder = uiHolder.querySelector(".loading");
-  var loadingLogo = uiHolder.querySelector(".progress-title");
-  var playSymbol = uiHolder.querySelector(".play-symbol");
-  var progressElement = uiHolder.querySelector(".progress");
-  var loadRing = uiHolder.querySelector(".progress-ring");
-  var playHolder = uiHolder.querySelector(".play-place");
-  var playButton = uiHolder.querySelector(".play-button");
-  var levelSelectButton = uiHolder.querySelector(".level-select-button");
+    // UI elements
+    var uiHolder = document.getElementById("menuHolder");
 
-  // level select elements
-  var levelSelectHolder = uiHolder.querySelector(".level-select");
-  var planetSelectButtons = [];
-  var returnToHome = uiHolder.querySelector(".return-home-button");
-  
-  // recommend buttons
-  var recommendSafari = loadingHolder.querySelector(".recommend-safari");
-  var recommendEdge = loadingHolder.querySelector(".recommend-edge");
-  
-  // audio controls
-  var audioControls = loadingHolder.querySelector(".audio-controls");
-  var stereoButton = audioControls.querySelector(".stereo-button");
-  var surroundButton = audioControls.querySelector(".surround-button");
-  
-  // mute button (always active after load)
-  var muteButton = uiHolder.querySelector(".mute-button");
-  var dolbyLogo = uiHolder.querySelector(".dolby-logo");
-  
-  // in-game elements
-  var inGameHolder = uiHolder.querySelector(".game-ui");
-  var pauseButton = uiHolder.querySelector(".pause-button");
-  var levelDisplay = inGameHolder.querySelector(".level-display-text");
-  var timerDisplay = inGameHolder.querySelector(".timer-display");
-  var lifeDisplay = inGameHolder.querySelector(".life-display");
-  var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
-  var starDisplay = inGameHolder.querySelector(".star-display");
-  var collectStars = starDisplay.querySelectorAll(".collect-star");
-  var scoreDisplay = inGameHolder.querySelector(".score-display-text");
-  var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
-  var reticle = inGameHolder.querySelector(".targeting-reticle");
-  
-  // tutorial item
-  var interactMessage = null;
-  var interactCircle = null;
-  var skipSequenceButton = uiHolder.querySelector(".skip-sequence");
-  
-  // pause menu
-  var pauseOverlay = uiHolder.querySelector(".pause-overlay");
-  var pauseHolder = uiHolder.querySelector(".pause-menu");
-  var pauseTitle = pauseHolder.querySelector(".pause-title");
-  var resumeButton = pauseHolder.querySelector(".resume-button");
-  var restartButton = pauseHolder.querySelector(".restart-button");
-  var quitButton = pauseHolder.querySelector(".quit-button");
+    // loading and title play button
+    var loadingHolder = uiHolder.querySelector(".loading");
+    var loadingLogo = uiHolder.querySelector(".progress-title");
+    var playSymbol = uiHolder.querySelector(".play-symbol");
+    var progressElement = uiHolder.querySelector(".progress");
+    var loadRing = uiHolder.querySelector(".progress-ring");
+    var playHolder = uiHolder.querySelector(".play-place");
+    var playButton = uiHolder.querySelector(".play-button");
+    var levelSelectButton = uiHolder.querySelector(".level-select-button");
 
-  // Level completion items
-  var levelResults = uiHolder.querySelector(".level-results");
-  var scoreStars = [
-      levelResults.querySelector('.large-star'),
-      levelResults.querySelectorAll('.small-star')[0],
-      levelResults.querySelectorAll('.small-star')[1]
-  ];
-  var resultTitle = levelResults.querySelector(".level-done-title");
-  
-  // game over menu
-  var gameOverHolder = uiHolder.querySelector(".game-over-menu");
-  var gameOverTitle = gameOverHolder.querySelector(".game-over-title");
-  var restartButton2 = gameOverHolder.querySelector(".restart-button");
-  var quitButton2 = gameOverHolder.querySelector(".quit-button");
-  
-  // title
-  var title = uiHolder.querySelector(".title");
+    // level select elements
+    var levelSelectHolder = uiHolder.querySelector(".level-select");
+    var planetSelectButtons = [];
+    var returnToHome = uiHolder.querySelector(".return-home-button");
 
-  // caption
-  var caption = uiHolder.querySelector(".caption");
-  
-  // game element
-  var gameContainer = document.getElementById( 'container' );
-  
-  // title sequence
-  var titleSequence;
+    // recommend buttons
+    var recommendSafari = loadingHolder.querySelector(".recommend-safari");
+    var recommendEdge = loadingHolder.querySelector(".recommend-edge");
 
-  var progressRing = (function() {
-    var elementA = playHolder.querySelector('.progress-fill-a');
-    var elementB = playHolder.querySelector('.progress-fill-b');
-    var secondHalf = false;
-    
-    var update = function(value) {
-      var angle = 360 * value - 180;
-      if (!secondHalf) {
-        var styleObject = elementA.style;
-        styleObject['-webkit-transform'] = "rotate(" + angle.toFixed(2) + "deg)";
-        styleObject['transform'] = "rotate(" + angle.toFixed(2) + "deg)";
-        //console.log( angle, styleObject.left, styleObject.transform);
-        if (value>=0.5) {
-          secondHalf = true;
-          styleObject['-webkit-transform'] = "rotate(0deg)";
-          styleObject['transform'] = "rotate(0deg)";
-          elementB.classList.remove('hidden');
-        }
-      } else {
-        var styleObject = elementB.style;
-        styleObject['-webkit-transform'] = "rotate(" + angle + "deg)";
-        styleObject['transform'] = "rotate(" + angle + "deg)";
-      }
-    }
-    return {
-      update: update
-    }
-  })();
+    // audio controls
+    var audioControls = loadingHolder.querySelector(".audio-controls");
+    var stereoButton = audioControls.querySelector(".stereo-button");
+    var surroundButton = audioControls.querySelector(".surround-button");
 
-  var init = function() {
-    createjs.CSSPlugin.install();
-    
+    // mute button (always active after load)
+    var muteButton = uiHolder.querySelector(".mute-button");
+    var dolbyLogo = uiHolder.querySelector(".dolby-logo");
 
-    function logoAppear() {
-      loadingLogo.classList.add('logo-loading-layout');
+    // in-game elements
+    var inGameHolder = uiHolder.querySelector(".game-ui");
+    var pauseButton = uiHolder.querySelector(".pause-button");
+    var levelDisplay = inGameHolder.querySelector(".level-display-text");
+    var timerDisplay = inGameHolder.querySelector(".timer-display");
+    var lifeDisplay = inGameHolder.querySelector(".life-display");
+    var lifeHearts = lifeDisplay.querySelectorAll(".life-heart");
+    var starDisplay = inGameHolder.querySelector(".star-display");
+    var collectStars = starDisplay.querySelectorAll(".collect-star");
+    var scoreDisplay = inGameHolder.querySelector(".score-display-text");
+    var powerupCharge = inGameHolder.querySelector(".powerup-charge-display");
+    var reticle = inGameHolder.querySelector(".targeting-reticle");
+
+    // tutorial item
+    var interactMessage = null;
+    var interactCircle = null;
+    var skipSequenceButton = uiHolder.querySelector(".skip-sequence");
+
+    // pause menu
+    var pauseOverlay = uiHolder.querySelector(".pause-overlay");
+    var pauseHolder = uiHolder.querySelector(".pause-menu");
+    var pauseTitle = pauseHolder.querySelector(".pause-title");
+    var resumeButton = pauseHolder.querySelector(".resume-button");
+    var restartButton = pauseHolder.querySelector(".restart-button");
+    var quitButton = pauseHolder.querySelector(".quit-button");
+
+    // Level completion items
+    var levelResults = uiHolder.querySelector(".level-results");
+    var scoreStars = [
+        levelResults.querySelector(".large-star"),
+        levelResults.querySelectorAll(".small-star")[0],
+        levelResults.querySelectorAll(".small-star")[1]
+    ];
+    var resultTitle = levelResults.querySelector(".level-done-title");
+
+    // game over menu
+    var gameOverHolder = uiHolder.querySelector(".game-over-menu");
+    var gameOverTitle = gameOverHolder.querySelector(".game-over-title");
+    var restartButton2 = gameOverHolder.querySelector(".restart-button");
+    var quitButton2 = gameOverHolder.querySelector(".quit-button");
+
+    // title
+    var title = uiHolder.querySelector(".title");
+
+    // caption
+    var caption = uiHolder.querySelector(".caption");
+
+    // game element
+    var gameContainer = document.getElementById("container");
+
+    // title sequence
+    var titleSequence;
+
+    var progressRing = (function() {
+        var elementA = playHolder.querySelector(".progress-fill-a");
+        var elementB = playHolder.querySelector(".progress-fill-b");
+        var secondHalf = false;
+
+        var update = function(value) {
+            var angle = 360 * value - 180;
+            if (!secondHalf) {
+                var styleObject = elementA.style;
+                styleObject["-webkit-transform"] = "rotate(" + angle.toFixed(2) + "deg)";
+                styleObject["transform"] = "rotate(" + angle.toFixed(2) + "deg)";
+                //console.log( angle, styleObject.left, styleObject.transform);
+                if (value >= 0.5) {
+                    secondHalf = true;
+                    styleObject["-webkit-transform"] = "rotate(0deg)";
+                    styleObject["transform"] = "rotate(0deg)";
+                    elementB.classList.remove("hidden");
+                }
+            } else {
+                var styleObject = elementB.style;
+                styleObject["-webkit-transform"] = "rotate(" + angle + "deg)";
+                styleObject["transform"] = "rotate(" + angle + "deg)";
+            }
+        };
+        return {
+            update: update
+        };
+    })();
+
+    var init = function() {
+        createjs.CSSPlugin.install();
+
+
+        function logoAppear() {
+            loadingLogo.classList.add("logo-loading-layout");
 /*      logo.style.width = 0;
       logo.style.height = 0;
       createjs.Tween.get(logo).to({width: 141, height:93 }, 500);*/
-    }
-
-    // hook button elements
-    playButton.addEventListener('click', onClickPlay );
-    playButton.addEventListener('mouseover', onOverButton);
-    playButton.addEventListener('touchstart', onClickPlay );
-    playButton.addEventListener('touchstart', blockEvent );
-
-    levelSelectButton.addEventListener('click', onClickLevelSelect);
-    levelSelectButton.addEventListener('mouseover', onOverButton);
-    levelSelectButton.addEventListener('touchstart', onClickLevelSelect);
-    levelSelectButton.addEventListener('touchstart', blockEvent);
-
-    returnToHome.addEventListener('click', onReturnHomeSelect);
-    returnToHome.addEventListener('mouseover', onOverButton);
-    returnToHome.addEventListener('touchstart', onReturnHomeSelect);
-    returnToHome.addEventListener('touchstart', blockEvent);
-
-    muteButton.addEventListener('click', onClickMute );
-    muteButton.addEventListener('mousedown', blockEvent );
-    muteButton.addEventListener('mouseover', onOverButton);
-    muteButton.addEventListener('touchstart', onClickMute );
-    muteButton.addEventListener('touchstart', blockEvent );
-    
-    pauseButton.addEventListener('click', onClickPause );
-    pauseButton.addEventListener('mousedown', blockEvent );
-    pauseButton.addEventListener('mouseover', onOverButton);
-    pauseButton.addEventListener('touchstart', onClickPause );
-    pauseButton.addEventListener('touchstart', blockEvent );
-    
-    resumeButton.addEventListener('click', onClickResume );
-    resumeButton.addEventListener('mouseover', onOverButton);
-    resumeButton.addEventListener('touchstart', blockEvent );
-    resumeButton.addEventListener('touchstart', onClickResume );
-    
-    restartButton.addEventListener('click', onClickRestart );
-    restartButton.addEventListener('mouseover', onOverButton);
-    restartButton.addEventListener('touchstart', blockEvent );
-    restartButton.addEventListener('touchstart', onClickRestart );
-    
-    restartButton2.addEventListener('click', onClickRestart );
-    restartButton2.addEventListener('mouseover', onOverButton);
-    restartButton2.addEventListener('touchstart', blockEvent );
-    restartButton2.addEventListener('touchstart', onClickRestart );
-    
-    quitButton.addEventListener('click', onClickQuit );
-    quitButton.addEventListener('mouseover', onOverButton);
-    quitButton.addEventListener('touchstart', blockEvent );
-    quitButton.addEventListener('touchstart', onClickQuit );
-    
-    quitButton2.addEventListener('click', onClickQuit );
-    quitButton2.addEventListener('mouseover', onOverButton);
-    quitButton2.addEventListener('touchstart', blockEvent );
-    quitButton2.addEventListener('touchstart', onClickQuit );
-    
-    stereoButton.addEventListener('click', onClickStereo);
-    stereoButton.addEventListener('mouseover', onOverButton);
-    surroundButton.addEventListener('click', onClickSurround);
-    surroundButton.addEventListener('mouseover', onOverButton);
-    
-    recommendSafari.addEventListener('mouseover', onOverButton);
-    recommendEdge.addEventListener('mouseover', onOverButton);
-
-    skipSequenceButton.addEventListener('click', galaxies.engine.skipSequence);
-    skipSequenceButton.addEventListener('touchstart', galaxies.engine.skipSequence);
-
-  
-    logoAppear();
-    
-    galaxies.utils.testAudioSupport( startLoad );
-    
-    // set background animation keyframe based on window size
-    // update this when window is resized
-  };
-
-  var initLevelSelect = function () {
-      var buttonContainer = document.createElement("div"),
-          planetButton, planetText, overlay, lockIcon;
-
-      buttonContainer.className = "level-select-container";
-
-      for (var p = 0; p < galaxies.engine.TOTAL_PLANETS; ++p) {
-          planetButton = document.createElement("div");
-          planetButton.className = "planet-button";
-          planetButton.dataset.planet = p;
-
-          planetText = document.createElement("span");
-          planetText.className = "planet-button-text";
-          planetText.innerText = galaxies.resources.planetData[p].name;
-
-          overlay = document.createElement("div");
-          overlay.className = "fullscreen";
-
-          lockIcon = document.createElement("i");
-          lockIcon.innerHTML = "lock";
-          lockIcon.className = "material-icons lock";
-
-          overlay.appendChild(lockIcon);
-          planetButton.appendChild(planetText);
-          planetButton.appendChild(overlay);
-          buttonContainer.appendChild(planetButton);
-
-          planetButton.addEventListener("click", onPlanetSelect);
-          planetButton.addEventListener("mouseover", onOverPlanetButton);
-          planetButton.addEventListener("touchstart", onPlanetSelect);
-          planetButton.addEventListener("touchstart", blockEvent);
-
-          planetSelectButtons.push({
-              button: planetButton,
-              text: planetText,
-              overlay: overlay,
-              lock: lockIcon
-          });
-      }
-
-      levelSelectHolder.appendChild(buttonContainer);
-  };
-  
-  var startLoad = function() {
-    
-    var handleComplete = function() {
-      // Initialize audio context before showing audio controls
-      galaxies.audio.initAudio( transitionToMenu );
-      
-    }
-    var handleProgress = function( e ) {
-      progressElement.innerHTML = Math.round(e.progress * 100).toString();
-      // update ring
-      progressRing.update( e.progress );
-    }
-    
-    galaxies.loadAssets( handleProgress, handleComplete );
-    
-  }
-  
-  var initBgKeyframes = function() {
-    
-    var bgWidth = 1024 * uiHolder.querySelector('.bg1').offsetHeight/512;
-    
-    var keyframes = findKeyframesRule("bgscroll1");
-    keyframes.deleteRule("100%");
-    keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
-    keyframes = findKeyframesRule("bgscroll2");
-    keyframes.deleteRule("100%");
-    keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
-    
-    // assign the animation to our element (which will cause the animation to run)
-    //document.getElementById('box').style.webkitAnimationName = anim;
-  }
-    
-  // search the CSSOM for a specific -webkit-keyframe rule
-  function findKeyframesRule(rule) {
-    // gather all stylesheets into an array
-    var ss = document.styleSheets;
-    
-    // loop through the stylesheets
-    for (var i = 0; i < ss.length; ++i) {
-      // loop through all the rules
-      if ( ss[i].cssRules == null ) { continue; }
-      for (var j = 0; j < ss[i].cssRules.length; ++j) {
-        
-        // find the rule whose name matches our passed over parameter and return that rule
-        if ((ss[i].cssRules[j].type == window.CSSRule.KEYFRAMES_RULE) && (ss[i].cssRules[j].name == rule)) {
-          return ss[i].cssRules[j];
         }
-      }
-    }
-      
-    // rule not found
-    return null;
-  }
-  
-  
-  var transitionToMenu = function() {
-    console.log("Transition loading layout to main menu.");
 
-    hideReticle();
-    
-    // Start the music
-    // This could be a singleton, but we're just going to instantiate one like this.
-    galaxies.audio.soundField = new galaxies.audio.SoundField( galaxies.audio.getSound('music') );
-    galaxies.audio.soundField.volume = 0.08; // 0.24
-    
-    // Hide loading logo
-    loadingLogo.classList.remove('hidden');
-    loadingLogo.classList.add('fade-out');
-    // Initialize the 3D scene
-    galaxies.engine.initScene();
-    
-    // Start title sequence
-    titleSequence = new galaxies.TitleSequence();
-    titleSequence.activate();
-    
-    // Wait for skybox fade, then transform play button
-    createjs.Tween.get(progressElement)
-      .wait(1000)
-      .call( transformLoadingIndicator, this );
-  }
-  
-  var transformLoadingIndicator = function() {
-    // transition load indicator to play button
-    progressElement.style.left = 0;
-    createjs.Tween.get(progressElement).to({left:52}, 500, createjs.Ease.quadInOut).call( showPlayButton );
-    var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
-    playSymbol.style.left = start;
-    createjs.Tween.get(playSymbol).to({left:0}, 500, createjs.Ease.quadInOut);
-    
-    
-    // Turn on the appropriate recommend link
-    if ( !galaxies.utils.supportsEC3 ) {
-      if ( galaxies.utils.isOSX() ) {
-        recommendSafari.classList.remove('hidden');
-        window.getComputedStyle(recommendSafari).bottom; // reflow
-        recommendSafari.classList.add('browser-recommend-on');
-      } else if ( galaxies.utils.isWindows() ) {
-        recommendEdge.classList.remove('hidden');
-        window.getComputedStyle(recommendEdge).bottom; // reflow
-        recommendEdge.classList.add('browser-recommend-on');
-      }
+        // hook button elements
+        playButton.addEventListener("click", onClickPlay);
+        playButton.addEventListener("mouseover", onOverButton);
+        playButton.addEventListener("touchstart", onClickPlay);
+        playButton.addEventListener("touchstart", blockEvent);
+
+        levelSelectButton.addEventListener("click", onClickLevelSelect);
+        levelSelectButton.addEventListener("mouseover", onOverButton);
+        levelSelectButton.addEventListener("touchstart", onClickLevelSelect);
+        levelSelectButton.addEventListener("touchstart", blockEvent);
+
+        returnToHome.addEventListener("click", onReturnHomeSelect);
+        returnToHome.addEventListener("mouseover", onOverButton);
+        returnToHome.addEventListener("touchstart", onReturnHomeSelect);
+        returnToHome.addEventListener("touchstart", blockEvent);
+
+        muteButton.addEventListener("click", onClickMute);
+        muteButton.addEventListener("mousedown", blockEvent);
+        muteButton.addEventListener("mouseover", onOverButton);
+        muteButton.addEventListener("touchstart", onClickMute);
+        muteButton.addEventListener("touchstart", blockEvent);
+
+        pauseButton.addEventListener("click", onClickPause);
+        pauseButton.addEventListener("mousedown", blockEvent);
+        pauseButton.addEventListener("mouseover", onOverButton);
+        pauseButton.addEventListener("touchstart", onClickPause);
+        pauseButton.addEventListener("touchstart", blockEvent);
+
+        resumeButton.addEventListener("click", onClickResume);
+        resumeButton.addEventListener("mouseover", onOverButton);
+        resumeButton.addEventListener("touchstart", blockEvent);
+        resumeButton.addEventListener("touchstart", onClickResume);
+
+        restartButton.addEventListener("click", onClickRestart);
+        restartButton.addEventListener("mouseover", onOverButton);
+        restartButton.addEventListener("touchstart", blockEvent);
+        restartButton.addEventListener("touchstart", onClickRestart);
+
+        restartButton2.addEventListener("click", onClickRestart);
+        restartButton2.addEventListener("mouseover", onOverButton);
+        restartButton2.addEventListener("touchstart", blockEvent);
+        restartButton2.addEventListener("touchstart", onClickRestart);
+
+        quitButton.addEventListener("click", onClickQuit);
+        quitButton.addEventListener("mouseover", onOverButton);
+        quitButton.addEventListener("touchstart", blockEvent);
+        quitButton.addEventListener("touchstart", onClickQuit);
+
+        quitButton2.addEventListener("click", onClickQuit);
+        quitButton2.addEventListener("mouseover", onOverButton);
+        quitButton2.addEventListener("touchstart", blockEvent);
+        quitButton2.addEventListener("touchstart", onClickQuit);
+
+        stereoButton.addEventListener("click", onClickStereo);
+        stereoButton.addEventListener("mouseover", onOverButton);
+        surroundButton.addEventListener("click", onClickSurround);
+        surroundButton.addEventListener("mouseover", onOverButton);
+
+        recommendSafari.addEventListener("mouseover", onOverButton);
+        recommendEdge.addEventListener("mouseover", onOverButton);
+
+        skipSequenceButton.addEventListener("click", galaxies.engine.skipSequence);
+        skipSequenceButton.addEventListener("touchstart", galaxies.engine.skipSequence);
+
+
+        logoAppear();
+
+        galaxies.utils.testAudioSupport(startLoad);
+
+        // set background animation keyframe based on window size
+        // update this when window is resized
+    };
+
+    var initLevelSelect = function() {
+        var buttonContainer = document.createElement("div"),
+            planetButton,
+            planetText,
+            overlay,
+            lockIcon;
+
+        buttonContainer.className = "level-select-container";
+
+        for (var p = 0; p < galaxies.engine.TOTAL_PLANETS; ++p) {
+            planetButton = document.createElement("div");
+            planetButton.className = "planet-button";
+            planetButton.dataset.planet = p;
+
+            planetText = document.createElement("span");
+            planetText.className = "planet-button-text";
+            planetText.innerText = galaxies.resources.planetData[p].name;
+
+            overlay = document.createElement("div");
+            overlay.className = "fullscreen";
+
+            lockIcon = document.createElement("i");
+            lockIcon.innerHTML = "lock";
+            lockIcon.className = "material-icons lock";
+
+            overlay.appendChild(lockIcon);
+            planetButton.appendChild(planetText);
+            planetButton.appendChild(overlay);
+            buttonContainer.appendChild(planetButton);
+
+            planetButton.addEventListener("click", onPlanetSelect);
+            planetButton.addEventListener("mouseover", onOverPlanetButton);
+            planetButton.addEventListener("touchstart", onPlanetSelect);
+            planetButton.addEventListener("touchstart", blockEvent);
+
+            planetSelectButtons.push({
+                button: planetButton,
+                text: planetText,
+                overlay: overlay,
+                lock: lockIcon
+            });
+        }
+
+        levelSelectHolder.appendChild(buttonContainer);
+    };
+
+    var startLoad = function() {
+
+        var handleComplete = function() {
+            // Initialize audio context before showing audio controls
+            galaxies.audio.initAudio(transitionToMenu);
+
+        };
+        var handleProgress = function(e) {
+            progressElement.innerHTML = Math.round(e.progress * 100).toString();
+            // update ring
+            progressRing.update(e.progress);
+        };
+        galaxies.loadAssets(handleProgress, handleComplete);
+
+    };
+    var initBgKeyframes = function() {
+
+        var bgWidth = 1024 * uiHolder.querySelector(".bg1").offsetHeight / 512;
+
+        var keyframes = findKeyframesRule("bgscroll1");
+        keyframes.deleteRule("100%");
+        keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
+        keyframes = findKeyframesRule("bgscroll2");
+        keyframes.deleteRule("100%");
+        keyframes.appendRule("100% { background-position: " + bgWidth + "px; }");
+
+        // assign the animation to our element (which will cause the animation to run)
+        //document.getElementById('box').style.webkitAnimationName = anim;
+    };
+
+    // search the CSSOM for a specific -webkit-keyframe rule
+    function findKeyframesRule(rule) {
+        // gather all stylesheets into an array
+        var ss = document.styleSheets;
+
+        // loop through the stylesheets
+        for (var i = 0; i < ss.length; ++i) {
+            // loop through all the rules
+            if (ss[i].cssRules == null) {
+                continue;
+            }
+            for (var j = 0; j < ss[i].cssRules.length; ++j) {
+
+                // find the rule whose name matches our passed over parameter and return that rule
+                if ((ss[i].cssRules[j].type == window.CSSRule.KEYFRAMES_RULE) && (ss[i].cssRules[j].name == rule)) {
+                    return ss[i].cssRules[j];
+                }
+            }
+        }
+
+        // rule not found
+        return null;
     }
-    
-    // Show stereo/surround buttons
-    if (!galaxies.utils.isMobile() ) {
-      audioControls.classList.add("fade-in");
-      audioControls.classList.remove("hidden");
-    }
-    
-    // Show mute button
-    muteButton.classList.remove("hidden");
-    //window.getComputedStyle(muteButton).right; // reflow
-    muteButton.classList.add("fade-in");
-    
-    // Show Dolby logo
-    if ( galaxies.utils.supportsEC3 ) {
-      dolbyLogo.classList.add("fade-in");
-      dolbyLogo.classList.remove("hidden");
-    }
-    
-    
-  }
-  var showPlayButton = function() {
-    loadRing.classList.add("hidden");
-    
-    playButton.classList.remove("hidden");
-    levelSelectButton.classList.remove("hidden");
-  }
-  
-  var showMenu = function() {
-    //gameContainer.classList.add('hidden');
-    inGameHolder.classList.add('hidden');
-    hidePauseMenu();
-    hideGameOver();
-    clearTitle();
-    
-    // Loading logo should be removed
-    loadingLogo.classList.remove('fade-out');
-    loadingLogo.classList.add('hidden');
-    
-    titleSequence.activate();
-    loadingHolder.classList.remove('hidden');
-  }
-  
-  var showPauseButton = function() {
-    pauseButton.classList.remove('hidden');
-    window.getComputedStyle(pauseButton).left; // reflow
-    pauseButton.classList.add('pause-button-on');
-  }
-  var hidePauseButton = function() {
-    pauseButton.classList.remove('pause-button-on');
-    pauseButton.classList.add('hidden');
-  }
-  
-  /**
+
+
+    var transitionToMenu = function() {
+        console.log("Transition loading layout to main menu.");
+
+        hideReticle();
+
+        // Start the music
+        // This could be a singleton, but we're just going to instantiate one like this.
+        galaxies.audio.soundField = new galaxies.audio.SoundField(galaxies.audio.getSound("music"));
+        galaxies.audio.soundField.volume = 0.08; // 0.24
+
+        // Hide loading logo
+        loadingLogo.classList.remove("hidden");
+        loadingLogo.classList.add("fade-out");
+        // Initialize the 3D scene
+        galaxies.engine.initScene();
+
+        // Start title sequence
+        titleSequence = new galaxies.TitleSequence();
+        titleSequence.activate();
+
+        // Wait for skybox fade, then transform play button
+        createjs.Tween.get(progressElement)
+            .wait(1000)
+            .call(transformLoadingIndicator, this);
+    };
+    var transformLoadingIndicator = function() {
+        // transition load indicator to play button
+        progressElement.style.left = 0;
+        createjs.Tween.get(progressElement).to({ left: 52 }, 500, createjs.Ease.quadInOut).call(showPlayButton);
+        var start = window.getComputedStyle(playSymbol, null).getPropertyValue("left");
+        playSymbol.style.left = start;
+        createjs.Tween.get(playSymbol).to({ left: 0 }, 500, createjs.Ease.quadInOut);
+
+
+        // Turn on the appropriate recommend link
+        if (!galaxies.utils.supportsEC3) {
+            if (galaxies.utils.isOSX()) {
+                recommendSafari.classList.remove("hidden");
+                window.getComputedStyle(recommendSafari).bottom; // reflow
+                recommendSafari.classList.add("browser-recommend-on");
+            } else if (galaxies.utils.isWindows()) {
+                recommendEdge.classList.remove("hidden");
+                window.getComputedStyle(recommendEdge).bottom; // reflow
+                recommendEdge.classList.add("browser-recommend-on");
+            }
+        }
+
+        // Show stereo/surround buttons
+        if (!galaxies.utils.isMobile()) {
+            audioControls.classList.add("fade-in");
+            audioControls.classList.remove("hidden");
+        }
+
+        // Show mute button
+        muteButton.classList.remove("hidden");
+        //window.getComputedStyle(muteButton).right; // reflow
+        muteButton.classList.add("fade-in");
+
+        // Show Dolby logo
+        if (galaxies.utils.supportsEC3) {
+            dolbyLogo.classList.add("fade-in");
+            dolbyLogo.classList.remove("hidden");
+        }
+
+
+    };
+    var showPlayButton = function() {
+        loadRing.classList.add("hidden");
+
+        playButton.classList.remove("hidden");
+        levelSelectButton.classList.remove("hidden");
+    };
+    var showMenu = function() {
+        //gameContainer.classList.add('hidden');
+        inGameHolder.classList.add("hidden");
+        hidePauseMenu();
+        hideGameOver();
+        clearTitle();
+
+        // Loading logo should be removed
+        loadingLogo.classList.remove("fade-out");
+        loadingLogo.classList.add("hidden");
+
+        titleSequence.activate();
+        loadingHolder.classList.remove("hidden");
+    };
+    var showPauseButton = function() {
+        pauseButton.classList.remove("hidden");
+        window.getComputedStyle(pauseButton).left; // reflow
+        pauseButton.classList.add("pause-button-on");
+    };
+    var hidePauseButton = function() {
+        pauseButton.classList.remove("pause-button-on");
+        pauseButton.classList.add("hidden");
+    };
+
+    /**
    * Show a title as yellow text that animates up and down from the bottom
    * of the screen. A title of 0 time will not be removed until titles are
    * manually cleared.
    */
-  var titleQueue = [];
-  var titleActive = false;
-  var currentTitle = null;
-  var showTitle = function( titleText, time, small ) {
-    var newTitle = {
-      text: titleText,
-      time: time * 1000,
-      small: small
+    var titleQueue = [];
+    var titleActive = false;
+    var currentTitle = null;
+    var showTitle = function(titleText, time, small) {
+        var newTitle = {
+            text: titleText,
+            time: time * 1000,
+            small: small
+        };
+
+        titleQueue.push(newTitle);
+
+        if ((!titleActive) || (currentTitle.time === 0)) {
+            updateTitle();
+        }
     };
-    
-    titleQueue.push( newTitle );
-    
-    if ( (!titleActive) || (currentTitle.time===0) ) {
-      updateTitle();
-    }
-  };
-  var updateTitle = function() {
-    if ( titleQueue.length == 0 ) {
-      clearTitle();
-      return;
-    }
-    
-    titleActive = true;
-    var nextTitle = titleQueue.shift();
-    
-    title.innerHTML = nextTitle.text;
-    title.classList.remove('hidden');
-
-    if (nextTitle.small) {
-      title.classList.add('small-text');
-    } else {
-      title.classList.remove('small-text');
-    }
-
-    window.getComputedStyle(title).top; // reflow
-    
-    title.classList.add('title-on');
-    
-    createjs.Tween.removeTweens( title );
-    if ( nextTitle.time > 0 ) {
-      createjs.Tween.get( title )
-        .wait( nextTitle.time )
-        .call( function() { title.classList.remove('title-on'); }, this )
-        .wait( 1000 ) // CSS transition time
-        .call( updateTitle );
-    }
-    
-    currentTitle = nextTitle;
-  };
-  var clearTitle = function() {
-    title.classList.remove('title-on');
-    title.classList.add('hidden');
-    titleQueue = [];
-    currentTitle = null;
-    
-    createjs.Tween.removeTweens( title );
-    titleActive = false;
-  };
-
-  var showCaption = function (captionText, time) {
-    caption.classList.remove("invisible");
-
-    caption.innerHTML = '';
-
-    createjs.Tween.removeTweens(caption);
-
-    var msPerChar = 33,
-        numChars = captionText.length,
-        tween = createjs.Tween.get(caption),
-        delayedAddChar = function(char) {
-          tween.wait(msPerChar).call(function () {
-            caption.innerHTML += char;
-          });
-        },
-        i;
-
-    for (i = 0; i < numChars; ++i) {
-      delayedAddChar(captionText[i]);
-    }
-
-    tween.wait(time * 1000)
-        .call(function() {caption.classList.add("invisible")});
-  };
-
-  var showLevelResults = function (bonusScore, roundAccuracy) {
-    levelResults.classList.remove("hidden");
-
-    hideReticle();
-
-    requestAnimationFrame(function() {
-      resultTitle.innerHTML = galaxies.ui.levelClearText || "MOON DEFENDED";
-      resultTitle.classList.add("level-done-title-on");
-
-      galaxies.ui.levelClearText = null;
-
-      for (var i = 0; i < 3; ++i) {
-        scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
-      }
-    });
-
-    title.classList.remove("hidden");
-
-      // TODO: Remove setTimeout?
-    setTimeout(function () {showRoundScore(bonusScore, roundAccuracy);}, 1600)
-  };
-
-  var scaleStar = function (star, collected, delay) {
-    var easing = createjs.Ease.getElasticOut(2, 0.3);
-
-    star.style.transform = "scale(0)";
-
-    if (collected) {
-      star.classList.remove("empty");
-    }
-
-      // TODO: Remove setTimeout?
-    setTimeout(function () {
-      var tween = createjs.Tween.get(star, {override: true})
-          .to({x: 10}, 1000);
-
-      tween.addEventListener("change", function () {
-        if (!tween.duration) {
-          return;
-        }
-
-        var normalizedPosition = tween.position / tween.duration;
-        var scaleValue = easing(normalizedPosition);
-
-        star.style.transform = "scale(" + scaleValue + ")";
-      });
-    }, delay);
-  };
-
-  var showRoundScore = function (bonus, roundAccuracy) {
-    roundAccuracy = Math.round(roundAccuracy * 100);
-
-    title.innerHTML = '<div class="score-title">BONUS <span class="bonus-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
-    title.classList.add("title-on");
-    title.classList.add("small-text");
-
-    var bonusElem = title.querySelector(".bonus-score"),
-        accTitle = title.querySelector(".acc-title"),
-        roundAccElem = accTitle.querySelector(".round-acc");
-
-    var scoreTween = createjs.Tween.get(bonusElem)
-        .to({innerHTML: bonus}, 2500);
-
-    scoreTween.addEventListener("change", function () {
-      if (!scoreTween.duration) {
-        return;
-      }
-
-      var interimScore = Math.round(bonus * scoreTween.position / scoreTween.duration);
-
-      bonusElem.innerHTML = galaxies.utils.addCommas(interimScore);
-    });
-
-      // TODO: Remove setTimeout?
-    setTimeout(function () {
-      accTitle.classList.add("acc-title-on");
-
-      var accTween = createjs.Tween.get(roundAccElem)
-          .to({innerHTML: roundAccuracy}, 1250)
-          .wait(1500);
-
-      accTween.addEventListener("change", function () {
-        if (!accTween.duration) {
-          return;
-        }
-
-        roundAccElem.innerHTML = Math.round(roundAccuracy * accTween.position / accTween.duration);
-      });
-    }, 1250);
-  };
-
-  var clearLevelResults = function () {
-    levelResults.classList.add("fade");
-    title.classList.remove("title-on");
-
-      // TODO: Remove setTimeout?
-    setTimeout(function () {
-      clearTitle();
-      levelResults.classList.add("hidden");
-      levelResults.classList.remove("fade");
-      resultTitle.classList.remove("level-done-title-on");
-
-      showReticle();
-
-      for (var i = 0; i < 3; ++i) {
-        scoreStars[i].style.transform = "scale(0)";
-      }
-    }, 1500);
-  };
-
-  // Stop event from reaching other listeners.
-  // Used to keep ui buttons from causing fire events on underlying game element.
-  var blockEvent = function(e) {
-    
-    e.stopPropagation();
-    
-  }
-
-  /// Start the game
-  var onClickPlay = function(e) {
-    loadingHolder.classList.add('hidden');
-    titleSequence.deactivate();
-    
-    inGameHolder.classList.remove('hidden');
-    showPauseButton();
-
-    showReticle();
-    
-    if ( galaxies.engine.gameInitialized ) {
-      galaxies.engine.restartGame();
-    } else {
-      galaxies.engine.initGame();
-    }
-  }
-
-  var onClickLevelSelect = function (e) {
-    e.preventDefault();
-
-    loadingHolder.classList.add('hidden');
-    loadingLogo.classList.add('hidden');
-    titleSequence.hideTitleElements();
-
-    var playerPlanetData = galaxies.engine.playerData.planets;
-
-    planetSelectButtons.forEach(function(item, index) {
-      if (index === 0 || playerPlanetData[index - 1].completed) {
-        item.overlay.classList.add("hidden");
-        item.button.classList.add("active");
-      } else {
-        item.overlay.classList.remove("hidden");
-        item.button.classList.remove("active");
-      }
-    });
-
-    levelSelectHolder.classList.remove('hidden');
-  };
-
-  var onReturnHomeSelect = function(e) {
-    e.preventDefault();
-
-    levelSelectHolder.classList.add('hidden');
-
-    loadingHolder.classList.remove('hidden');
-    titleSequence.showTitleElements();
-  };
-
-  var onPlanetSelect = function (e) {
-    var planet = parseInt(e.currentTarget.dataset.planet);
-
-    if (planet === 0 || galaxies.engine.playerData.planets[planet - 1].completed) {
-      levelSelectHolder.classList.add('hidden');
-      titleSequence.deactivate();
-
-      inGameHolder.classList.remove('hidden');
-      showPauseButton();
-
-      showReticle();
-
-      if ( galaxies.engine.gameInitialized ) {
-        galaxies.engine.restartGame(planet);
-      } else {
-        galaxies.engine.initGame(planet);
-      }
-    }
-  };
-
-  var onOverPlanetButton = function (e) {
-    if (e.target.classList.contains("active")) {
-      onOverButton(e);
-    }
-  };
-
-  var onClickMute = function(e) {
-    e.preventDefault();
-    
-    // Change the mute state
-    galaxies.audio.toggleMuteState();
-    
-    // Update the button class
-    if ( galaxies.audio.muteState === 'music' ) {
-      
-    } else if ( galaxies.audio.muteState === 'all' ) {
-      
-    } else {
-      
-    }
-    
-    console.log("Toggle mute");
-  }
-  
-  var onClickPause = function(e) {
-    e.preventDefault();
-
-    hideReticle();
-    
-    pauseOverlay.classList.remove('hidden');
-    window.getComputedStyle(pauseOverlay).top; // reflow
-    pauseOverlay.classList.add('pause-overlay-on');
-    
-    pauseHolder.classList.remove('hidden');
-    window.getComputedStyle(pauseTitle).top; // reflow
-    pauseTitle.classList.add('pause-title-on');
-    
-    galaxies.engine.pauseGame();
-  }
-  var onClickResume = function(e) {
-    showReticle();
-    hidePauseMenu();
-    galaxies.engine.resumeGame();
-  }
-  var onClickRestart = function(e) {
-    showReticle();
-    hidePauseMenu();
-    hideGameOver();
-    
-    galaxies.engine.restartGame();
-  }
-  var onClickQuit = function(e) {
-    hidePauseMenu();
-    
-    galaxies.engine.endGame();
-  }
-  var hidePauseMenu = function() {
-    pauseTitle.classList.remove('pause-title-on');
-    window.getComputedStyle(pauseTitle).top; // reflow
-    
-    pauseHolder.classList.add('hidden');
-    pauseOverlay.classList.add('hidden');
-    pauseOverlay.classList.remove('pause-overlay-on');
-    
-  }
-  
-  
-  var onClickStereo = function(e) {
-    galaxies.audio.toggleTargetMix( false );
-  }
-  var onClickSurround = function(e) {
-    galaxies.audio.toggleTargetMix( true );
-  }
-  var setMixButtons = function( isSurround ) {
-    if ( isSurround ) {
-      stereoButton.classList.remove('active');
-      surroundButton.classList.add('active');
-    } else {
-      stereoButton.classList.add('active');
-      surroundButton.classList.remove('active');
-    }
-  }
-  
-  function onOverButton(e) {
-    galaxies.audio.playSound( galaxies.audio.getSound('buttonover') );
-  }
-  
-  
-  
-  var showGameOver = function( isWin, score, bonus, accuracy ) {
-    gameOverHolder.classList.remove('hidden');
-
-    hideReticle();
-    
-    window.getComputedStyle(gameOverTitle).top; // reflow
-    gameOverTitle.classList.add('game-over-title-on');
-    
-    gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
-    
-    showTitle( "BONUS " + galaxies.utils.addCommas(bonus) +
-               "<br>FINAL SCORE " + galaxies.utils.addCommas(score) +
-               "<br>ACCURACY " + Math.round(accuracy * 100) + '%', 0, true);
-  }
-  var hideGameOver = function() {
-    gameOverTitle.classList.remove('game-over-title-on');
-    window.getComputedStyle(gameOverTitle).top; // reflow
-    
-    gameOverHolder.classList.add('hidden');
-  }
-  
-  var updateTimer = function( time ) {
-    timerDisplay.innerHTML = time.toFixed(0);
-  }
-  
-  var updateLevel = function( newPlanetNumber, roundNumber ) {
-    if (newPlanetNumber === 0 && roundNumber === 0) {
-      levelDisplay.innerHTML = "TRAINING";
-    } else {
-      levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
-    }
-  }
-  var updateScore = function( newScore ) {
-    var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, '')) || newScore,
-        scoreDiff = newScore - startScore,
-        scoreTween = createjs.Tween.get(scoreDisplay, {override: true})
-            .to({innerHTML: newScore}, Math.min(Math.sqrt(scoreDiff) * 25, 4000));
-
-    scoreTween.addEventListener("change", function () {
-      if (!scoreTween.duration) {
-        return;
-      }
-
-      var interimScore = Math.round(startScore + scoreDiff * scoreTween.position / scoreTween.duration);
-
-      scoreDisplay.innerHTML = galaxies.utils.addCommas(interimScore);
-    });
-  }
-  var updateLife = function( newLifeValue ) {
-    for ( var i=0; i<lifeHearts.length; i++ ) {
-      if ( (i+1)<=newLifeValue ) {
-        lifeHearts[i].classList.remove('empty');
-      } else {
-        lifeHearts[i].classList.add('empty');
-      }
-    }
-  }
-
-  var getFirstEmptyHeartPosition = function () {
-    var numHearts = lifeHearts.length,
-        i;
-
-    for (i = 0; i < numHearts; ++i) {
-      if (lifeHearts[i].classList.contains("empty")) {
-        return lifeHearts[i].getBoundingClientRect();
-      }
-    }
-
-    return null
-  };
-
-  var createFloatingDiv = function (className) {
-    var floatingDiv = document.createElement("div");
-
-    floatingDiv.className = className;
-    floatingDiv.style.position = "absolute";
-
-    document.body.appendChild(floatingDiv);
-
-    return floatingDiv;
-  };
-
-  var createFloatingHeart = function () {
-    return createFloatingDiv("life-heart");
-  };
-  
-  var updateStars = function( starsCollected ) {
-    for ( var i=0; i<collectStars.length; i++ ) {
-      if ( (i+1)<=starsCollected ) {
-        collectStars[i].classList.remove('empty');
-      } else {
-        collectStars[i].classList.add('empty');
-      }
-    }
-  }
-
-  var getFirstEmptyStarPosition = function () {
-    var numStars = collectStars.length,
-        i;
-
-    for (i = 0; i < numStars; ++i) {
-      if (collectStars[i].classList.contains("empty")) {
-        return collectStars[i].getBoundingClientRect();
-      }
-    }
-
-    return null
-
-  };
-
-  var createFloatingStar = function () {
-    return createFloatingDiv("collect-star");
-  };
-
-  var animateCollection = function (divElem, sourceObject, finalPosition, callback) {
-    var screenPos = galaxies.utils.getObjScreenPosition(sourceObject, 50);
-
-    divElem.style.left = Math.round(screenPos.x - finalPosition.width / 2) + "px";
-    divElem.style.top = Math.round(screenPos.y - finalPosition.height / 2) + "px";
-    divElem.style.transform = "scale(0.5)";
-
-    createjs.Tween.get(divElem.style)
-        .wait(17)
-        .call(function () {
-          divElem.classList.add("animated");
-        })
-        .set({transform: "scale(2)"})
-        .wait(500)
-        .set({transform: "scale(1)"});
-
-    createjs.Tween.get(divElem.style)
-        .wait(17)
-        .set({left: finalPosition.left + "px", top: finalPosition.top + "px"})
-        .wait(1000)
-        .call(function () {
-          divElem.remove();
-
-          if (typeof callback === "function") {
-            callback();
-          }
-        });
-  };
-  
-  var updatePowerupCharge = function( newValue ) {
-    //powerupCharge.innerHTML = newValue.toFixed(2);
-  }
-
-  var updateShotCount = function ( value ) {
-    if (value > 1 && powerupCharge.classList.contains("hidden")) {
-      powerupCharge.classList.remove("hidden");
-    } else if (value === 0) {
-      powerupCharge.classList.add("hidden");
-    }
-
-    powerupCharge.innerHTML = value;
-  };
-
-  var startTutorial = function () {
-    showReticle();
-
-    galaxies.ui.showSkipButton();
-  };
-
-  var showSkipButton = function () {
-    skipSequenceButton.classList.remove("hidden");
-
-    requestAnimationFrame(function () {
-      skipSequenceButton.classList.remove("invisible");
-    });
-  };
-
-  var hideSkipButton = function () {
-    skipSequenceButton.classList.add("invisible");
-
-      // TODO: Remove setTimeout?
-    setTimeout(function () {
-      skipSequenceButton.classList.add("hidden");
-    }, 500);
-  };
-
-  var showInteractionMessage = function (forObject, message) {
-    createjs.Tween.get(galaxies.engine)
-        .to({timeDilation: 0}, 1000)
-        .call(function () {
-          if (!forObject.object.parent || forObject.state === "inactive") {
-            galaxies.engine.timeDilation = 1;
-
-            hideInteractionMessage();
-
+    var updateTitle = function() {
+        if (titleQueue.length == 0) {
+            clearTitle();
             return;
-          }
+        }
 
-          var pos = galaxies.utils.getObjScreenPosition(forObject.object),
-              edgePos = forObject.object.localToWorld(new THREE.Vector3())
-                  .add(new THREE.Vector3(forObject.hitThreshold * 0.75, 0, 0)),
-              pos2 = galaxies.utils.getScreenPosition(edgePos),
-              circleRadius = Math.abs(pos2.x - pos.x);
+        titleActive = true;
+        var nextTitle = titleQueue.shift();
 
-          if (!interactMessage) {
-            interactMessage = document.createElement("div");
-            interactMessage.classList.add("interact-message");
+        title.innerHTML = nextTitle.text;
+        title.classList.remove("hidden");
 
-            interactCircle = document.createElement("div");
-            interactCircle.classList.add("interact-circle");
+        if (nextTitle.small) {
+            title.classList.add("small-text");
+        } else {
+            title.classList.remove("small-text");
+        }
 
-            galaxies.engine.container.appendChild(interactMessage);
-            galaxies.engine.container.appendChild(interactCircle);
-          }
+        window.getComputedStyle(title).top; // reflow
 
-          interactMessage.innerHTML = message;
-          interactMessage.style.left = pos.x + "px";
-          interactMessage.style.top = (pos.y + circleRadius + 18) + "px";
+        title.classList.add("title-on");
 
-          interactCircle.style.left = pos.x + "px";
-          interactCircle.style.top = pos.y + "px";
-          interactCircle.style.width = interactCircle.style.height = (circleRadius * 2) + "px";
+        createjs.Tween.removeTweens(title);
+        if (nextTitle.time > 0) {
+            createjs.Tween.get(title)
+                .wait(nextTitle.time)
+                .call(function() { title.classList.remove("title-on"); }, this)
+                .wait(1000) // CSS transition time
+                .call(updateTitle);
+        }
+
+        currentTitle = nextTitle;
+    };
+    var clearTitle = function() {
+        title.classList.remove("title-on");
+        title.classList.add("hidden");
+        titleQueue = [];
+        currentTitle = null;
+
+        createjs.Tween.removeTweens(title);
+        titleActive = false;
+    };
+
+    var showCaption = function(captionText, time) {
+        caption.classList.remove("invisible");
+
+        caption.innerHTML = "";
+
+        createjs.Tween.removeTweens(caption);
+
+        var msPerChar = 33,
+            numChars = captionText.length,
+            tween = createjs.Tween.get(caption),
+            delayedAddChar = function(char) {
+                tween.wait(msPerChar).call(function() {
+                    caption.innerHTML += char;
+                });
+            },
+            i;
+
+        for (i = 0; i < numChars; ++i) {
+            delayedAddChar(captionText[i]);
+        }
+
+        tween.wait(time * 1000)
+            .call(function() { caption.classList.add("invisible") });
+    };
+
+    var showLevelResults = function(bonusScore, roundAccuracy) {
+        levelResults.classList.remove("hidden");
+
+        hideReticle();
+
+        requestAnimationFrame(function() {
+            resultTitle.innerHTML = galaxies.ui.levelClearText || "MOON DEFENDED";
+            resultTitle.classList.add("level-done-title-on");
+
+            galaxies.ui.levelClearText = null;
+
+            for (var i = 0; i < 3; ++i) {
+                scaleStar(scoreStars[i], i < galaxies.engine.starsCollectedRound, 500 + i * 300);
+            }
         });
-  };
 
-  var hideInteractionMessage = function () {
-    createjs.Tween.get(galaxies.engine, {override: true})
-        .to({timeDilation: 1}, 100);
+        title.classList.remove("hidden");
 
-    if (interactMessage) {
-      galaxies.engine.container.removeChild(interactMessage);
-      galaxies.engine.container.removeChild(interactCircle);
+        // TODO: Remove setTimeout?
+        setTimeout(function() { showRoundScore(bonusScore, roundAccuracy); }, 1600);
+    };
 
-      interactMessage = null;
-      interactCircle = null;
+    var scaleStar = function(star, collected, delay) {
+        var easing = createjs.Ease.getElasticOut(2, 0.3);
+
+        star.style.transform = "scale(0)";
+
+        if (collected) {
+            star.classList.remove("empty");
+        }
+
+        // TODO: Remove setTimeout?
+        setTimeout(function() {
+                var tween = createjs.Tween.get(star, { override: true })
+                    .to({ x: 10 }, 1000);
+
+                tween.addEventListener("change",
+                    function() {
+                        if (!tween.duration) {
+                            return;
+                        }
+
+                        var normalizedPosition = tween.position / tween.duration;
+                        var scaleValue = easing(normalizedPosition);
+
+                        star.style.transform = "scale(" + scaleValue + ")";
+                    });
+            },
+            delay);
+    };
+
+    var showRoundScore = function(bonus, roundAccuracy) {
+        roundAccuracy = Math.round(roundAccuracy * 100);
+
+        title.innerHTML =
+            '<div class="score-title">BONUS <span class="bonus-score">0</span></div><div class="acc-title">ACCURACY <span class="round-acc">0</span>%</div>';
+        title.classList.add("title-on");
+        title.classList.add("small-text");
+
+        var bonusElem = title.querySelector(".bonus-score"),
+            accTitle = title.querySelector(".acc-title"),
+            roundAccElem = accTitle.querySelector(".round-acc");
+
+        var scoreTween = createjs.Tween.get(bonusElem)
+            .to({ innerHTML: bonus }, 2500);
+
+        scoreTween.addEventListener("change",
+            function() {
+                if (!scoreTween.duration) {
+                    return;
+                }
+
+                var interimScore = Math.round(bonus * scoreTween.position / scoreTween.duration);
+
+                bonusElem.innerHTML = galaxies.utils.addCommas(interimScore);
+            });
+
+        // TODO: Remove setTimeout?
+        setTimeout(function() {
+                accTitle.classList.add("acc-title-on");
+
+                var accTween = createjs.Tween.get(roundAccElem)
+                    .to({ innerHTML: roundAccuracy }, 1250)
+                    .wait(1500);
+
+                accTween.addEventListener("change",
+                    function() {
+                        if (!accTween.duration) {
+                            return;
+                        }
+
+                        roundAccElem.innerHTML = Math.round(roundAccuracy * accTween.position / accTween.duration);
+                    });
+            },
+            1250);
+    };
+
+    var clearLevelResults = function() {
+        levelResults.classList.add("fade");
+        title.classList.remove("title-on");
+
+        // TODO: Remove setTimeout?
+        setTimeout(function() {
+                clearTitle();
+                levelResults.classList.add("hidden");
+                levelResults.classList.remove("fade");
+                resultTitle.classList.remove("level-done-title-on");
+
+                showReticle();
+
+                for (var i = 0; i < 3; ++i) {
+                    scoreStars[i].style.transform = "scale(0)";
+                }
+            },
+            1500);
+    };
+
+    // Stop event from reaching other listeners.
+    // Used to keep ui buttons from causing fire events on underlying game element.
+    var blockEvent = function(e) {
+
+        e.stopPropagation();
+
+    };
+
+    /// Start the game
+    var onClickPlay = function(e) {
+        loadingHolder.classList.add("hidden");
+        titleSequence.deactivate();
+
+        inGameHolder.classList.remove("hidden");
+        showPauseButton();
+
+        showReticle();
+
+        if (galaxies.engine.gameInitialized) {
+            galaxies.engine.restartGame();
+        } else {
+            galaxies.engine.initGame();
+        }
+    };
+    var onClickLevelSelect = function(e) {
+        e.preventDefault();
+
+        loadingHolder.classList.add("hidden");
+        loadingLogo.classList.add("hidden");
+        titleSequence.hideTitleElements();
+
+        var playerPlanetData = galaxies.engine.playerData.planets;
+
+        planetSelectButtons.forEach(function(item, index) {
+            if (index === 0 || playerPlanetData[index - 1].completed) {
+                item.overlay.classList.add("hidden");
+                item.button.classList.add("active");
+            } else {
+                item.overlay.classList.remove("hidden");
+                item.button.classList.remove("active");
+            }
+        });
+
+        levelSelectHolder.classList.remove("hidden");
+    };
+
+    var onReturnHomeSelect = function(e) {
+        e.preventDefault();
+
+        levelSelectHolder.classList.add("hidden");
+
+        loadingHolder.classList.remove("hidden");
+        titleSequence.showTitleElements();
+    };
+
+    var onPlanetSelect = function(e) {
+        var planet = parseInt(e.currentTarget.dataset.planet);
+
+        if (planet === 0 || galaxies.engine.playerData.planets[planet - 1].completed) {
+            levelSelectHolder.classList.add("hidden");
+            titleSequence.deactivate();
+
+            inGameHolder.classList.remove("hidden");
+            showPauseButton();
+
+            showReticle();
+
+            if (galaxies.engine.gameInitialized) {
+                galaxies.engine.restartGame(planet);
+            } else {
+                galaxies.engine.initGame(planet);
+            }
+        }
+    };
+
+    var onOverPlanetButton = function(e) {
+        if (e.target.classList.contains("active")) {
+            onOverButton(e);
+        }
+    };
+
+    var onClickMute = function(e) {
+        e.preventDefault();
+
+        // Change the mute state
+        galaxies.audio.toggleMuteState();
+
+        // Update the button class
+        if (galaxies.audio.muteState === "music") {
+
+        } else if (galaxies.audio.muteState === "all") {
+
+        } else {
+
+        }
+
+        console.log("Toggle mute");
+    };
+    var onClickPause = function(e) {
+        e.preventDefault();
+
+        hideReticle();
+
+        pauseOverlay.classList.remove("hidden");
+        window.getComputedStyle(pauseOverlay).top; // reflow
+        pauseOverlay.classList.add("pause-overlay-on");
+
+        pauseHolder.classList.remove("hidden");
+        window.getComputedStyle(pauseTitle).top; // reflow
+        pauseTitle.classList.add("pause-title-on");
+
+        galaxies.engine.pauseGame();
+    };
+    var onClickResume = function(e) {
+        showReticle();
+        hidePauseMenu();
+        galaxies.engine.resumeGame();
+    };
+    var onClickRestart = function(e) {
+        showReticle();
+        hidePauseMenu();
+        hideGameOver();
+
+        galaxies.engine.restartGame();
+    };
+    var onClickQuit = function(e) {
+        hidePauseMenu();
+
+        galaxies.engine.endGame();
+    };
+    var hidePauseMenu = function() {
+        pauseTitle.classList.remove("pause-title-on");
+        window.getComputedStyle(pauseTitle).top; // reflow
+
+        pauseHolder.classList.add("hidden");
+        pauseOverlay.classList.add("hidden");
+        pauseOverlay.classList.remove("pause-overlay-on");
+
+    };
+    var onClickStereo = function(e) {
+        galaxies.audio.toggleTargetMix(false);
+    };
+    var onClickSurround = function(e) {
+        galaxies.audio.toggleTargetMix(true);
+    };
+    var setMixButtons = function(isSurround) {
+        if (isSurround) {
+            stereoButton.classList.remove("active");
+            surroundButton.classList.add("active");
+        } else {
+            stereoButton.classList.add("active");
+            surroundButton.classList.remove("active");
+        }
+    };
+
+    function onOverButton(e) {
+        galaxies.audio.playSound(galaxies.audio.getSound("buttonover"));
     }
-  };
 
-  var updateReticlePosition = function (event) {
-    reticle.style.left = event.clientX + "px";
-    reticle.style.top = event.clientY + "px";
-  };
 
-  var showReticle = function () {
-    if (galaxies.utils.isMobile()) {
-      return;
-    }
+    var showGameOver = function(isWin, score, bonus, accuracy) {
+        gameOverHolder.classList.remove("hidden");
 
-    reticle.classList.remove("hidden");
-    reticle.style.left = "-50px";
-    reticle.style.top = "-50px";
-  };
+        hideReticle();
 
-  var hideReticle = function () {
-    if (galaxies.utils.isMobile()) {
-      return;
-    }
+        window.getComputedStyle(gameOverTitle).top; // reflow
+        gameOverTitle.classList.add("game-over-title-on");
 
-    reticle.classList.add("hidden");
-  };
+        gameOverTitle.innerText = isWin ? "GALACTIC HI-FIVE" : "GAME OVER";
 
-  return {
-    init: init,
-    initLevelSelect: initLevelSelect,
-    levelClearText: null,
-    gameContainer: gameContainer,
-    showMenu: showMenu,
-    showGameOver: showGameOver,
-    showPauseButton: showPauseButton,
-    hidePauseButton: hidePauseButton,
-    showTitle: showTitle,
-    showCaption: showCaption,
-    clearTitle: clearTitle,
-    showLevelResults: showLevelResults,
-    clearLevelResults: clearLevelResults,
-    updateLevel: updateLevel,
-    updateTimer: updateTimer,
-    updateScore: updateScore,
-    updateLife: updateLife,
-    getFirstEmptyHeartPosition: getFirstEmptyHeartPosition,
-    createFloatingHeart: createFloatingHeart,
-    updateStars: updateStars,
-    getFirstEmptyStarPosition: getFirstEmptyStarPosition,
-    createFloatingStar: createFloatingStar,
-    animateCollection: animateCollection,
-    updatePowerupCharge: updatePowerupCharge,
-    setMixButtons: setMixButtons,
-    updateShotCount: updateShotCount,
-    startTutorial: startTutorial,
-    showSkipButton: showSkipButton,
-    hideSkipButton: hideSkipButton,
-    showInteractionMessage: showInteractionMessage,
-    hideInteractionMessage: hideInteractionMessage,
-    updateReticlePosition: updateReticlePosition,
-    showReticle: showReticle,
-    hideReticle: hideReticle
-  };
-  
-  
+        showTitle("BONUS " +
+            galaxies.utils.addCommas(bonus) +
+            "<br>FINAL SCORE " +
+            galaxies.utils.addCommas(score) +
+            "<br>ACCURACY " +
+            Math.round(accuracy * 100) +
+            "%",
+            0,
+            true);
+    };
+    var hideGameOver = function() {
+        gameOverTitle.classList.remove("game-over-title-on");
+        window.getComputedStyle(gameOverTitle).top; // reflow
+
+        gameOverHolder.classList.add("hidden");
+    };
+    var updateTimer = function(time) {
+        timerDisplay.innerHTML = time.toFixed(0);
+    };
+    var updateLevel = function(newPlanetNumber, roundNumber) {
+        if (newPlanetNumber === 0 && roundNumber === 0) {
+            levelDisplay.innerHTML = "TRAINING";
+        } else {
+            levelDisplay.innerHTML = "WORLD " + newPlanetNumber.toString() + "-" + roundNumber.toString();
+        }
+    };
+    var updateScore = function(newScore) {
+        var startScore = parseInt(scoreDisplay.innerHTML.replace(/,/g, "")) || newScore,
+            scoreDiff = newScore - startScore,
+            scoreTween = createjs.Tween.get(scoreDisplay, { override: true })
+                .to({ innerHTML: newScore }, Math.min(Math.sqrt(scoreDiff) * 25, 4000));
+
+        scoreTween.addEventListener("change",
+            function() {
+                if (!scoreTween.duration) {
+                    return;
+                }
+
+                var interimScore = Math.round(startScore + scoreDiff * scoreTween.position / scoreTween.duration);
+
+                scoreDisplay.innerHTML = galaxies.utils.addCommas(interimScore);
+            });
+    };
+    var updateLife = function(newLifeValue) {
+        for (var i = 0; i < lifeHearts.length; i++) {
+            if ((i + 1) <= newLifeValue) {
+                lifeHearts[i].classList.remove("empty");
+            } else {
+                lifeHearts[i].classList.add("empty");
+            }
+        }
+    };
+    var getFirstEmptyHeartPosition = function() {
+        var numHearts = lifeHearts.length,
+            i;
+
+        for (i = 0; i < numHearts; ++i) {
+            if (lifeHearts[i].classList.contains("empty")) {
+                return lifeHearts[i].getBoundingClientRect();
+            }
+        }
+
+        return null;
+    };
+
+    var createFloatingDiv = function(className) {
+        var floatingDiv = document.createElement("div");
+
+        floatingDiv.className = className;
+        floatingDiv.style.position = "absolute";
+
+        document.body.appendChild(floatingDiv);
+
+        return floatingDiv;
+    };
+
+    var createFloatingHeart = function() {
+        return createFloatingDiv("life-heart");
+    };
+
+    var updateStars = function(starsCollected) {
+        for (var i = 0; i < collectStars.length; i++) {
+            if ((i + 1) <= starsCollected) {
+                collectStars[i].classList.remove("empty");
+            } else {
+                collectStars[i].classList.add("empty");
+            }
+        }
+    };
+    var getFirstEmptyStarPosition = function() {
+        var numStars = collectStars.length,
+            i;
+
+        for (i = 0; i < numStars; ++i) {
+            if (collectStars[i].classList.contains("empty")) {
+                return collectStars[i].getBoundingClientRect();
+            }
+        }
+
+        return null;
+    };
+
+    var createFloatingStar = function() {
+        return createFloatingDiv("collect-star");
+    };
+
+    var animateCollection = function(divElem, sourceObject, finalPosition, callback) {
+        var screenPos = galaxies.utils.getObjScreenPosition(sourceObject, 50);
+
+        divElem.style.left = Math.round(screenPos.x - finalPosition.width / 2) + "px";
+        divElem.style.top = Math.round(screenPos.y - finalPosition.height / 2) + "px";
+        divElem.style.transform = "scale(0.5)";
+
+        createjs.Tween.get(divElem.style)
+            .wait(17)
+            .call(function() {
+                divElem.classList.add("animated");
+            })
+            .set({ transform: "scale(2)" })
+            .wait(500)
+            .set({ transform: "scale(1)" });
+
+        createjs.Tween.get(divElem.style)
+            .wait(17)
+            .set({ left: finalPosition.left + "px", top: finalPosition.top + "px" })
+            .wait(1000)
+            .call(function() {
+                divElem.remove();
+
+                if (typeof callback === "function") {
+                    callback();
+                }
+            });
+    };
+
+    var updatePowerupCharge = function(newValue) {
+        //powerupCharge.innerHTML = newValue.toFixed(2);
+    };
+    var updateShotCount = function(value) {
+        if (value > 1 && powerupCharge.classList.contains("hidden")) {
+            powerupCharge.classList.remove("hidden");
+        } else if (value === 0) {
+            powerupCharge.classList.add("hidden");
+        }
+
+        powerupCharge.innerHTML = value;
+    };
+
+    var startTutorial = function() {
+        showReticle();
+
+        galaxies.ui.showSkipButton();
+    };
+
+    var showSkipButton = function() {
+        skipSequenceButton.classList.remove("hidden");
+
+        requestAnimationFrame(function() {
+            skipSequenceButton.classList.remove("invisible");
+        });
+    };
+
+    var hideSkipButton = function() {
+        skipSequenceButton.classList.add("invisible");
+
+        // TODO: Remove setTimeout?
+        setTimeout(function() {
+                skipSequenceButton.classList.add("hidden");
+            },
+            500);
+    };
+
+    var showInteractionMessage = function(forObject, message) {
+        createjs.Tween.get(galaxies.engine)
+            .to({ timeDilation: 0 }, 1000)
+            .call(function() {
+                if (!forObject.object.parent || forObject.state === "inactive") {
+                    galaxies.engine.timeDilation = 1;
+
+                    hideInteractionMessage();
+
+                    return;
+                }
+
+                var pos = galaxies.utils.getObjScreenPosition(forObject.object),
+                    edgePos = forObject.object.localToWorld(new THREE.Vector3())
+                        .add(new THREE.Vector3(forObject.hitThreshold * 0.75, 0, 0)),
+                    pos2 = galaxies.utils.getScreenPosition(edgePos),
+                    circleRadius = Math.abs(pos2.x - pos.x);
+
+                if (!interactMessage) {
+                    interactMessage = document.createElement("div");
+                    interactMessage.classList.add("interact-message");
+
+                    interactCircle = document.createElement("div");
+                    interactCircle.classList.add("interact-circle");
+
+                    galaxies.engine.container.appendChild(interactMessage);
+                    galaxies.engine.container.appendChild(interactCircle);
+                }
+
+                interactMessage.innerHTML = message;
+                interactMessage.style.left = pos.x + "px";
+                interactMessage.style.top = (pos.y + circleRadius + 18) + "px";
+
+                interactCircle.style.left = pos.x + "px";
+                interactCircle.style.top = pos.y + "px";
+                interactCircle.style.width = interactCircle.style.height = (circleRadius * 2) + "px";
+            });
+    };
+
+    var hideInteractionMessage = function() {
+        createjs.Tween.get(galaxies.engine, { override: true })
+            .to({ timeDilation: 1 }, 100);
+
+        if (interactMessage) {
+            galaxies.engine.container.removeChild(interactMessage);
+            galaxies.engine.container.removeChild(interactCircle);
+
+            interactMessage = null;
+            interactCircle = null;
+        }
+    };
+
+    var updateReticlePosition = function(event) {
+        reticle.style.left = event.clientX + "px";
+        reticle.style.top = event.clientY + "px";
+    };
+
+    var showReticle = function() {
+        if (galaxies.utils.isMobile()) {
+            return;
+        }
+
+        reticle.classList.remove("hidden");
+        reticle.style.left = "-50px";
+        reticle.style.top = "-50px";
+    };
+
+    var hideReticle = function() {
+        if (galaxies.utils.isMobile()) {
+            return;
+        }
+
+        reticle.classList.add("hidden");
+    };
+
+    return {
+        init: init,
+        initLevelSelect: initLevelSelect,
+        levelClearText: null,
+        gameContainer: gameContainer,
+        showMenu: showMenu,
+        showGameOver: showGameOver,
+        showPauseButton: showPauseButton,
+        hidePauseButton: hidePauseButton,
+        showTitle: showTitle,
+        showCaption: showCaption,
+        clearTitle: clearTitle,
+        showLevelResults: showLevelResults,
+        clearLevelResults: clearLevelResults,
+        updateLevel: updateLevel,
+        updateTimer: updateTimer,
+        updateScore: updateScore,
+        updateLife: updateLife,
+        getFirstEmptyHeartPosition: getFirstEmptyHeartPosition,
+        createFloatingHeart: createFloatingHeart,
+        updateStars: updateStars,
+        getFirstEmptyStarPosition: getFirstEmptyStarPosition,
+        createFloatingStar: createFloatingStar,
+        animateCollection: animateCollection,
+        updatePowerupCharge: updatePowerupCharge,
+        setMixButtons: setMixButtons,
+        updateShotCount: updateShotCount,
+        startTutorial: startTutorial,
+        showSkipButton: showSkipButton,
+        hideSkipButton: hideSkipButton,
+        showInteractionMessage: showInteractionMessage,
+        hideInteractionMessage: hideInteractionMessage,
+        updateReticlePosition: updateReticlePosition,
+        showReticle: showReticle,
+        hideReticle: hideReticle
+    };
+
+
 }());
-
-
-

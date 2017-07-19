@@ -5,4 +5,3 @@
  */
 
 this.galaxies = this.galaxies || {};
-

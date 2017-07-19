@@ -3,7 +3,7 @@
 namespace galaxies {
     export class Pool<T> {
         get available(): number {
-            return this.items.filter(function (item) {
+            return this.items.filter(function(item) {
                 return !!item;
             }).length;
         }
@@ -17,26 +17,27 @@ namespace galaxies {
         private createNew: (owningPool: Pool<T>, createCache?: { [key: string]: any }) => T;
 
         constructor(createFunction: (owningPool: Pool<T>, createCache?: { [key: string]: any }) => T,
-                    initialSize: number = 0, createCache?: { [key: string]: any }) {
+            initialSize: number = 0,
+            createCache?: { [key: string]: any }) {
             this.createCache = createCache;
             this.createNew = createFunction;
 
             this.CreateMany(initialSize);
         }
 
-        public CreateMany(count: number): void {
+        CreateMany(count: number): void {
             for (let i = 0; i < count; ++i) {
                 this.CreateOne();
             }
         }
 
-        public CreateOne(): void {
+        CreateOne(): void {
             this.items.push(this.createNew(this, this.createCache));
         }
 
-        public GetMany(count: number): T[] {
-            let items = this.items;
-            let requested = [];
+        GetMany(count: number): T[] {
+            const items = this.items;
+            const requested: any[] = [];
             let next = 0;
 
             for (let i = 0; i < count; ++i) {
@@ -44,25 +45,23 @@ namespace galaxies {
 
                 if (next === -1) {
                     requested.push(this.createNew(this, this.createCache));
-                }
-                else {
+                } else {
                     requested.push(items[next]);
 
                     delete items[next];
                 }
             }
 
-            return requested
+            return requested;
         }
 
-        public GetOne(): T {
-            let next = this.NextAvailable();
+        GetOne(): T {
+            const next = this.NextAvailable();
 
             if (next === -1) {
                 return this.createNew(this, this.createCache);
-            }
-            else {
-                let item = this.items[next];
+            } else {
+                const item = this.items[next];
 
                 delete this.items[next];
 
@@ -70,17 +69,16 @@ namespace galaxies {
             }
         }
 
-        public ReturnMany(items: T[]): void {
+        ReturnMany(items: T[]): void {
             let next = 0;
-            let numItems = items.length;
+            const numItems = items.length;
 
             for (let i = 0; i < numItems; ++i) {
                 next = this.NextEmpty(next);
 
                 if (next === -1) {
                     this.items.push(items[i]);
-                }
-                else {
+                } else {
                     this.items[next] = items[i];
                 }
 
@@ -88,13 +86,12 @@ namespace galaxies {
             }
         }
 
-        public ReturnOne(item: T): void {
-            let next = this.NextEmpty();
+        ReturnOne(item: T): void {
+            const next = this.NextEmpty();
 
             if (next === -1) {
                 this.items.push(item);
-            }
-            else {
+            } else {
                 this.items[next] = item;
             }
         }
@@ -104,8 +101,8 @@ namespace galaxies {
                 return -1;
             }
 
-            let items = this.items;
-            let numItems = this.length;
+            const items = this.items;
+            const numItems = this.length;
 
             for (let i = startAt; i < numItems; ++i) {
                 if (items[i] !== void 0) {
@@ -121,8 +118,8 @@ namespace galaxies {
                 return -1;
             }
 
-            let items = this.items;
-            let numItems = this.length;
+            const items = this.items;
+            const numItems = this.length;
 
             for (let i = startAt; i < numItems; ++i) {
                 if (items[i] === void 0) {

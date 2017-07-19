@@ -2,8 +2,8 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.Boss = function () {
-    this.name = '';
+galaxies.Boss = function() {
+    this.name = "";
 
     this.initModel();
     this.initAudio();
@@ -13,7 +13,7 @@ galaxies.Boss = function () {
 };
 
 galaxies.Boss.prototype = {
-    defeat: function (defeatBonus) {
+    defeat: function(defeatBonus) {
         defeatBonus = defeatBonus || 0;
 
         this.state = "exiting";
@@ -29,12 +29,12 @@ galaxies.Boss.prototype = {
         galaxies.engine.showCombo(defeatBonus, 1, this.object);
     },
 
-    disable: function () {
+    disable: function() {
         this.state = "inactive";
         this.object.visible = false;
     },
 
-    enter: function () {
+    enter: function() {
         if (this.state === "preEntry") {
             this.state = "entering";
             this.object.visible = true;
@@ -43,18 +43,19 @@ galaxies.Boss.prototype = {
         }
     },
 
-    initAudio: function () {
+    initAudio: function() {
         // No default functionality
     },
 
-    initModel: function () {
+    initModel: function() {
         this.object = new THREE.Object3D();
     },
 
-    reset: function () {
+    reset: function() {
         var endings = ["DEFEATED", "DECOMMISSIONED", "DESTROYED", "DECIMATED"];
 
-        galaxies.ui.levelClearText = this.name.toUpperCase() + " " +
+        galaxies.ui.levelClearText = this.name.toUpperCase() +
+            " " +
             endings[Math.round(Math.random() * (endings.length - 1))];
 
         this.state = "preEntry";
@@ -65,7 +66,7 @@ galaxies.Boss.prototype = {
         this.updateCoordinates();
     },
 
-    update: function (delta) {
+    update: function(delta) {
         if (this.state === "inactive") {
             return;
         }
@@ -81,7 +82,7 @@ galaxies.Boss.prototype = {
         }
     },
 
-    updateCoordinates: function () {
+    updateCoordinates: function() {
         // May change if the planet is to be put in another part of the screen
         var bottomRightCorner = new THREE.Vector3(1, -1, 0.5),
             topLeftCorner = new THREE.Vector3(-1, 1, 0.5),
@@ -103,11 +104,11 @@ galaxies.Boss.prototype = {
         this.rightEdge = bottomRightCorner.x;
     },
 
-    updateEntering: function () {
+    updateEntering: function() {
         // No default functionality
     },
 
-    updateExiting: function () {
+    updateExiting: function() {
         // No default functionality
     }
 };

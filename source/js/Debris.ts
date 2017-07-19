@@ -1,4 +1,4 @@
-/// <reference path="Rubble.ts"/>
+/// <reference path="Rubble.ts" />
 
 namespace galaxies {
     export class Debris extends Rubble {

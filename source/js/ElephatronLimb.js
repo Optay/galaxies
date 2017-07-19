@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
+galaxies.ElephatronLimb = function(getLaserBlast, spawnLaserPellet, props) {
     props = props || {};
 
     this.baseProps = props;
@@ -43,52 +43,53 @@ galaxies.ElephatronLimb = function (getLaserBlast, spawnLaserPellet, props) {
 galaxies.ElephatronLimb.prototype = {};
 galaxies.ElephatronLimb.prototype.constructor = galaxies.ElephatronLimb;
 
-Object.defineProperties(galaxies.ElephatronLimb.prototype, {
-    angle: {
-        get: function () {
-            return this._angle;
-        },
-        set: function (value) {
-            value = this.confineAngle(value);
+Object.defineProperties(galaxies.ElephatronLimb.prototype,
+    {
+        angle: {
+            get: function() {
+                return this._angle;
+            },
+            set: function(value) {
+                value = this.confineAngle(value);
 
-            this._angle = value;
+                this._angle = value;
 
-            var adjustedAngle = value + this.limbAngleOffset;
+                var adjustedAngle = value + this.limbAngleOffset;
 
-            this.limb.rotation.z = adjustedAngle;
+                this.limb.rotation.z = adjustedAngle;
 
-            if (this.shadow) {
-                this.shadow.rotation.z = adjustedAngle;
-            }
-        }
-    },
-    targetAngle: {
-        get: function () {
-            return this._targetAngle;
-        },
-        set: function (value) {
-            if (typeof value !== "number") {
-                this._targetAngle = value;
-
-                return;
-            }
-
-            value = this.confineAngle(value);
-
-            if (this.minAngle === null || this.maxAngle === null) {
-                var diff = value - this.angle;
-
-                if (Math.abs(diff) > Math.PI) {
-                    value -= Math.sign(diff) * 2 * Math.PI;
+                if (this.shadow) {
+                    this.shadow.rotation.z = adjustedAngle;
                 }
             }
+        },
+        targetAngle: {
+            get: function() {
+                return this._targetAngle;
+            },
+            set: function(value) {
+                if (typeof value !== "number") {
+                    this._targetAngle = value;
 
-            this._targetAngle = value;
+                    return;
+                }
+
+                value = this.confineAngle(value);
+
+                if (this.minAngle === null || this.maxAngle === null) {
+                    var diff = value - this.angle;
+
+                    if (Math.abs(diff) > Math.PI) {
+                        value -= Math.sign(diff) * 2 * Math.PI;
+                    }
+                }
+
+                this._targetAngle = value;
+            }
         }
-    }
-});
+    });
 
-galaxies.ElephatronLimb.prototype.checkCollisions = function () {
+galaxies.ElephatronLimb.prototype.checkCollisions = function() {
     if (galaxies.engine.projectiles.length === 0) {
         return;
     }
@@ -98,49 +99,50 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
     this.damageColliders.forEach(this.updateCollider, this);
     this.otherColliders.forEach(this.updateCollider, this);
 
-    galaxies.engine.projectiles.forEach(function (proj) {
-        var didHit = this.damageColliders.some(function (collider) {
-                return doCollidersOverlap(proj.flatCapsule, collider);
-            }),
-            didDamage = false;
+    galaxies.engine.projectiles.forEach(function(proj) {
+            var didHit = this.damageColliders.some(function(collider) {
+                    return doCollidersOverlap(proj.flatCapsule, collider);
+                }),
+                didDamage = false;
 
-        if (didHit) {
-            if (!this.invincible) {
-                didDamage = true;
+            if (didHit) {
+                if (!this.invincible) {
+                    didDamage = true;
 
-                if (this.health === this.maxHealth) {
-                    this.smokeEmitter.enable();
+                    if (this.health === this.maxHealth) {
+                        this.smokeEmitter.enable();
+                    }
+
+                    --this.health;
+
+                    var scalar = 1 - (this.health / this.maxHealth);
+
+                    this.smokeEmitter.opacity.value = this.opacityValues.map(function(value) {
+                        return value * scalar;
+                    });
                 }
-
-                --this.health;
-
-                var scalar = 1 - (this.health / this.maxHealth);
-
-                this.smokeEmitter.opacity.value = this.opacityValues.map(function (value) {
-                    return value * scalar;
+            } else {
+                didHit = this.otherColliders.some(function(collider) {
+                    return doCollidersOverlap(proj.flatCapsule, collider);
                 });
             }
-        } else {
-            didHit = this.otherColliders.some(function (collider) {
-                return doCollidersOverlap(proj.flatCapsule, collider);
-            });
-        }
 
-        if (didHit) {
-            proj.hit();
+            if (didHit) {
+                proj.hit();
 
-            if (didDamage) {
-                galaxies.engine.showCombo(500, 1, this.object);
+                if (didDamage) {
+                    galaxies.engine.showCombo(500, 1, this.object);
+                }
+
+                new galaxies.audio.PositionedSound({
+                    source: galaxies.audio.getSound(didDamage ? "elephatronhitsuccess" : "elephatronhitfail"),
+                    position: proj.object.position,
+                    baseVolume: 2.2,
+                    loop: false
+                });
             }
-
-            new galaxies.audio.PositionedSound({
-                source: galaxies.audio.getSound(didDamage ? 'elephatronhitsuccess' : 'elephatronhitfail'),
-                position: proj.object.position,
-                baseVolume: 2.2,
-                loop: false
-            });
-        }
-    }, this);
+        },
+        this);
 
     if (this.health <= 0) {
         this.health = 0;
@@ -149,7 +151,7 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
 
         pos.z += 0.5;
 
-        galaxies.FX.ShowExplosion(this.damageColliders[0].rootPosition, 'ufoFire', 5);
+        galaxies.FX.ShowExplosion(this.damageColliders[0].rootPosition, "ufoFire", 5);
         galaxies.FX.TintScreen(0xFFAA00, 0.3, 200, 500);
 
         this.limbSprite.material.map = this.limbDamagedTexture;
@@ -160,7 +162,7 @@ galaxies.ElephatronLimb.prototype.checkCollisions = function () {
     }
 };
 
-galaxies.ElephatronLimb.prototype.confineAngle = function (angle) {
+galaxies.ElephatronLimb.prototype.confineAngle = function(angle) {
     if (this.minAngle === null || this.maxAngle === null) {
         return angle;
     }
@@ -185,7 +187,7 @@ galaxies.ElephatronLimb.prototype.confineAngle = function (angle) {
     return Math.min(Math.max(angle, this.minAngle), this.maxAngle);
 };
 
-galaxies.ElephatronLimb.prototype.disable = function () {
+galaxies.ElephatronLimb.prototype.disable = function() {
     this.smokeEmitter.disable();
 
     if (this.smokeEmitter.age) {
@@ -193,7 +195,7 @@ galaxies.ElephatronLimb.prototype.disable = function () {
     }
 };
 
-galaxies.ElephatronLimb.prototype.fireLaser = function () {
+galaxies.ElephatronLimb.prototype.fireLaser = function() {
     var spawnPoint = this.limb.localToWorld(this.laserEmitPoint.clone()),
         blast = this.getLaserBlast(this.angle);
 
@@ -208,18 +210,18 @@ galaxies.ElephatronLimb.prototype.fireLaser = function () {
     this.spawnLaserPellet(spawnPoint);
 };
 
-galaxies.ElephatronLimb.prototype.initModel = function () {
+galaxies.ElephatronLimb.prototype.initModel = function() {
     var props = this.baseProps,
-        getTexture = function (textureID) {
+        getTexture = function(textureID) {
             var tex = new THREE.Texture(galaxies.queue.getResult(textureID));
 
             tex.needsUpdate = true;
 
             return tex;
         },
-        createSprite = function (texture, scale, offset) {
+        createSprite = function(texture, scale, offset) {
             var spriteObject = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),
-                    new THREE.MeshBasicMaterial({map: texture, transparent: true, side: THREE.DoubleSide}));
+                new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }));
 
             if (scale) {
                 spriteObject.scale.copy(scale);
@@ -257,7 +259,7 @@ galaxies.ElephatronLimb.prototype.initModel = function () {
     this.object.add(this.limb);
 };
 
-galaxies.ElephatronLimb.prototype.initParticles = function () {
+galaxies.ElephatronLimb.prototype.initParticles = function() {
     var smokeParticles = {
         type: SPE.distributions.BOX,
         particleCount: 50,
@@ -270,8 +272,10 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
             value: new THREE.Vector3(0, 0, 3)
         },
         color: {
-            value: [ new THREE.Color(0.600, 0.600, 0.600),
-                new THREE.Color(0.200, 0.200, 0.200) ],
+            value: [
+                new THREE.Color(0.600, 0.600, 0.600),
+                new THREE.Color(0.200, 0.200, 0.200)
+            ],
             spread: new THREE.Vector3(0.1, 0.1, 0.1)
         },
         opacity: {
@@ -283,7 +287,7 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
         }
     };
 
-    var smokeTexture = new THREE.Texture( galaxies.queue.getResult('smoke') );
+    var smokeTexture = new THREE.Texture(galaxies.queue.getResult("smoke"));
 
     smokeTexture.needsUpdate = true;
 
@@ -294,9 +298,9 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
         maxParticleCount: 100
     });
 
-    var smokeEmitter = new SPE.Emitter( smokeParticles );
+    var smokeEmitter = new SPE.Emitter(smokeParticles);
 
-    smokeGroup.addEmitter( smokeEmitter );
+    smokeGroup.addEmitter(smokeEmitter);
 
     smokeEmitter.disable();
 
@@ -309,7 +313,7 @@ galaxies.ElephatronLimb.prototype.initParticles = function () {
     this.smokeGroup = smokeGroup;
 };
 
-galaxies.ElephatronLimb.prototype.reset = function () {
+galaxies.ElephatronLimb.prototype.reset = function() {
     this.targetAngle = null;
     this.health = this.maxHealth;
     this.angularVelocity = 0;
@@ -325,7 +329,7 @@ galaxies.ElephatronLimb.prototype.reset = function () {
     }
 };
 
-galaxies.ElephatronLimb.prototype.update = function (delta) {
+galaxies.ElephatronLimb.prototype.update = function(delta) {
     if (this.health !== this.maxHealth) {
         this.updateCollider(this.damageColliders[0]);
 
@@ -357,23 +361,24 @@ galaxies.ElephatronLimb.prototype.update = function (delta) {
     this.checkCollisions();
 };
 
-galaxies.ElephatronLimb.prototype.updateCollider = function (collider) {
+galaxies.ElephatronLimb.prototype.updateCollider = function(collider) {
     galaxies.utils.updateCollider(collider, this.limb);
 };
 
-galaxies.ElephatronLimb.prototype.updateCoordinates = function (scale) {
-    this.smokeEmitter.size.value = this.smokeEmitter.size.value.map(function () {
+galaxies.ElephatronLimb.prototype.updateCoordinates = function(scale) {
+    this.smokeEmitter.size.value = this.smokeEmitter.size.value.map(function() {
         return scale * 2.5;
     });
 
     this.scale = scale;
 };
 
-galaxies.ElephatronLimb.prototype.updateRotation = function (delta) {
+galaxies.ElephatronLimb.prototype.updateRotation = function(delta) {
     var difference = this.targetAngle - this.angle,
         absDifference = Math.abs(difference),
         direction = Math.sign(difference),
-        absVel, velDir;
+        absVel,
+        velDir;
 
     if (absDifference < 0.01) {
         this.angularVelocity = 0;

@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.PlaneSweep = function () {
+galaxies.PlaneSweep = function() {
     this.xList = [];
     this.yList = [];
     this.zList = [];
@@ -11,7 +11,7 @@ galaxies.PlaneSweep = function () {
 galaxies.PlaneSweep.prototype = {
     constructor: galaxies.PlaneSweep,
 
-    add: function (item) {
+    add: function(item) {
         if (this.xList.indexOf(item) > -1) {
             return;
         }
@@ -27,17 +27,17 @@ galaxies.PlaneSweep.prototype = {
             i;
 
         for (i = 0; i < listLen; ++i) {
-            if (!placedX && itemX < this.getItemMinVal(this.xList[i], 'x')) {
+            if (!placedX && itemX < this.getItemMinVal(this.xList[i], "x")) {
                 placedX = true;
                 this.xList.splice(i, 0, item);
             }
 
-            if (!placedY && itemY < this.getItemMinVal(this.yList[i], 'y')) {
+            if (!placedY && itemY < this.getItemMinVal(this.yList[i], "y")) {
                 placedY = true;
                 this.yList.splice(i, 0, item);
             }
 
-            if (!placedZ && itemZ < this.getItemMinVal(this.zList[i], 'z')) {
+            if (!placedZ && itemZ < this.getItemMinVal(this.zList[i], "z")) {
                 placedZ = true;
                 this.zList.splice(i, 0, item);
             }
@@ -60,23 +60,25 @@ galaxies.PlaneSweep.prototype = {
         }
     },
 
-    getItemMinVal: function (item, axis) {
+    getItemMinVal: function(item, axis) {
         if (item instanceof galaxies.Projectile) {
             return Math.min(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] - (item.hitThreshold || 0);
+            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] -
+                (item.hitThreshold || 0);
         }
     },
 
-    getItemMaxVal: function (item, axis) {
+    getItemMaxVal: function(item, axis) {
         if (item instanceof galaxies.Projectile) {
             return Math.max(item.object.position[axis], item.lastPos[axis]);
         } else {
-            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] + (item.hitThreshold || 0);
+            return (item.hasOwnProperty("rootPosition") ? item.rootPosition : item.object.position)[axis] +
+                (item.hitThreshold || 0);
         }
     },
 
-    remove: function (item) {
+    remove: function(item) {
         var xListIdx = this.xList.indexOf(item);
 
         if (xListIdx === -1) {
@@ -88,13 +90,13 @@ galaxies.PlaneSweep.prototype = {
         this.zList.splice(this.zList.indexOf(item), 1);
     },
 
-    update: function () {
+    update: function() {
         var getMinVal = this.getItemMinVal,
-            bubbleSort = function(a, compareFn)
-            {
+            bubbleSort = function(a, compareFn) {
                 var swapped,
                     aLenM1 = a.length - 1,
-                    i, iP1;
+                    i,
+                    iP1;
 
                 do {
                     swapped = false;
@@ -111,25 +113,31 @@ galaxies.PlaneSweep.prototype = {
                 } while (swapped);
             },
             getBubbleCompare = function(axis) {
-                return function (a, b) {
+                return function(a, b) {
                     return getMinVal(b, axis) < getMinVal(a, axis);
                 };
             };
 
-        bubbleSort(this.xList, getBubbleCompare('x'));
-        bubbleSort(this.yList, getBubbleCompare('y'));
-        bubbleSort(this.zList, getBubbleCompare('z'));
+        bubbleSort(this.xList, getBubbleCompare("x"));
+        bubbleSort(this.yList, getBubbleCompare("y"));
+        bubbleSort(this.zList, getBubbleCompare("z"));
     },
 
-    potentialCollisions: function () {
-        var xOverlaps, yOverlaps, zOverlaps,
+    potentialCollisions: function() {
+        var xOverlaps,
+            yOverlaps,
+            zOverlaps,
             getItemMinVal = this.getItemMinVal,
             getItemMaxVal = this.getItemMaxVal,
             getOverlaps = function(list, axis) {
                 var listSize = list.length,
                     listSizeM1 = listSize - 1,
                     pairs = [],
-                    i, j, checkVal, baseItem, checkItem;
+                    i,
+                    j,
+                    checkVal,
+                    baseItem,
+                    checkItem;
 
                 for (i = 0; i < listSizeM1; ++i) {
                     baseItem = list[i];
@@ -149,16 +157,16 @@ galaxies.PlaneSweep.prototype = {
                 return pairs;
             };
 
-        xOverlaps = getOverlaps(this.xList, 'x');
-        yOverlaps = getOverlaps(this.yList, 'y');
-        zOverlaps = getOverlaps(this.zList, 'z');
+        xOverlaps = getOverlaps(this.xList, "x");
+        yOverlaps = getOverlaps(this.yList, "y");
+        zOverlaps = getOverlaps(this.zList, "z");
 
-        return xOverlaps.filter(function (overlapPair) {
-            var doesMatchPair = function (checkPair) {
-                    return overlapPair.every(function (item) {
-                        return checkPair.indexOf(item) !== -1;
-                    });
-                };
+        return xOverlaps.filter(function(overlapPair) {
+            var doesMatchPair = function(checkPair) {
+                return overlapPair.every(function(item) {
+                    return checkPair.indexOf(item) !== -1;
+                });
+            };
 
             return yOverlaps.some(doesMatchPair) && zOverlaps.some(doesMatchPair);
         });

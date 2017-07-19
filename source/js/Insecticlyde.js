@@ -3,360 +3,235 @@
 this.galaxies = this.galaxies || {};
 
 galaxies.Insecticlyde = function () {
-    this.maxSegments = 10;
-    this.maxAngleDiff = Math.PI / 3;
-    this.taperCount = 3;
+    this.bodies = [];
 
-    this.segments = [];
-    this.movementController = null;
-    this.position = new THREE.Vector2();
-
-    this.patterns = [
-        [{x: 0.5, y: 1.2}, {x: 0.5, y: 1}, {x: 0.6, y: 0.5}, {x: 0.5, y: 0}, {x: 0.5, y: -0.5}],
-        [{x: 0.25, y: -0.2}, {x: 0.25, y: 0}, {x: 0.25, y: 0.5}, {x: 0.5, y: 0.9}, {x: 0.75, y: 0.5}, {x: 0.75, y: 0}, {x: 0.8, y: -0.5}],
-        [{x: 1.2, y: -0.2}, {x: 0.9, y: 0.1}, {x: 0.4, y: 0.4}, {x: 0.1, y: 0.9}, {x: -0.35, y: 1.35}],
-        [{x: 0.2, y: 1.2}, {x: 0.5, y: 0.8}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.2}, {x: 0.8, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.8, y: 1.5}]
-    ];
-
-    this.fillPools();
+    for (var i = 0; i < 3; ++i) {
+        this.bodies.push(new galaxies.InsectBody(this));
+    }
 
     galaxies.Boss.call(this);
 
     this.name = "Insecticlyde";
+    this.bodyScale = 0;
+    this.bodySpeed = 0;
 };
 
 galaxies.Insecticlyde.prototype = Object.create(galaxies.Boss.prototype);
 galaxies.Insecticlyde.prototype.constructor = galaxies.Insecticlyde;
 
-Object.defineProperties(galaxies.Insecticlyde.prototype, {
-    activeSegments: {
-        get: function () {
-            return this._activeSegments;
-        },
-        set: function (value) {
-            if (value !== this._activeSegments) {
-                this._activeSegments = value;
+galaxies.Insecticlyde.MAX_SEGMENTS = 10;
+galaxies.Insecticlyde.MAX_ANGLE_DIFF = Math.PI / 3;
+galaxies.Insecticlyde.DIVISIONS_PER_LOOP = 8;
+galaxies.Insecticlyde.DIVISIONS_PER_RADIAN = galaxies.Insecticlyde.DIVISIONS_PER_LOOP / (Math.PI * 2);
 
-                this.updateActiveSegments();
-            }
-        }
-    },
-    headAngle: {
-        get: function () {
-            return this._headAngle;
-        },
-        set: function (value) {
-            this._headAngle = value;
-
-            this.object.rotation.z = value + Math.PI / 2;
-        }
-    },
-    mouthOpenAmount: {
-        get: function () {
-            return this._mouthOpenAmount;
-        },
-        set: function (value) {
-            this._mouthOpenAmount = value;
-
-            var scalar = value - 0.8;
-
-            this.leftMandible.rotation.z = scalar * Math.PI / 4;
-            this.rightMandible.rotation.z = scalar * -Math.PI / 4;
-        }
-    },
-    scale: {
-        get: function () {
-            return this._scale;
-        },
-        set: function (value) {
-            this._scale = value;
-
-            this.object.scale.set(value, value, value);
-
-            this.updateActiveSegments();
-        }
-    }
-});
-
-galaxies.Insecticlyde.prototype.addRandomPattern = function () {
-    var chosenPattern = this.lastUsedPattern,
-        validIndices = this.patterns.length - 1;
-
-    while (chosenPattern === this.lastUsedPattern) {
-        chosenPattern = Math.round(Math.random() * validIndices)
-    }
-
-    this.movementController.addPath(this.patterns[chosenPattern]);
-
-    this.lastUsedPattern = chosenPattern;
+galaxies.Insecticlyde.prototype.activeBodies = function () {
+    return this.bodies.filter(function (body) { return body.state !== "inactive" });
 };
 
-galaxies.Insecticlyde.prototype.checkCollisions = function () {
-    var hitLast = false,
-        destroyedHead = false,
-        headCollider;
+galaxies.Insecticlyde.prototype.addBodies = function (sections) {
+    sections.forEach(function (section) {
+        this.nextAvailableBody().reset(section);
+    }, this);
+};
 
-    galaxies.utils.updateCollider(this.damageCollider, this.object);
+galaxies.Insecticlyde.prototype.addRandomPattern = function () {
+    var readyToAdd = this.bodies.every(function (body) {
+        return body.state === "inactive" || !body.movementController.active;
+    });
 
-    headCollider = this.damageCollider;
+    if (readyToAdd) {
+        var enterAngle = Math.random() * Math.PI *2,
+            exitAngle = Math.random() * Math.PI * 2,
+            enterVector = new THREE.Vector3(Math.cos(enterAngle), Math.sin(enterAngle), 0),
+            exitVector = new THREE.Vector3(Math.cos(exitAngle), Math.sin(exitAngle), 0),
+            angleDiff = galaxies.utils.normalizeAngle(exitAngle - enterAngle),
+            planetPosition = new THREE.Vector3(this.rightEdge - this.leftEdge, this.topEdge - this.bottomEdge, 1)
+                .multiply(new THREE.Vector3(galaxies.engine.planetScreenPoint.x, galaxies.engine.planetScreenPoint.y, 0))
+                .add(new THREE.Vector3(this.leftEdge, this.bottomEdge, 0)),
+            basePath = [],
+            startPoint = planetPosition.clone().add(enterVector.clone()
+                .multiplyScalar(this.distanceToEdge(planetPosition, enterVector) + this.bodyScale * 2)),
+            endPoint = planetPosition.clone().add(exitVector.clone()
+                .multiplyScalar(this.distanceToEdge(planetPosition, exitVector) + this.bodyScale * (galaxies.Insecticlyde.MAX_SEGMENTS + 1))),
+            angleIsSmall = Math.abs(angleDiff) < (Math.PI / 2);
 
-    galaxies.engine.projectiles.forEach(function (projectile) {
-        var projectileHit = false;
+        basePath.push(startPoint);
 
-        this.segments.some(function (segment, index) {
-            if (segment.enabled && segment.didGetHit(projectile)) {
-                projectileHit = true;
+        var intermmediatePointCount,
+            angleIncrement,
+            angle = enterAngle,
+            circleEnter,
+            circleExit,
+            i;
 
-                if (index === this.activeSegments - 1) {
-                    hitLast = true;
+        if (angleIsSmall || (Math.random() > 0.75)) {
+            var rotationDirection = angleIsSmall ? (-Math.sign(angleDiff)) : ((Math.random() > 0.5) ? 1 : -1);
+
+            angleDiff = exitAngle - enterAngle;
+
+            if (Math.sign(angleDiff) !== rotationDirection) {
+                if (rotationDirection === -1) {
+                    while (angleDiff > 0) {
+                        angleDiff -= Math.PI * 2;
+                    }
+
+                    // angleDiff -= Math.PI * 2;
+                } else {
+                    while (angleDiff < 0) {
+                        angleDiff += Math.PI * 2;
+                    }
+
+                    // angleDiff += Math.PI * 2;
                 }
             }
 
-            return !segment.enabled;
-        }, this);
+            circleEnter = planetPosition.clone().add(enterVector.clone().multiplyScalar(this.planetOrbitRadius));
+            circleExit = planetPosition.clone().add(exitVector.clone().multiplyScalar(this.planetOrbitRadius));
+        } else {
+            var intersections = galaxies.utils.getSegmentCircleIntersections(planetPosition, this.planetOrbitRadius, startPoint, endPoint);
 
-        if (galaxies.utils.doCollidersOverlap(projectile.flatCapsule, headCollider)) {
-            projectileHit = true;
-
-            if (!destroyedHead && this.activeSegments === 0) {
-                destroyedHead = true;
-
-                this.disable();
-
-                galaxies.engine.showCombo(8000, 1, this.object);
-                galaxies.FX.ShowExplosion(this.object.position, "green", this.scale * 3);
-                galaxies.FX.TintScreen(0x00FF00, 0.3, 200, 500);
+            if (intersections.length === 2) {
+                if (intersections[0].distanceToSquared(startPoint) < intersections[1].distanceToSquared(startPoint)) {
+                    circleEnter = intersections[0];
+                    circleExit = intersections[1];
+                } else {
+                    circleEnter = intersections[1];
+                    circleExit = intersections[0];
+                }
+            } else {
+                basePath.push(startPoint.clone().multiplyScalar(0.75).add(endPoint.clone().multiplyScalar(0.25)));
+                basePath.push(startPoint.clone().add(endPoint).multiplyScalar(0.5));
+                basePath.push(startPoint.clone().multiplyScalar(0.25).add(endPoint.clone().multiplyScalar(0.75)));
             }
         }
 
-        if (projectileHit) {
-            projectile.hit();
+        if (circleEnter) {
+            intermmediatePointCount = Math.max(1, Math.ceil(Math.abs(angleDiff * galaxies.Insecticlyde.DIVISIONS_PER_RADIAN) - 2));
+            angleIncrement = angleDiff / (intermmediatePointCount + 1);
+
+            basePath.push(startPoint.clone().add(circleEnter).multiplyScalar(0.5));
+
+            basePath.push(startPoint.clone().multiplyScalar(0.2).add(circleEnter.clone().multiplyScalar(0.8)));
+
+            basePath.push(circleEnter);
+
+            for (i = 0; i < intermmediatePointCount; ++i) {
+                angle += angleIncrement;
+
+                basePath.push(planetPosition.clone().add(new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0).multiplyScalar(this.planetOrbitRadius)));
+            }
+
+            basePath.push(circleExit);
+
+            basePath.push(endPoint.clone().multiplyScalar(0.2).add(circleExit.clone().multiplyScalar(0.8)));
+
+            basePath.push(endPoint.clone().add(circleExit).multiplyScalar(0.5));
         }
-    }, this);
 
-    if (hitLast) {
-        var lastSegment = this.segments[this.activeSegments - 1],
-            segmentCenter = lastSegment.object.position.clone();
+        basePath.push(endPoint);
 
-        segmentCenter.x -= Math.cos(lastSegment.angle) * lastSegment.scale;
-        segmentCenter.y -= Math.sin(lastSegment.angle) * lastSegment.scale;
+        var activeSections = this.activeBodies(),
+            numActive = activeSections.length;
 
-        galaxies.FX.ShakeCamera(0.7, 1);
-        galaxies.engine.showCombo(500, 1, lastSegment.object);
-        galaxies.FX.ShowExplosion(segmentCenter, "green", this.scale * 2);
-        galaxies.FX.TintScreen(0x00FF00, 0.3, 200, 500);
+        activeSections.forEach(function (section, index) {
+            if (index === 0) {
+                section.movementController.addPath(basePath.map(this.convertToPathPoint, this));
+            } else {
+                var rotation = Math.PI * 2 * index / numActive;
 
-        this.splatAudio.startSound();
+                section.movementController.addPath(basePath.map(function (point) {
+                    var localPoint = point.clone().sub(galaxies.engine.planetScreenPoint),
+                        cr = Math.cos(rotation),
+                        sr = Math.sin(rotation);
 
-        if (--this.activeSegments === 0) {
-            this.movementController.speed *= 2.3;
-        }
+                    localPoint.set(localPoint.x * cr - localPoint.y * sr, localPoint.x * sr + localPoint.y * cr);
+
+                    return this.convertToPathPoint(localPoint.add(galaxies.engine.planetScreenPoint));
+                }, this));
+            }
+
+            section.updateMovement(0, true, true);
+        }, this);
     }
+};
+
+galaxies.Insecticlyde.prototype.convertToPathPoint = function (point) {
+    return new THREE.Vector2((point.x - this.leftEdge) / (this.rightEdge - this.leftEdge),
+        (point.y - this.bottomEdge) / (this.topEdge - this.bottomEdge));
 };
 
 galaxies.Insecticlyde.prototype.disable = function () {
     galaxies.Boss.prototype.disable.call(this);
 
-    this.segments.forEach(function (segment) {
-        segment.object.visible = false;
+    this.bodies.forEach(function (body) {
+        body.disable();
     });
+};
 
-    this.laserBlastPool.forEach(function (blast) {
-        galaxies.engine.rootObject.remove(blast.sprite);
-    });
+galaxies.Insecticlyde.prototype.distanceToEdge = function (startPoint, direction) {
+    var targetX = (direction.x < 0) ? this.leftEdge : this.rightEdge,
+        targetY = (direction.y < 0) ? this.bottomEdge : this.topEdge,
+        smallValue = 0.00000001;
 
-    this.laserPelletPool.forEach(function (pellet) {
-        pellet.removeFromScene();
-    });
+    return Math.min((targetX - startPoint.x) / (direction.x || smallValue), (targetY - startPoint.y) / (direction.y || smallValue));
 };
 
 galaxies.Insecticlyde.prototype.enter = function () {
     galaxies.Boss.prototype.enter.call(this);
 
-    this.movementController.addPath([{x: -0.1, y: 0.8}, {x: 0.5, y: 0.8}, {x: 1, y: 1}, {x: 1.35, y: 1.35}]);
-    this.addRandomPattern();
-
-    this.laserBlastPool.forEach(function (blast) {
-        blast.sprite.visible = false;
-
-        galaxies.engine.rootObject.add(blast.sprite);
-    });
-};
-
-galaxies.Insecticlyde.prototype.fillPools = function () {
-    var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8, {x: 0, y: 0},
-            0.5),
-        i, tex, mat, sheet, sprite;
-
-    this.laserBlastPool = [];
-    this.laserBlastIndex = 0;
-
-    for (i = 0; i < 3; ++i) {
-        tex = new THREE.Texture(galaxies.queue.getResult('lasercircleblast'));
-
-        tex.needsUpdate = true;
-
-        mat = new THREE.SpriteMaterial({
-            map: tex,
-            transparent: true
-        });
-
-        sheet = new galaxies.SpriteSheet(tex, frames, 30);
-
-        sprite = new THREE.Sprite(mat);
-
-        this.laserBlastPool.push({
-            texture: tex,
-            spriteSheet: sheet,
-            material: mat,
-            sprite: sprite,
-            sound: new galaxies.audio.PositionedSound({
-                source: galaxies.audio.getSound('ufoshoot'),
-                position: this.rootPosition,
-                baseVolume: 2.4,
-                loop: false,
-                start: false,
-                dispose: false
-            })
-        });
-    }
-
-    this.laserPelletPool = [];
-    this.laserPelletIndex = 0;
-
-    for (i = 0; i < 15; ++i) {
-        this.laserPelletPool.push(new galaxies.LaserPellet());
-    }
-};
-
-galaxies.Insecticlyde.prototype.fireLaserPellet = function (position, angle) {
-    var pellet = this.laserPelletPool[this.laserPelletIndex],
-        direction;
-
-    if (++this.laserPelletIndex >= this.laserPelletPool.length) {
-        this.laserPelletIndex = 0;
-    }
-
-    if (typeof angle === "number") {
-        direction = new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0);
-    }
-
-    pellet.addToScene(position, direction);
+    this.bodies[0].enter();
 };
 
 galaxies.Insecticlyde.prototype.initModel = function () {
     galaxies.Boss.prototype.initModel.call(this);
 
-    this.head = galaxies.utils.makeSprite("insecticlydeface");
-
-    this.head.scale.set(1.58, 1.27, 1);
-
-    this.damageCollider = new galaxies.colliders.SphereCollider(new THREE.Vector3(), 0.7);
-
-    this.object.add(this.head);
-
-    for (var i = 0; i < this.maxSegments; ++i) {
-        var segment = new galaxies.InsectSegment();
-
-        this.segments.push(segment);
-
-        segment.angle = 0;
-
-        galaxies.engine.rootObject.add(segment.object);
-
-        segment.object.position.set(-0.45 - i * 0.9, 0, (i + 1) * -0.01);
-    }
-
-    var leftMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible"),
-        rightMandibleSprite = galaxies.utils.makeSprite("insecticlydemandible");
-
-    this.leftMandible = new THREE.Object3D();
-    this.rightMandible = new THREE.Object3D();
-
-    leftMandibleSprite.scale.set(-0.29, 0.73, 1);
-    rightMandibleSprite.scale.set(0.29, 0.73, 1);
-
-    leftMandibleSprite.material.side = THREE.BackSide;
-
-    leftMandibleSprite.position.set(-0.095, -0.195, 0);
-    rightMandibleSprite.position.set(0.095, -0.195, 0);
-
-    this.leftMandible.add(leftMandibleSprite);
-    this.rightMandible.add(rightMandibleSprite);
-
-    this.leftMandible.position.set(0.48, -0.32, -0.01);
-    this.rightMandible.position.set(-0.48, -0.32, -0.01);
-
-    this.object.add(this.leftMandible);
-    this.object.add(this.rightMandible);
-
     galaxies.engine.rootObject.add(this.object);
+
+    this.bodies.forEach(function (body) {
+        body.initModel();
+    });
 };
 
 galaxies.Insecticlyde.prototype.initAudio = function () {
     galaxies.Boss.prototype.initAudio.call(this);
 
-    this.splatAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('squishsplat'),
-        loop: false,
-        start: false
+    this.bodies.forEach(function (body) {
+        body.initAudio();
     });
 };
 
-galaxies.Insecticlyde.prototype.onNewPath = function () {
-    this.position = this.movementController.getCurrentPosition();
-    this.headAngle = this.movementController.getCurrentFacingAngle();
+galaxies.Insecticlyde.prototype.nextAvailableBody = function () {
+    var numBodies = this.bodies.length;
 
-    if (this.state === "entering") {
-        this.state = "moving";
+    for (var i = 0; i < numBodies; ++i) {
+        if (this.bodies[i].state === "inactive") {
+            return this.bodies[i];
+        }
     }
 
-    this.updateSegments(0, true, true);
+    var newBody = new galaxies.InsectBody(this);
 
-    this.addRandomPattern();
+    newBody.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, this.bodyScale, this.bodySpeed);
+
+    this.bodies.push(newBody);
+
+    return newBody;
 };
 
 galaxies.Insecticlyde.prototype.reset = function () {
     galaxies.Boss.prototype.reset.call(this);
 
-    this.segments.forEach(function (segment) {
-        segment.reset();
+    this.bodies.forEach(function (body, index) {
+        body.reset();
+
+        if (index !== 0) {
+            body.disable();
+        } else {
+            body.object.visible = true;
+        }
     });
 
-    this.object.visible = true;
-
-    this.headAngle = 0;
-    this.mouthOpenAmount = 0.5;
-    this.activeSegments = this.maxSegments;
-    this.timeToNextShot = 0;
     this.lastUsedPattern = -1;
-
-    this.position.x = this.leftEdge - this.scale * 2;
-    this.position.y = this.topEdge - this.scale * 2;
-
-    if (this.movementController) {
-        this.movementController.reset();
-        this.movementController.speed = this.scale * 5;
-    }
-
-    this.updateSegments(0, true);
-};
-
-galaxies.Insecticlyde.prototype.triggerLaserBlast = function (position) {
-    var blast = this.laserBlastPool[this.laserBlastIndex];
-
-    if (++this.laserBlastIndex >= this.laserBlastPool.length) {
-        this.laserBlastIndex = 0;
-    }
-
-    blast.sprite.visible = true;
-    blast.material.rotation = this.headAngle + Math.PI / 2;
-    blast.spriteSheet.play();
-    blast.sprite.position.copy(position);
-    blast.sprite.position.z += 0.1;
-
-    blast.sound.updatePosition(blast.sprite.position);
-    blast.sound.startSound();
 };
 
 galaxies.Insecticlyde.prototype.update = function (delta) {
@@ -366,196 +241,19 @@ galaxies.Insecticlyde.prototype.update = function (delta) {
         return;
     }
 
-    this.updateMovement(delta);
-
-    if ((this.state !== "preEntry") && (this.state !== "entering")) {
-        var firing = false,
-            angleDiff;
-
-        if (this.position.x > this.leftEdge && this.position.x < this.rightEdge &&
-            this.position.y > this.bottomEdge && this.position.y < this.topEdge) {
-            angleDiff = Math.atan2(this.position.y, this.position.x) - this.headAngle;
-
-            while (angleDiff > Math.PI) {
-                angleDiff -= 2 * Math.PI;
-            }
-
-            while (angleDiff < -Math.PI) {
-                angleDiff += 2 * Math.PI;
-            }
-
-            firing = Math.abs(angleDiff) > (5 * Math.PI / 6);
-        }
-
-        if (firing) {
-            this.timeToNextShot -= delta;
-
-            if (this.timeToNextShot <= 0) {
-                this.timeToNextShot = 0.25;
-
-                var position = this.object.position.clone()
-                    .add(new THREE.Vector3(Math.cos(this.headAngle), Math.sin(this.headAngle), 0)
-                        .multiplyScalar(this.scale * 0.5));
-
-                this.fireLaserPellet(position, this.headAngle);
-
-                this.triggerLaserBlast(position);
-            }
-        }
-    }
-
-    this.laserBlastPool.forEach(function (blast) {
-        if (blast.sprite.visible) {
-            blast.spriteSheet.update(delta);
-
-            if (!blast.spriteSheet.isPlaying()) {
-                blast.sprite.visible = false;
-            }
-        }
+    this.bodies.forEach(function (body) {
+        body.update(delta);
     });
-
-    this.laserPelletPool.forEach(function (pellet) {
-        if (pellet.state !== "inactive") {
-            pellet.update(delta);
-        }
-    });
-
-    if (this.state !== "preEntry") {
-        this.checkCollisions();
-    }
-};
-
-galaxies.Insecticlyde.prototype.updateActiveSegments = function (isResize, force) {
-    var /*taperAt = this.activeSegments - this.taperCount,
-        taperPlusOne = this.taperCount + 1,*/
-        outerScale = this.scale;
-
-    this.segments.forEach(function (segment, index) {
-        if (index >= this.activeSegments) {
-            segment.enabled = false;
-        } else {
-            segment.enabled = true;
-
-            var targetScale;
-
-            /*if (index >= taperAt) {
-                targetScale = (0.25 + 0.75 * (1 - (index - taperAt + 1) / taperPlusOne)) * outerScale;
-            } else {*/
-                targetScale = outerScale;
-            //}
-
-            if (force) {
-                segment.scale = targetScale;
-            } else if (isResize) {
-                segment.scale *= targetScale / segment.targetScale;
-            }
-
-            segment.targetScale = targetScale;
-        }
-    }, this);
 };
 
 galaxies.Insecticlyde.prototype.updateCoordinates = function () {
     galaxies.Boss.prototype.updateCoordinates.call(this);
 
-    var newScale = Math.min(Math.abs(this.topEdge - this.bottomEdge), Math.abs(this.rightEdge - this.leftEdge)) / 16;
+    this.bodyScale = Math.min(Math.abs(this.topEdge - this.bottomEdge), Math.abs(this.rightEdge - this.leftEdge)) / 16;
+    this.bodySpeed = this.bodyScale * 5;
+    this.planetOrbitRadius = this.bodyScale * 4;
 
-    this._scale = newScale;
-
-    this.object.scale.set(newScale, newScale, newScale);
-
-    var speed = newScale * (this.activeSegments === 0 ? 8 : 5);
-
-    if (this.movementController) {
-        this.movementController.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, speed);
-    } else {
-        this.movementController = new galaxies.BossMover(this.onNewPath.bind(this), this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge,
-            speed);
-    }
-
-    this.updateActiveSegments(true, (this.state === "preEntry") || (this.state === "entering"));
-
-    this.updateMovement(0, true);
-
-    if (this.state === "preEntry") {
-        this.position.x = this.leftEdge - newScale * 2;
-        this.position.y = this.topEdge - newScale * 2;
-
-        this.updateSegments(0, true);
-    }
-
-    this.laserBlastPool.forEach(function (blast) {
-        blast.sprite.scale.set(newScale, newScale, newScale);
-    });
-};
-
-galaxies.Insecticlyde.prototype.updateMovement = function (delta, skipAngleUpdate) {
-    if (this.state === "preEntry") {
-        return;
-    }
-
-    this.movementController.update(delta);
-
-    var pos = this.movementController.getCurrentPosition(),
-        angle = this.movementController.getCurrentFacingAngle();
-
-    if (pos) {
-        this.position = pos;
-        this.headAngle = angle;
-    }
-
-    this.updateSegments(delta, skipAngleUpdate || !pos);
-};
-
-galaxies.Insecticlyde.prototype.updateSegments = function (delta, skipAngleUpdate, reorient) {
-    delta = delta || 0;
-    reorient = reorient || false;
-
-    var mad = this.maxAngleDiff,
-        prevSegment;
-
-    this.object.position.x = this.position.x;
-    this.object.position.y = this.position.y;
-
-    this.segments.forEach(function (segment, index) {
-        var so = segment.object,
-            startFrom, angle, scalar, pos, lookAngle;
-
-        if (index === 0) {
-            startFrom = this.object.position;
-            angle = this.headAngle;
-            scalar = 0.45 * this.scale;
-        } else {
-            startFrom = prevSegment.object.position;
-            angle = prevSegment.angle;
-            scalar = 0.9 * prevSegment.scale;
-        }
-
-        pos = so.position.clone();
-
-        so.position.x = startFrom.x - Math.cos(angle) * scalar;
-        so.position.y = startFrom.y - Math.sin(angle) * scalar;
-
-        if (reorient) {
-            segment.angle = this.headAngle;
-        } else if (!skipAngleUpdate) {
-            pos.sub(so.position).multiplyScalar(-1);
-
-            lookAngle = Math.atan2(pos.y, pos.x);
-
-            var angleDiff = lookAngle - segment.angle;
-
-            if (angleDiff > Math.PI) {
-                lookAngle -= 2 * Math.PI;
-            } else if (angleDiff < -Math.PI) {
-                lookAngle += 2 * Math.PI;
-            }
-
-            segment.angle = Math.max(Math.min(0.1 * lookAngle + 0.9 * segment.angle, angle + mad), angle - mad);
-        }
-
-        segment.update(delta);
-
-        prevSegment = segment;
+    this.bodies.forEach(function (body) {
+        body.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, this.bodyScale, this.bodySpeed);
     }, this);
 };

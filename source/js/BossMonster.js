@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.BossMonster = function () {
+galaxies.BossMonster = function() {
     this.roarTime = 5;
     this.mouthAsteroids = [];
     this.leftTentacleAsteroid = null;
@@ -19,10 +19,10 @@ galaxies.BossMonster.SEGMENTS_PER_BONE = 2;
 galaxies.BossMonster.prototype = Object.create(galaxies.Boss.prototype);
 galaxies.BossMonster.prototype.constructor = galaxies.BossMonster;
 
-galaxies.BossMonster.prototype.closeEyes = function () {
+galaxies.BossMonster.prototype.closeEyes = function() {
     this.invincible = true;
 
-    this.eyes.forEach(function (eye) {
+    this.eyes.forEach(function(eye) {
         if (eye.eyeball.visible) {
             eye.eyelid.visible = true;
         }
@@ -42,7 +42,12 @@ galaxies.BossMonster.prototype.createArm = function() {
         mesh = new THREE.SkinnedMesh(geo, mat),
         segmentHeight = 4 / (numBones - 1),
         bones = [],
-        i, j, k, bone, scalar, invScalar,
+        i,
+        j,
+        k,
+        bone,
+        scalar,
+        invScalar,
         skeleton;
 
     tex.needsUpdate = true;
@@ -51,7 +56,7 @@ galaxies.BossMonster.prototype.createArm = function() {
         bone = new THREE.Bone();
 
         bone.position.y = i == 0 ? -2 : segmentHeight;
-        
+
         // TODO: Currently rigid. More blending between bones, except at ends. Use neighboring bones.
         if (i > 0) {
             bones[i - 1].add(bone);
@@ -81,10 +86,10 @@ galaxies.BossMonster.prototype.createArm = function() {
 
     mesh.bind(skeleton);
 
-    return {mesh: mesh, bones: bones, flinging: false, numBones: numBones, progress: 0, wiggleScalar: 0};
+    return { mesh: mesh, bones: bones, flinging: false, numBones: numBones, progress: 0, wiggleScalar: 0 };
 };
 
-galaxies.BossMonster.prototype.hitEye = function (eye) {
+galaxies.BossMonster.prototype.hitEye = function(eye) {
     var scale = eye.hitThreshold * 1.5;
 
     eye.eyeball.visible = false;
@@ -133,50 +138,50 @@ galaxies.BossMonster.prototype.hitEye = function (eye) {
     }
 };
 
-galaxies.BossMonster.prototype.initAudio = function () {
+galaxies.BossMonster.prototype.initAudio = function() {
     galaxies.Boss.prototype.initAudio.call(this);
 
     this.roarAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('monsterroar'),
+        source: galaxies.audio.getSound("monsterroar"),
         loop: false,
         start: false
     });
 
     this.ouchAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('monsterouch'),
+        source: galaxies.audio.getSound("monsterouch"),
         loop: false,
         start: false,
         baseVolume: 3
     });
 
     this.splatAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('squishsplat'),
+        source: galaxies.audio.getSound("squishsplat"),
         loop: false,
         start: false
     });
 };
 
-galaxies.BossMonster.prototype.initModel = function () {
+galaxies.BossMonster.prototype.initModel = function() {
     galaxies.Boss.prototype.initModel.call(this);
 
     var mainObject = this.object,
         topObject = new THREE.Object3D(),
-        bottomSprite = galaxies.utils.makeSprite('bossbottom'),
-        middleSprite = galaxies.utils.makeSprite('bossmiddle'),
-        topSprite = galaxies.utils.makeSprite('bosstop'),
+        bottomSprite = galaxies.utils.makeSprite("bossbottom"),
+        middleSprite = galaxies.utils.makeSprite("bossmiddle"),
+        topSprite = galaxies.utils.makeSprite("bosstop"),
         eyeSprites = [
-            galaxies.utils.makeSprite('bosseye1'),
-            galaxies.utils.makeSprite('bosseye2'),
-            galaxies.utils.makeSprite('bosseye3'),
-            galaxies.utils.makeSprite('bosseye4')
+            galaxies.utils.makeSprite("bosseye1"),
+            galaxies.utils.makeSprite("bosseye2"),
+            galaxies.utils.makeSprite("bosseye3"),
+            galaxies.utils.makeSprite("bosseye4")
         ],
         eyelidSprites = [
-            galaxies.utils.makeSprite('bosseyelid1'),
-            galaxies.utils.makeSprite('bosseyelid2'),
-            galaxies.utils.makeSprite('bosseyelid3'),
-            galaxies.utils.makeSprite('bosseyelid4')
+            galaxies.utils.makeSprite("bosseyelid1"),
+            galaxies.utils.makeSprite("bosseyelid2"),
+            galaxies.utils.makeSprite("bosseyelid3"),
+            galaxies.utils.makeSprite("bosseyelid4")
         ],
-        detachedEyeball = galaxies.utils.makeSprite('bosseyeball');
+        detachedEyeball = galaxies.utils.makeSprite("bosseyeball");
 
     this.leftTentacle = this.createArm();
     this.rightTentacle = this.createArm();
@@ -198,11 +203,11 @@ galaxies.BossMonster.prototype.initModel = function () {
     topObject.add(middleSprite);
     topObject.add(topSprite);
 
-    eyeSprites.forEach(function (eye) {
+    eyeSprites.forEach(function(eye) {
         topObject.add(eye);
     });
 
-    eyelidSprites.forEach(function (eyelid) {
+    eyelidSprites.forEach(function(eyelid) {
         topObject.add(eyelid);
     });
 
@@ -258,26 +263,30 @@ galaxies.BossMonster.prototype.initModel = function () {
         });
     }
 
-    var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0), new THREE.Vector2(512, 512),
-        new THREE.Vector2(4096, 4096), 53, new THREE.Vector2(0, 0), 0.5);
+    var frames = galaxies.utils.generateSpriteFrames(new THREE.Vector2(0, 0),
+        new THREE.Vector2(512, 512),
+        new THREE.Vector2(4096, 4096),
+        53,
+        new THREE.Vector2(0, 0),
+        0.5);
 
-    this.bloodSpurt = galaxies.FX.CreateGradatedSprite('toonexplosion', new THREE.Vector2(4, 4), frames);
+    this.bloodSpurt = galaxies.FX.CreateGradatedSprite("toonexplosion", new THREE.Vector2(4, 4), frames);
 
     THREE.SceneUtils.detach(this.bloodSpurt.sprite, galaxies.engine.rootObject, this.object);
 };
 
-galaxies.BossMonster.prototype.openEyes = function () {
+galaxies.BossMonster.prototype.openEyes = function() {
     this.invincible = false;
 
-    this.eyes.forEach(function (eye) {
+    this.eyes.forEach(function(eye) {
         eye.eyelid.visible = false;
     });
 };
 
-galaxies.BossMonster.prototype.reset = function () {
+galaxies.BossMonster.prototype.reset = function() {
     this.maxXVel = 0.5;
 
-    this.eyes.forEach(function (eye) {
+    this.eyes.forEach(function(eye) {
         eye.eyeball.visible = true;
     });
 
@@ -305,14 +314,15 @@ galaxies.BossMonster.prototype.reset = function () {
     galaxies.Boss.prototype.reset.call(this);
 };
 
-galaxies.BossMonster.prototype.update = function (delta) {
+galaxies.BossMonster.prototype.update = function(delta) {
     galaxies.Boss.prototype.update.call(this, delta);
 
     if (this.state === "inactive") {
         return;
     }
 
-    var cameraRootPos = galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
+    var cameraRootPos =
+        galaxies.engine.rootObject.worldToLocal(galaxies.engine.camera.localToWorld(new THREE.Vector3()));
 
     galaxies.FX.UpdateSprite(this.bloodSpurt, cameraRootPos, delta);
 
@@ -337,15 +347,16 @@ galaxies.BossMonster.prototype.update = function (delta) {
     }
 
     this.leftTentacleAsteroid = this.updateTentacle(delta, this.leftTentacle, this.leftTentacleAsteroid, -Math.PI / 4);
-    this.rightTentacleAsteroid = this.updateTentacle(delta, this.rightTentacle, this.rightTentacleAsteroid, Math.PI / 4);
+    this.rightTentacleAsteroid =
+        this.updateTentacle(delta, this.rightTentacle, this.rightTentacleAsteroid, Math.PI / 4);
 };
 
 // TODO: Figure out how to "fling" the asteroids in a way that feels right
-galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
+galaxies.BossMonster.prototype.updateCinematicAsteroids = function(delta) {
     var basePosition = this.object.position,
         yScale = this.object.scale.y;
 
-    this.mouthAsteroids = this.mouthAsteroids.filter(function (data) {
+    this.mouthAsteroids = this.mouthAsteroids.filter(function(data) {
         var asteroid = data.asteroid,
             conePoint;
 
@@ -359,7 +370,7 @@ galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
 
         if (data.progress >= 1 || asteroid.state !== "cinematic") {
             if (asteroid.state === "cinematic") {
-               asteroid.state = "falling";
+                asteroid.state = "falling";
             }
 
             asteroid.angle = Math.atan2(conePoint.y, conePoint.x);
@@ -381,12 +392,12 @@ galaxies.BossMonster.prototype.updateCinematicAsteroids = function (delta) {
     });
 };
 
-galaxies.BossMonster.prototype.updateCollisions = function (delta) {
+galaxies.BossMonster.prototype.updateCollisions = function(delta) {
     var camPos = galaxies.engine.camera.position,
         objScale = this.object.scale,
         topPos = this.object.position.clone().add(this.topObject.position.clone().multiply(objScale));
 
-    this.eyes.forEach(function (eye) {
+    this.eyes.forEach(function(eye) {
         var eyeball = eye.eyeball;
 
         if (eyeball.visible) {
@@ -394,61 +405,64 @@ galaxies.BossMonster.prototype.updateCollisions = function (delta) {
         }
     });
 
-    galaxies.engine.projectiles.forEach(function (proj) {
-        if (proj.alreadyCollidedWith.indexOf(this) > -1) {
-            return;
-        }
-
-        var projectedPrevCenter = proj.lastPos.clone(),
-            projectedCenter = proj.object.position.clone(),
-            projectedEdge = projectedCenter.clone().add(
-                projectedCenter.clone().normalize().multiplyScalar(proj.hitThreshold)),
-            diff = projectedCenter.clone().sub(camPos),
-            diff2 = projectedPrevCenter.clone().sub(camPos),
-            diff3 = projectedEdge.clone().sub(camPos),
-            projLine,
-            scaledHitThresholdSq;
-
-        projectedCenter.sub(diff.multiplyScalar(projectedCenter.z / diff.z));
-        projectedPrevCenter.sub(diff2.multiplyScalar(projectedPrevCenter.z / diff2.z));
-        projectedEdge.sub(diff3.multiplyScalar(projectedEdge.z / diff3.z));
-
-        projLine = projectedCenter.clone().sub(projectedPrevCenter);
-
-        scaledHitThresholdSq = projectedCenter.distanceToSquared(projectedEdge);
-
-        this.eyes.forEach(function (eye) {
-            if (eye.eyeball.visible) {
-                var eyeLine = eye.rootPosition.clone().sub(projectedPrevCenter),
-                    scalar, checkPoint;
-
-                eyeLine.projectOnVector(projLine);
-
-                scalar = eyeLine.clone().divide(projLine);
-                scalar = Math.min(Math.max(scalar.x || scalar.y || scalar.z, 0), 1);
-
-                checkPoint = projectedPrevCenter.clone().add(projLine.clone().multiplyScalar(scalar));
-
-                if (galaxies.utils.flatLengthSqr(checkPoint.sub(eye.rootPosition)) <=
-                    scaledHitThresholdSq + eye.hitThreshold * eye.hitThreshold) {
-                    proj.alreadyCollidedWith.push(this);
-                    proj.hit();
-
-                    if (!this.invincible) {
-                        this.hitEye(eye);
-                    }
-                }
+    galaxies.engine.projectiles.forEach(function(proj) {
+            if (proj.alreadyCollidedWith.indexOf(this) > -1) {
+                return;
             }
-        }, this);
-    }, this);
+
+            var projectedPrevCenter = proj.lastPos.clone(),
+                projectedCenter = proj.object.position.clone(),
+                projectedEdge = projectedCenter.clone().add(
+                    projectedCenter.clone().normalize().multiplyScalar(proj.hitThreshold)),
+                diff = projectedCenter.clone().sub(camPos),
+                diff2 = projectedPrevCenter.clone().sub(camPos),
+                diff3 = projectedEdge.clone().sub(camPos),
+                projLine,
+                scaledHitThresholdSq;
+
+            projectedCenter.sub(diff.multiplyScalar(projectedCenter.z / diff.z));
+            projectedPrevCenter.sub(diff2.multiplyScalar(projectedPrevCenter.z / diff2.z));
+            projectedEdge.sub(diff3.multiplyScalar(projectedEdge.z / diff3.z));
+
+            projLine = projectedCenter.clone().sub(projectedPrevCenter);
+
+            scaledHitThresholdSq = projectedCenter.distanceToSquared(projectedEdge);
+
+            this.eyes.forEach(function(eye) {
+                    if (eye.eyeball.visible) {
+                        var eyeLine = eye.rootPosition.clone().sub(projectedPrevCenter),
+                            scalar,
+                            checkPoint;
+
+                        eyeLine.projectOnVector(projLine);
+
+                        scalar = eyeLine.clone().divide(projLine);
+                        scalar = Math.min(Math.max(scalar.x || scalar.y || scalar.z, 0), 1);
+
+                        checkPoint = projectedPrevCenter.clone().add(projLine.clone().multiplyScalar(scalar));
+
+                        if (galaxies.utils.flatLengthSqr(checkPoint.sub(eye.rootPosition)) <=
+                            scaledHitThresholdSq + eye.hitThreshold * eye.hitThreshold) {
+                            proj.alreadyCollidedWith.push(this);
+                            proj.hit();
+
+                            if (!this.invincible) {
+                                this.hitEye(eye);
+                            }
+                        }
+                    }
+                },
+                this);
+        },
+        this);
 };
 
-galaxies.BossMonster.prototype.updateCoordinates = function () {
+galaxies.BossMonster.prototype.updateCoordinates = function() {
     galaxies.Boss.prototype.updateCoordinates.call(this);
 
     var scale = Math.max((this.rightEdge - this.leftEdge) / 22, 1);
 
-    this.eyes.forEach(function (eye) {
+    this.eyes.forEach(function(eye) {
         var trueSize = eye.eyeball.scale.clone().multiplyScalar(scale);
 
         eye.hitThreshold = Math.max(trueSize.x, trueSize.y, scale / 3);
@@ -460,7 +474,7 @@ galaxies.BossMonster.prototype.updateCoordinates = function () {
     this.updateSpriteY(this.yPosition);
 };
 
-galaxies.BossMonster.prototype.updateDetachedEye = function (delta) {
+galaxies.BossMonster.prototype.updateDetachedEye = function(delta) {
     var prevPos = this.detachedEyeball.position.clone(),
         diff;
 
@@ -483,7 +497,7 @@ galaxies.BossMonster.prototype.updateDetachedEye = function (delta) {
     }
 };
 
-galaxies.BossMonster.prototype.updateEntering = function (delta) {
+galaxies.BossMonster.prototype.updateEntering = function(delta) {
     if (this.yPosition > 0) {
         this.yPosition = Math.max(this.yPosition - delta, 0);
     }
@@ -495,7 +509,7 @@ galaxies.BossMonster.prototype.updateEntering = function (delta) {
     }
 };
 
-galaxies.BossMonster.prototype.updateExiting = function (delta) {
+galaxies.BossMonster.prototype.updateExiting = function(delta) {
     if (this.yPosition < 1) {
         this.yPosition = Math.min(this.yPosition + delta, 1);
     } else {
@@ -503,7 +517,7 @@ galaxies.BossMonster.prototype.updateExiting = function (delta) {
     }
 };
 
-galaxies.BossMonster.prototype.updateIdle = function (delta) {
+galaxies.BossMonster.prototype.updateIdle = function(delta) {
     this.timeToNextRoar -= delta;
 
     if (galaxies.engine.isGameOver) {
@@ -531,7 +545,7 @@ galaxies.BossMonster.prototype.updateIdle = function (delta) {
     }
 };
 
-galaxies.BossMonster.prototype.updateMovement = function (delta) {
+galaxies.BossMonster.prototype.updateMovement = function(delta) {
     var distToTarget = this.targetXPos - this.xPosition,
         absDistToTarget = Math.abs(distToTarget);
 
@@ -567,7 +581,7 @@ galaxies.BossMonster.prototype.updateMovement = function (delta) {
     }
 };
 
-galaxies.BossMonster.prototype.updateRoar = function (delta) {
+galaxies.BossMonster.prototype.updateRoar = function(delta) {
     this.roarTimer += delta;
 
     if (this.roarTimer > this.roarTime) {
@@ -609,17 +623,17 @@ galaxies.BossMonster.prototype.updateRoar = function (delta) {
     this.topObject.position.x = Math.sin(this.roarTimer * 70) * 0.04 * this.mouthOpenAmount;
 };
 
-galaxies.BossMonster.prototype.updateSpriteX = function (value) {
+galaxies.BossMonster.prototype.updateSpriteX = function(value) {
     var halfWidth = (this.object.scale.x * this.bottomSprite.scale.x) / 2;
 
     this.object.position.x = (1 - value) * (this.leftEdge + halfWidth) + value * (this.rightEdge - halfWidth);
 };
 
-galaxies.BossMonster.prototype.updateSpriteY = function (value) {
+galaxies.BossMonster.prototype.updateSpriteY = function(value) {
     this.object.position.y = this.bottomEdge - value * this.object.scale.y * 3.5;
 };
 
-galaxies.BossMonster.prototype.updateTentacle = function (delta, tentacle, asteroid, restAngle) {
+galaxies.BossMonster.prototype.updateTentacle = function(delta, tentacle, asteroid, restAngle) {
     var maxDeviation = Math.PI / 12,
         direction = Math.sign(restAngle),
         periodicityScalar = 2 * Math.PI / 3,
@@ -633,7 +647,8 @@ galaxies.BossMonster.prototype.updateTentacle = function (delta, tentacle, aster
             var fromAngle = direction * Math.PI / (2 * tentacle.numBones);
 
             for (i = 1; i < tentacle.numBones; ++i) {
-                tentacle.bones[i].rotation.z = fromAngle - (direction * tentacle.progress * Math.PI / tentacle.numBones);
+                tentacle.bones[i].rotation.z =
+                    fromAngle - (direction * tentacle.progress * Math.PI / tentacle.numBones);
             }
         }
 
@@ -678,8 +693,7 @@ galaxies.BossMonster.prototype.updateTentacle = function (delta, tentacle, aster
         }
     }
 
-    if (tentacle.wiggleScalar > 0)
-    {
+    if (tentacle.wiggleScalar > 0) {
         tentacle.bones[0].rotation.z = restAngle + Math.sin(scaledAge) * maxDeviation / 2;
 
         for (i = 1; i < tentacle.numBones; ++i) {
@@ -701,35 +715,36 @@ galaxies.BossMonster.prototype.updateTentacle = function (delta, tentacle, aster
     return asteroid;
 };
 
-Object.defineProperties(galaxies.BossMonster.prototype, {
-    xPosition: {
-        get: function () {
-            return this._xPosition;
-        },
-        set: function (value) {
-            this._xPosition = value;
+Object.defineProperties(galaxies.BossMonster.prototype,
+    {
+        xPosition: {
+            get: function() {
+                return this._xPosition;
+            },
+            set: function(value) {
+                this._xPosition = value;
 
-            this.updateSpriteX(value);
-        }
-    },
-    yPosition: {
-        get: function () {
-            return this._yPosition;
+                this.updateSpriteX(value);
+            }
         },
-        set: function (value) {
-            this._yPosition = value;
+        yPosition: {
+            get: function() {
+                return this._yPosition;
+            },
+            set: function(value) {
+                this._yPosition = value;
 
-            this.updateSpriteY(value);
-        }
-    },
-    mouthOpenAmount: {
-        get: function () {
-            return this._mouthOpenAmount;
+                this.updateSpriteY(value);
+            }
         },
-        set: function (value) {
-            this._mouthOpenAmount = value;
+        mouthOpenAmount: {
+            get: function() {
+                return this._mouthOpenAmount;
+            },
+            set: function(value) {
+                this._mouthOpenAmount = value;
 
-            this.topObject.position.y = 1.27 + value * 2.73;
+                this.topObject.position.y = 1.27 + value * 2.73;
+            }
         }
-    }
-});
+    });

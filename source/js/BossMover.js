@@ -2,8 +2,8 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.BossMover = function (pathChangeCallback, topEdge, bottomEdge, leftEdge, rightEdge, speed) {
-    this.pathChangeCallback = pathChangeCallback;
+galaxies.BossMover = function (pathEndCallback, topEdge, bottomEdge, leftEdge, rightEdge, speed) {
+    this.pathEndCallback = pathEndCallback;
 
     this.reset();
 
@@ -25,15 +25,17 @@ galaxies.BossMover.prototype = {
             return;
         }
 
-        var startX = this.startX,
-            startY = this.startY,
-            scaleX = this.scaleX,
-            scaleY = this.scaleY,
-            convertedPoints = this.paths[0].map(function (point) {
-                return new THREE.Vector3(startX + point.x * scaleX, startY + point.y * scaleY, point.z || 0);
-            });
-
-        this.currentPath = new THREE.CatmullRomCurve3(convertedPoints);
+        this.currentPath = new THREE.CatmullRomCurve3(this.paths[0].map(this.convertPointToWorld, this));
+    },
+    convertPointToNormalized: function (point) {
+        return new THREE.Vector2(point.x, point.y)
+            .sub(new THREE.Vector2(this.startX, this.startY))
+            .divide(new THREE.Vector2(this.scaleX, this.scaleY));
+    },
+    convertPointToWorld: function (point) {
+        return new THREE.Vector3(this.scaleX, this.scaleY, 1)
+            .multiply(new THREE.Vector3(point.x, point.y, point.z || 0))
+            .add(new THREE.Vector3(this.startX, this.startY, 0));
     },
     getCurrentFacingAngle: function () {
         if (!this.currentPath) {
@@ -81,23 +83,25 @@ galaxies.BossMover.prototype = {
                 .sub(this.currentPath.getPoint(this.pathProgress)).length(),
             calculatedSpeed = smallChange * distanceToTravel / distanceOverChange;
 
-        this.currentRate = this.currentRate * 0.8 + calculatedSpeed * 0.2;
+        this.currentRate = (this.pathProgress === 0) ? calculatedSpeed : (this.currentRate * 0.4 + calculatedSpeed * 0.6);
 
         this.pathProgress += this.currentRate;
 
         if (this.pathProgress >= 1) {
             this.moveToNextPath();
 
-            if (this.currentPath !== null && this.pathChangeCallback) {
-                this.pathChangeCallback();
+            if (this.pathEndCallback) {
+                this.pathEndCallback();
             }
         }
     },
     updateCoordinates: function (topEdge, bottomEdge, leftEdge, rightEdge, speed) {
         var newScaleX = rightEdge - leftEdge,
             newScaleY = topEdge - bottomEdge,
-            changesMade = (leftEdge !== this.startX) || (bottomEdge !== this.startY) ||
-                (newScaleX !== this.scaleX) || (newScaleY !== this.scaleY);
+            changesMade = (leftEdge !== this.startX) ||
+                (bottomEdge !== this.startY) ||
+                (newScaleX !== this.scaleX) ||
+                (newScaleY !== this.scaleY);
 
         this.startX = leftEdge;
         this.scaleX = newScaleX;
@@ -114,3 +118,12 @@ galaxies.BossMover.prototype = {
         }
     }
 };
+
+Object.defineProperties(galaxies.BossMover.prototype,
+    {
+        active: {
+            get: function () {
+                return this.currentPath != null;
+            }
+        }
+    });

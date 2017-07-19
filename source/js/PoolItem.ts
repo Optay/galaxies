@@ -1,4 +1,4 @@
-/// <reference path="Pool.ts"/>
+/// <reference path="Pool.ts" />
 
 "use strict";
 
@@ -11,16 +11,16 @@ namespace galaxies {
             this.owningPool = pool;
         }
 
-        public Activate(): void {
+        Activate(): void {
             this.bIsActive = true;
         }
 
-        public Deactivate(): void {
+        Deactivate(): void {
             this.bIsActive = false;
             this.owningPool.ReturnOne(this);
         }
 
-        public IsActive(): boolean {
+        IsActive(): boolean {
             return this.bIsActive;
         }
     }

@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.Elephatron = function () {
+galaxies.Elephatron = function() {
     this.laserBlastPool = [];
     this.laserBlastIndex = 0;
     this.laserPelletPool = [];
@@ -29,14 +29,14 @@ galaxies.Elephatron = function () {
 galaxies.Elephatron.prototype = Object.create(galaxies.Boss.prototype);
 galaxies.Elephatron.prototype.constructor = galaxies.Elephatron;
 
-galaxies.Elephatron.prototype.disable = function () {
+galaxies.Elephatron.prototype.disable = function() {
     galaxies.Boss.prototype.disable.call(this);
 
-    this.laserBlastPool.forEach(function (blast) {
+    this.laserBlastPool.forEach(function(blast) {
         galaxies.engine.rootObject.remove(blast.sprite);
     });
 
-    this.laserPelletPool.forEach(function (pellet) {
+    this.laserPelletPool.forEach(function(pellet) {
         pellet.removeFromScene();
     });
 
@@ -45,25 +45,33 @@ galaxies.Elephatron.prototype.disable = function () {
     this.trunk.disable();
 };
 
-galaxies.Elephatron.prototype.enter = function () {
+galaxies.Elephatron.prototype.enter = function() {
     galaxies.Boss.prototype.enter.call(this);
 
     this.targetAngle = Math.PI / 2;
 
-    this.laserBlastPool.forEach(function (blast) {
+    this.laserBlastPool.forEach(function(blast) {
         blast.sprite.visible = false;
 
         galaxies.engine.rootObject.add(blast.sprite);
     });
 };
 
-galaxies.Elephatron.prototype.fillPools = function () {
-    var frames = galaxies.utils.generateSpriteFrames({x: 0, y: 0}, {x: 256, y: 256}, {x: 256, y: 2048}, 8, {x: 0, y: 0},
+galaxies.Elephatron.prototype.fillPools = function() {
+    var frames = galaxies.utils.generateSpriteFrames({ x: 0, y: 0 },
+            { x: 256, y: 256 },
+            { x: 256, y: 2048 },
+            8,
+            { x: 0, y: 0 },
             0.5),
-        i, tex, sheet, mat, sprite;
+        i,
+        tex,
+        sheet,
+        mat,
+        sprite;
 
     for (i = 0; i < 6; ++i) {
-        tex = new THREE.Texture(galaxies.queue.getResult('lasercircleblast'));
+        tex = new THREE.Texture(galaxies.queue.getResult("lasercircleblast"));
 
         tex.needsUpdate = true;
 
@@ -82,7 +90,7 @@ galaxies.Elephatron.prototype.fillPools = function () {
             material: mat,
             sprite: sprite,
             sound: new galaxies.audio.PositionedSound({
-                source: galaxies.audio.getSound('ufoshoot'),
+                source: galaxies.audio.getSound("ufoshoot"),
                 position: this.rootPosition,
                 baseVolume: 2.4,
                 loop: false,
@@ -97,7 +105,7 @@ galaxies.Elephatron.prototype.fillPools = function () {
     }
 };
 
-galaxies.Elephatron.prototype.getLaserBlast = function (angle) {
+galaxies.Elephatron.prototype.getLaserBlast = function(angle) {
     var blast = this.laserBlastPool[this.laserBlastIndex];
 
     if (++this.laserBlastIndex >= this.laserBlastPool.length) {
@@ -111,23 +119,23 @@ galaxies.Elephatron.prototype.getLaserBlast = function (angle) {
     return blast;
 };
 
-galaxies.Elephatron.prototype.initAudio = function () {
+galaxies.Elephatron.prototype.initAudio = function() {
     galaxies.Boss.prototype.initAudio.call(this);
 
     this.roarAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('elephatronroar'),
+        source: galaxies.audio.getSound("elephatronroar"),
         loop: false,
         start: false
     });
 
     this.explodeAudio = new galaxies.audio.SimpleSound({
-        source: galaxies.audio.getSound('satellitesplode'),
+        source: galaxies.audio.getSound("satellitesplode"),
         loop: false,
         start: false
     });
 };
 
-galaxies.Elephatron.prototype.initModel = function () {
+galaxies.Elephatron.prototype.initModel = function() {
     galaxies.Boss.prototype.initModel.call(this);
 
     var mainObject = this.object,
@@ -214,58 +222,72 @@ galaxies.Elephatron.prototype.initModel = function () {
 
     var colliders = galaxies.colliders;
 
-    this.leftArm = new galaxies.ElephatronLimb(this.getLaserBlast, this.spawnLaserPellet, {
-        limbTextureID: "elephatronarm",
-        limbDamagedTextureID: "elephatronarmdamaged",
-        limbSpriteScale: new THREE.Vector3(-1.95, 0.93, 1),
-        limbSpriteOffset: new THREE.Vector3(0.855, -0.065, 0),
-        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(1.46, -0.03, 0), 0.425)],
-        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(1.46, -0.03, 0), 0.3)],
-        laserEmitPoint: new THREE.Vector3(1.68, -0.03, 0.05),
-        minAngle: -Math.PI / 2,
-        maxAngle: Math.PI / 2,
-        startAngle: -Math.PI / 4
-    });
+    this.leftArm = new galaxies.ElephatronLimb(this.getLaserBlast,
+        this.spawnLaserPellet,
+        {
+            limbTextureID: "elephatronarm",
+            limbDamagedTextureID: "elephatronarmdamaged",
+            limbSpriteScale: new THREE.Vector3(-1.95, 0.93, 1),
+            limbSpriteOffset: new THREE.Vector3(0.855, -0.065, 0),
+            damageColliders: [new colliders.SphereCollider(new THREE.Vector3(1.46, -0.03, 0), 0.425)],
+            otherColliders: [
+                new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(1.46, -0.03, 0),
+                    0.3)
+            ],
+            laserEmitPoint: new THREE.Vector3(1.68, -0.03, 0.05),
+            minAngle: -Math.PI / 2,
+            maxAngle: Math.PI / 2,
+            startAngle: -Math.PI / 4
+        });
 
     this.leftArm.object.position.set(0.9, 0.11, -0.04);
 
-    this.rightArm = new galaxies.ElephatronLimb(this.getLaserBlast, this.spawnLaserPellet, {
-        limbTextureID: "elephatronarm",
-        limbDamagedTextureID: "elephatronarmdamaged",
-        limbSpriteScale: new THREE.Vector3(1.95, 0.93, 1),
-        limbSpriteOffset: new THREE.Vector3(-0.855, -0.065, 0),
-        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(-1.46, -0.03, 0), 0.425)],
-        otherColliders: [new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(-1.46, -0.03, 0), 0.3)],
-        laserEmitPoint: new THREE.Vector3(-1.68, -0.03, 0.05),
-        minAngle: Math.PI / 2,
-        maxAngle: 3 * Math.PI / 2,
-        limbAngleOffset: Math.PI,
-        startAngle: 5 * Math.PI / 4
-    });
+    this.rightArm = new galaxies.ElephatronLimb(this.getLaserBlast,
+        this.spawnLaserPellet,
+        {
+            limbTextureID: "elephatronarm",
+            limbDamagedTextureID: "elephatronarmdamaged",
+            limbSpriteScale: new THREE.Vector3(1.95, 0.93, 1),
+            limbSpriteOffset: new THREE.Vector3(-0.855, -0.065, 0),
+            damageColliders: [new colliders.SphereCollider(new THREE.Vector3(-1.46, -0.03, 0), 0.425)],
+            otherColliders: [
+                new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(-1.46, -0.03, 0),
+                    0.3)
+            ],
+            laserEmitPoint: new THREE.Vector3(-1.68, -0.03, 0.05),
+            minAngle: Math.PI / 2,
+            maxAngle: 3 * Math.PI / 2,
+            limbAngleOffset: Math.PI,
+            startAngle: 5 * Math.PI / 4
+        });
 
     this.rightArm.object.position.set(-0.86, 0.11, -0.04);
 
-    this.trunk = new galaxies.ElephatronLimb(this.getLaserBlast, this.spawnLaserPellet, {
-        limbTextureID: "elephatronnose",
-        limbDamagedTextureID: "elephatronnosedamaged",
-        shadowTextureID: "elephatronnoseshadow",
-        shadowDamagedTextureID: "elephatronnosedamagedshadow",
-        limbSpriteScale: new THREE.Vector3(1.06, 2.23, 1),
-        limbSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
-        shadowSpriteScale: new THREE.Vector3(1.11, 2.48, 1),
-        shadowSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
-        shadowPosition: new THREE.Vector3(-0.05, -0.195, -0.01),
-        damageColliders: [new colliders.SphereCollider(new THREE.Vector3(0.305, -1.72, 0), 0.4)],
-        otherColliders: [
-            new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-0.1, -0.7, 0), 0.4),
-            new colliders.CapsuleCollider(new THREE.Vector3(-0.12, -0.815, 0), new THREE.Vector3(0.305, -1.72, 0), 0.3)
-        ],
-        laserEmitPoint: new THREE.Vector3(0.405, -1.92, 0.05),
-        limbAngleOffset: 9 * Math.PI / 24,
-        startAngle: -3 * Math.PI / 8
-    });
+    this.trunk = new galaxies.ElephatronLimb(this.getLaserBlast,
+        this.spawnLaserPellet,
+        {
+            limbTextureID: "elephatronnose",
+            limbDamagedTextureID: "elephatronnosedamaged",
+            shadowTextureID: "elephatronnoseshadow",
+            shadowDamagedTextureID: "elephatronnosedamagedshadow",
+            limbSpriteScale: new THREE.Vector3(1.06, 2.23, 1),
+            limbSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
+            shadowSpriteScale: new THREE.Vector3(1.11, 2.48, 1),
+            shadowSpriteOffset: new THREE.Vector3(0.075, -0.815, 0),
+            shadowPosition: new THREE.Vector3(-0.05, -0.195, -0.01),
+            damageColliders: [new colliders.SphereCollider(new THREE.Vector3(0.305, -1.72, 0), 0.4)],
+            otherColliders: [
+                new colliders.CapsuleCollider(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-0.1, -0.7, 0), 0.4),
+                new colliders.CapsuleCollider(new THREE.Vector3(-0.12, -0.815, 0),
+                    new THREE.Vector3(0.305, -1.72, 0),
+                    0.3)
+            ],
+            laserEmitPoint: new THREE.Vector3(0.405, -1.92, 0.05),
+            limbAngleOffset: 9 * Math.PI / 24,
+            startAngle: -3 * Math.PI / 8
+        });
 
     this.trunk.object.position.set(-0.04, 0.58, 0.03);
 
@@ -274,7 +296,7 @@ galaxies.Elephatron.prototype.initModel = function () {
     mainObject.add(this.trunk.object);
 };
 
-galaxies.Elephatron.prototype.reset = function () {
+galaxies.Elephatron.prototype.reset = function() {
     galaxies.Boss.prototype.reset.call(this);
 
     this.xVel = 0;
@@ -296,14 +318,15 @@ galaxies.Elephatron.prototype.reset = function () {
     this.rightArm.reset();
     this.trunk.reset();
 
-    this.leftArm.shotCooldown = this.rightArm.shotCooldown = this.trunk.shotCooldown = (this.health + 1) / this.maxHealth;
+    this.leftArm.shotCooldown = this.rightArm.shotCooldown = this.trunk.shotCooldown =
+        (this.health + 1) / this.maxHealth;
 
     this.leftArm.invincible = true;
     this.rightArm.invincible = true;
     this.trunk.invincible = true;
 };
 
-galaxies.Elephatron.prototype.spawnLaserPellet = function (position) {
+galaxies.Elephatron.prototype.spawnLaserPellet = function(position) {
     var pellet = this.laserPelletPool[this.laserPelletIndex];
 
     if (++this.laserPelletIndex >= this.laserPelletPool.length) {
@@ -313,7 +336,7 @@ galaxies.Elephatron.prototype.spawnLaserPellet = function (position) {
     pellet.addToScene(position);
 };
 
-galaxies.Elephatron.prototype.update = function (delta) {
+galaxies.Elephatron.prototype.update = function(delta) {
     galaxies.Boss.prototype.update.call(this, delta);
 
     if (this.state === "inactive") {
@@ -426,7 +449,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
         this.object.rotation.z = 0.05 * this.xVel / this.object.scale.x;
     }
 
-    this.laserBlastPool.forEach(function (blast) {
+    this.laserBlastPool.forEach(function(blast) {
         if (blast.sprite.visible) {
             blast.spriteSheet.update(delta);
 
@@ -436,7 +459,7 @@ galaxies.Elephatron.prototype.update = function (delta) {
         }
     });
 
-    this.laserPelletPool.forEach(function (pellet) {
+    this.laserPelletPool.forEach(function(pellet) {
         if (pellet.state !== "inactive") {
             pellet.update(delta);
         }
@@ -494,11 +517,12 @@ galaxies.Elephatron.prototype.update = function (delta) {
     }
 };
 
-galaxies.Elephatron.prototype.updateCoordinates = function () {
+galaxies.Elephatron.prototype.updateCoordinates = function() {
     galaxies.Boss.prototype.updateCoordinates.call(this);
 
     var scale = Math.max(Math.min(Math.abs(this.rightEdge - this.leftEdge) / (6 * 2.87),
-        Math.abs(this.topEdge - this.bottomEdge) / (5 * 3.26)), 1);
+            Math.abs(this.topEdge - this.bottomEdge) / (5 * 3.26)),
+        1);
 
     this.object.scale.set(scale, scale, scale);
 
@@ -512,7 +536,7 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
     this.rx = this.rightEdge * 0.6;
     this.ry = this.topEdge * 0.6;
 
-    this.laserBlastPool.forEach(function (blast) {
+    this.laserBlastPool.forEach(function(blast) {
         blast.sprite.scale.set(scale, scale, scale);
     });
 
@@ -521,7 +545,7 @@ galaxies.Elephatron.prototype.updateCoordinates = function () {
     this.trunk.updateCoordinates(scale);
 };
 
-galaxies.Elephatron.prototype.updateExiting = function (delta) {
+galaxies.Elephatron.prototype.updateExiting = function(delta) {
     galaxies.Boss.prototype.updateExiting.call(this);
 
     if (this.position.y > this.bottomEdge - this.object.scale.y * 4) {
@@ -532,7 +556,7 @@ galaxies.Elephatron.prototype.updateExiting = function (delta) {
     }
 };
 
-galaxies.Elephatron.prototype.updateMovement = function (delta) {
+galaxies.Elephatron.prototype.updateMovement = function(delta) {
     if (!this.angularVelocity) {
         this.angularVelocity = new THREE.Vector2(Math.sign(this.targetAngle - this.currentAngle), 0);
     }
@@ -596,28 +620,29 @@ galaxies.Elephatron.prototype.updateMovement = function (delta) {
     this.flameScale = 1.43 + 3 * this.angularVelocity.y / this.object.scale.x;
 };
 
-Object.defineProperties(galaxies.Elephatron.prototype, {
-    health: {
-        get: function () {
-            return this.leftArm.health + this.rightArm.health + this.trunk.health;
-        }
-    },
-    maxHealth: {
-        get: function () {
-            return this.leftArm.maxHealth + this.rightArm.maxHealth + this.trunk.maxHealth;
-        }
-    },
-    mouthOpenAmount: {
-        get: function () {
-            return this._mouthOpenAmount;
+Object.defineProperties(galaxies.Elephatron.prototype,
+    {
+        health: {
+            get: function() {
+                return this.leftArm.health + this.rightArm.health + this.trunk.health;
+            }
         },
-        set: function (value) {
-            var offset = value * 0.26;
+        maxHealth: {
+            get: function() {
+                return this.leftArm.maxHealth + this.rightArm.maxHealth + this.trunk.maxHealth;
+            }
+        },
+        mouthOpenAmount: {
+            get: function() {
+                return this._mouthOpenAmount;
+            },
+            set: function(value) {
+                var offset = value * 0.26;
 
-            this._mouthOpenAmount = value;
+                this._mouthOpenAmount = value;
 
-            this.topTeeth.position.y = 0.05 + offset;
-            this.bottomTeeth.position.y = -0.56 - offset;
+                this.topTeeth.position.y = 0.05 + offset;
+                this.bottomTeeth.position.y = -0.56 - offset;
+            }
         }
-    }
-});
+    });

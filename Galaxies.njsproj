@@ -1,0 +1,398 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{e3254976-53d5-4863-85b4-fb8ebe6e0f75}</ProjectGuid>
+    <ProjectHome />
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartupFile>
+    </StartupFile>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
+    <EnableTypeScript>true</EnableTypeScript>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <StartWebBrowser>True</StartWebBrowser>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="README.md" />
+    <Compile Include="Gruntfile.js" />
+    <Content Include="source\html\index.html" />
+    <Content Include="source\html\unsupported.html" />
+    <TypeScriptCompile Include="source\js\AsteroidRubble.ts" />
+    <TypeScriptCompile Include="source\js\Debris.ts" />
+    <TypeScriptCompile Include="source\js\FX.ts" />
+    <TypeScriptCompile Include="source\js\IceCubeRubble.ts" />
+    <TypeScriptCompile Include="source\js\IcyRubble.ts" />
+    <TypeScriptCompile Include="source\js\Pool.ts" />
+    <TypeScriptCompile Include="source\js\PoolItem.ts" />
+    <TypeScriptCompile Include="source\js\RadRubble.ts" />
+    <TypeScriptCompile Include="source\js\Rubble.ts" />
+    <Compile Include="source\js\AsteroidRubble.js" />
+    <Compile Include="source\js\audio.js" />
+    <Compile Include="source\js\Boss.js" />
+    <Compile Include="source\js\BossMonster.js" />
+    <Compile Include="source\js\BossMover.js" />
+    <Compile Include="source\js\Colliders.js" />
+    <Compile Include="source\js\Debris.js" />
+    <Compile Include="source\js\debug.js" />
+    <Compile Include="source\js\Elephatron.js" />
+    <Compile Include="source\js\ElephatronLimb.js" />
+    <Compile Include="source\js\engine.js" />
+    <Compile Include="source\js\FX.js" />
+    <Compile Include="source\js\IceCubeRubble.js" />
+    <Compile Include="source\js\IcyRubble.js" />
+    <Compile Include="source\js\Insecticlyde.js" />
+    <Compile Include="source\js\InsectBody.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\js\InsectSegment.js" />
+    <Compile Include="source\js\laserBullet.js" />
+    <Compile Include="source\js\LaserPellet.js" />
+    <Compile Include="source\js\loader.js" />
+    <Compile Include="source\js\names.js" />
+    <Compile Include="source\js\obstacle.js" />
+    <Compile Include="source\js\obstacleGenerator.js" />
+    <Compile Include="source\js\planeSweep.js" />
+    <Compile Include="source\js\player.js" />
+    <Compile Include="source\js\Pool.js" />
+    <Compile Include="source\js\PoolItem.js" />
+    <Compile Include="source\js\powerup.js" />
+    <Compile Include="source\js\projectile.js" />
+    <Compile Include="source\js\PVRLoader.js" />
+    <Compile Include="source\js\RadRubble.js" />
+    <Compile Include="source\js\resources.js" />
+    <Compile Include="source\js\Rubble.js" />
+    <Compile Include="source\js\shaders.js" />
+    <Compile Include="source\js\spriteSheet.js" />
+    <Compile Include="source\js\target.js" />
+    <Compile Include="source\js\titleSequence.js" />
+    <Compile Include="source\js\ufo.js" />
+    <Compile Include="source\js\ui.js" />
+    <Compile Include="source\js\utilities.js" />
+    <Content Include="source\html\tests\index.html" />
+    <TypeScriptCompile Include="source\html\tests\Asteroid.ts" />
+    <TypeScriptCompile Include="source\html\tests\Resources.ts" />
+    <Compile Include="source\html\tests\Asteroid.js" />
+    <Compile Include="source\html\tests\Resources.js" />
+    <Compile Include="source\html\tests\tests.js" />
+    <Compile Include="source\html\tests\twgl-full.min.js" />
+    <Content Include="source\includes\fonts\MyFontsWebfontsKit.css" />
+    <Compile Include="source\includes\lib\CSSPlugin.js" />
+    <Compile Include="source\includes\lib\dat.gui.min.js" />
+    <Compile Include="source\includes\lib\OBJLoader.js" />
+    <Compile Include="source\includes\lib\preloadjs-0.6.1.min.js" />
+    <Compile Include="source\includes\lib\SPE.min.js" />
+    <Compile Include="source\includes\lib\stats.min.js" />
+    <Compile Include="source\includes\lib\three.js" />
+    <Compile Include="source\includes\lib\three.min.js" />
+    <Compile Include="source\includes\lib\three.module.js" />
+    <Compile Include="source\includes\lib\tweenjs-0.6.1.min.js" />
+    <Content Include="source\includes\images\effects\hit_sprite.png" />
+    <Content Include="source\includes\images\effects\laser_rippled_128x512.png" />
+    <Content Include="source\includes\images\effects\lensflare3.png" />
+    <Content Include="source\includes\images\effects\lift_ring.png" />
+    <Content Include="source\includes\images\effects\smokeparticle.png" />
+    <Content Include="source\includes\images\effects\sparticle.png" />
+    <Content Include="source\includes\images\effects\star.png" />
+    <Content Include="source\includes\images\environment\planet_1.png" />
+    <Content Include="source\includes\images\environment\planet_2.png" />
+    <Content Include="source\includes\images\environment\planet_3.png" />
+    <Content Include="source\includes\images\environment\planet_4.png" />
+    <Content Include="source\includes\images\environment\planet_5.png" />
+    <Content Include="source\includes\images\environment\planet_6.png" />
+    <Content Include="source\includes\images\environment\planet_7.png" />
+    <Content Include="source\includes\images\environment\planet_jupiter.png" />
+    <Content Include="source\includes\images\environment\planet_mars.png" />
+    <Content Include="source\includes\images\environment\sun_on_black.jpg" />
+    <Content Include="source\includes\images\gradients\blood.png" />
+    <Content Include="source\includes\images\gradients\blueFire.png" />
+    <Content Include="source\includes\images\gradients\brown.png" />
+    <Content Include="source\includes\images\gradients\clone.png" />
+    <Content Include="source\includes\images\gradients\fire.png" />
+    <Content Include="source\includes\images\gradients\golden.png" />
+    <Content Include="source\includes\images\gradients\green.png" />
+    <Content Include="source\includes\images\gradients\heart.png" />
+    <Content Include="source\includes\images\gradients\icy.png" />
+    <Content Include="source\includes\images\gradients\shield.png" />
+    <Content Include="source\includes\images\gradients\spread.png" />
+    <Content Include="source\includes\images\gradients\star.png" />
+    <Content Include="source\includes\images\gradients\ufoFire.png" />
+    <Content Include="source\includes\images\gradients\white.png" />
+    <Content Include="source\includes\images\interface\._button_play_large_rollover.png" />
+    <Content Include="source\includes\images\interface\button_audio_off.png" />
+    <Content Include="source\includes\images\interface\button_audio_on.png" />
+    <Content Include="source\includes\images\interface\button_audio_on_rollover.png" />
+    <Content Include="source\includes\images\interface\button_circle_half_blue.png" />
+    <Content Include="source\includes\images\interface\button_circle_half_white.png" />
+    <Content Include="source\includes\images\interface\button_circle_large.png" />
+    <Content Include="source\includes\images\interface\button_continue.png" />
+    <Content Include="source\includes\images\interface\button_continue_rollover.png" />
+    <Content Include="source\includes\images\interface\button_home_large.png" />
+    <Content Include="source\includes\images\interface\button_home_large_rollover.png" />
+    <Content Include="source\includes\images\interface\button_mac_safari.png" />
+    <Content Include="source\includes\images\interface\button_microsoft_edge.png" />
+    <Content Include="source\includes\images\interface\button_pause_small.png" />
+    <Content Include="source\includes\images\interface\button_pause_small_rollover.png" />
+    <Content Include="source\includes\images\interface\button_play_large.png" />
+    <Content Include="source\includes\images\interface\button_play_large_no_circle.png" />
+    <Content Include="source\includes\images\interface\button_play_large_rollover.png" />
+    <Content Include="source\includes\images\interface\button_replay_large.png" />
+    <Content Include="source\includes\images\interface\button_replay_large_rollover.png" />
+    <Content Include="source\includes\images\interface\button_stereo.png" />
+    <Content Include="source\includes\images\interface\button_surround.png" />
+    <Content Include="source\includes\images\interface\button_touch_to_start_large.png" />
+    <Content Include="source\includes\images\interface\collect_star.png" />
+    <Content Include="source\includes\images\interface\detect.png" />
+    <Content Include="source\includes\images\interface\life_heart.png" />
+    <Content Include="source\includes\images\interface\logo_dolby_digital_plus.png" />
+    <Content Include="source\includes\images\interface\logo_feisty_galaxies.png" />
+    <Content Include="source\includes\images\interface\reticle.png" />
+    <Content Include="source\includes\images\interface\stars_tile.png" />
+    <Content Include="source\includes\images\interface\title_01_luxurious_animals.png" />
+    <Content Include="source\includes\images\interface\title_02_luxamillion.png" />
+    <Content Include="source\includes\images\interface\title_03_dolby.png" />
+    <Content Include="source\includes\images\interface\title_04_trunkford.png" />
+    <Content Include="source\includes\images\interface\title_luxamillion_planet.png" />
+    <Content Include="source\includes\images\interface\title_trunkford_in_ufo.png" />
+    <Content Include="source\includes\images\interface\feisty_galaxies_touch_to_start_background.jpg" />
+    <Content Include="source\includes\images\interface\loader_background.jpg" />
+    <Content Include="source\includes\images\sprites\alien_pro_icon.png" />
+    <Content Include="source\includes\images\sprites\character_shadow.png" />
+    <Content Include="source\includes\images\sprites\clock.png" />
+    <Content Include="source\includes\images\sprites\flat_heart.png" />
+    <Content Include="source\includes\images\sprites\game_fire_explosion.png" />
+    <Content Include="source\includes\images\sprites\game_over_explosion.png" />
+    <Content Include="source\includes\images\sprites\heart_life.png" />
+    <Content Include="source\includes\images\sprites\laser_circle_blast.png" />
+    <Content Include="source\includes\images\sprites\lux.png" />
+    <Content Include="source\includes\images\sprites\lux_clone.png" />
+    <Content Include="source\includes\images\sprites\lux_golden.png" />
+    <Content Include="source\includes\images\sprites\lux_triple.png" />
+    <Content Include="source\includes\images\sprites\powerup_collection.png" />
+    <Content Include="source\includes\images\sprites\powerup_explosion_bw.png" />
+    <Content Include="source\includes\images\sprites\rainbow_of_death_icon.png" />
+    <Content Include="source\includes\images\sprites\shield.png" />
+    <Content Include="source\includes\images\sprites\star_collect.png" />
+    <Content Include="source\includes\images\sprites\star_diamond.png" />
+    <Content Include="source\includes\images\sprites\triple_racquet_icon.png" />
+    <Content Include="source\includes\images\sprites\trunkford.png" />
+    <Content Include="source\includes\images\textures\asteroid_color.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_glowy_ambient.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_glowy_color.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_icy_color.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_normal.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_spiky_v2_color.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_spiky_v2_emissive.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_spiky_v2_normal.jpg" />
+    <Content Include="source\includes\images\textures\asteroid_spiky_v2_specular.jpg" />
+    <Content Include="source\includes\images\textures\mercury_pod_color.jpg" />
+    <Content Include="source\includes\images\textures\moon_lores_normal.jpg" />
+    <Content Include="source\includes\images\textures\moon_lores_occlusion.jpg" />
+    <Content Include="source\includes\images\textures\shuttlecock_col.jpg" />
+    <Content Include="source\includes\images\textures\ufo_col.jpg" />
+    <Content Include="source\includes\images\bosses\elephatron\10_elepha-tron_left_ear.png" />
+    <Content Include="source\includes\images\bosses\elephatron\11_elepha-tron_antenna_glow.png" />
+    <Content Include="source\includes\images\bosses\elephatron\12_elepha-tron_antenna.png" />
+    <Content Include="source\includes\images\bosses\elephatron\1_elepha-tron_nose.png" />
+    <Content Include="source\includes\images\bosses\elephatron\1_elepha-tron_nose_damaged.png" />
+    <Content Include="source\includes\images\bosses\elephatron\2_elepha-tron_nose_shadow.png" />
+    <Content Include="source\includes\images\bosses\elephatron\2_elepha-tron_nose_shadow_damage.png" />
+    <Content Include="source\includes\images\bosses\elephatron\3_elepha-tron_eyes_glow.png" />
+    <Content Include="source\includes\images\bosses\elephatron\4_elepha-tron_body.png" />
+    <Content Include="source\includes\images\bosses\elephatron\5_elepha-tron_teeth.png" />
+    <Content Include="source\includes\images\bosses\elephatron\6_elepha-tron_body_back.png" />
+    <Content Include="source\includes\images\bosses\elephatron\7_elepha-tron_arm.png" />
+    <Content Include="source\includes\images\bosses\elephatron\7_elepha-tron_arm_2.png" />
+    <Content Include="source\includes\images\bosses\elephatron\7_elepha-tron_arm_damaged.png" />
+    <Content Include="source\includes\images\bosses\elephatron\7_elepha-tron_arm_damaged_2.png" />
+    <Content Include="source\includes\images\bosses\elephatron\8_elepha-tron_leg.png" />
+    <Content Include="source\includes\images\bosses\elephatron\8_elepha-tron_leg_flame.png" />
+    <Content Include="source\includes\images\bosses\elephatron\9_elepha-tron_right_ear.png" />
+    <Content Include="source\includes\images\bosses\insecticlyde\boss_insect_back.png" />
+    <Content Include="source\includes\images\bosses\insecticlyde\boss_insect_face.png" />
+    <Content Include="source\includes\images\bosses\insecticlyde\boss_insect_mandible.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_1_top_no_eyes.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_2_bottom.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_3_middle.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eyeball.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eyelid_1.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eyelid_2.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eyelid_3.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eyelid_4.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eye_1.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eye_2.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eye_3.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_eye_4.png" />
+    <Content Include="source\includes\images\bosses\monster\boss_tentacle.png" />
+    <Content Include="source\includes\images\environment\1x\spacesky_back6.jpg" />
+    <Content Include="source\includes\images\environment\1x\spacesky_bottom4.jpg" />
+    <Content Include="source\includes\images\environment\1x\spacesky_front5.jpg" />
+    <Content Include="source\includes\images\environment\1x\spacesky_left2.jpg" />
+    <Content Include="source\includes\images\environment\1x\spacesky_right1.jpg" />
+    <Content Include="source\includes\images\environment\1x\spacesky_top3.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_back6.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_bottom4.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_front5.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_left2.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_right1.jpg" />
+    <Content Include="source\includes\images\environment\2x\spacesky_top3.jpg" />
+    <Content Include="source\includes\images\environment\mobile\planet_1.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_2.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_3.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_4.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_5.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_6.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_7.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_jupiter.png" />
+    <Content Include="source\includes\images\environment\mobile\planet_mars.png" />
+    <Content Include="source\includes\images\environment\mobile\sun_on_black.jpg" />
+    <Content Include="source\includes\images\sprites\mobile\game_fire_explosion.png" />
+    <Content Include="source\includes\images\sprites\mobile\game_over_explosion.png" />
+    <Content Include="source\includes\images\sprites\mobile\laser_circle_blast.png" />
+    <Content Include="source\includes\images\sprites\mobile\lux.png" />
+    <Content Include="source\includes\images\sprites\mobile\lux_clone.png" />
+    <Content Include="source\includes\images\sprites\mobile\lux_golden.png" />
+    <Content Include="source\includes\images\sprites\mobile\lux_triple.png" />
+    <Content Include="source\includes\images\sprites\mobile\powerup_collection.png" />
+    <Content Include="source\includes\images\sprites\mobile\powerup_explosion_bw.png" />
+    <Content Include="source\includes\images\sprites\mobile\trunkford.png" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_color.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_glowy_ambient.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_glowy_color.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_icy_color.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_normal.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_spiky_v2_color.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_spiky_v2_emissive.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_spiky_v2_normal.jpg" />
+    <Content Include="source\includes\images\textures\mobile\asteroid_spiky_v2_specular.jpg" />
+    <Content Include="source\includes\images\textures\mobile\mercury_pod_color.jpg" />
+    <Content Include="source\includes\images\textures\mobile\moon_lores_normal.jpg" />
+    <Content Include="source\includes\images\textures\mobile\moon_lores_occlusion.jpg" />
+    <Content Include="source\includes\images\textures\mobile\ufo_col.jpg" />
+    <Compile Include="source\js\plain\obstaclePatterns.js" />
+    <Compile Include="source\js\postprocessing\Wagner.js" />
+    <Compile Include="source\js\postprocessing\Wagner_base.js" />
+    <Compile Include="source\js\postprocessing\shaders\ConvolutionShader.js" />
+    <Compile Include="source\js\postprocessing\shaders\CopyShader.js" />
+    <Compile Include="source\js\postprocessing\shaders\DotScreenShader.js" />
+    <Compile Include="source\js\postprocessing\shaders\FocusShader.js" />
+    <Compile Include="source\js\postprocessing\shaders\VignetteShader.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="old_code" />
+    <Folder Include="old_code\source" />
+    <Folder Include="old_code\source\includes" />
+    <Folder Include="old_code\source\includes\images" />
+    <Folder Include="old_code\source\includes\images\bosses" />
+    <Folder Include="source" />
+    <Folder Include="source\css" />
+    <Folder Include="source\html" />
+    <Folder Include="source\html\edit" />
+    <Folder Include="source\html\tests" />
+    <Folder Include="source\html\update" />
+    <Folder Include="source\includes" />
+    <Folder Include="source\includes\audio" />
+    <Folder Include="source\includes\audio\bosses" />
+    <Folder Include="source\includes\audio\bosses\elephatron" />
+    <Folder Include="source\includes\audio\bosses\ocularry" />
+    <Folder Include="source\includes\audio\characters" />
+    <Folder Include="source\includes\audio\fx" />
+    <Folder Include="source\includes\audio\fx\collectible" />
+    <Folder Include="source\includes\audio\fx\environment" />
+    <Folder Include="source\includes\audio\fx\impact" />
+    <Folder Include="source\includes\audio\fx\weapon" />
+    <Folder Include="source\includes\audio\interface" />
+    <Folder Include="source\includes\audio\music" />
+    <Folder Include="source\includes\fonts" />
+    <Folder Include="source\includes\images" />
+    <Folder Include="source\includes\images\bosses" />
+    <Folder Include="source\includes\images\bosses\elephatron" />
+    <Folder Include="source\includes\images\bosses\insecticlyde" />
+    <Folder Include="source\includes\images\bosses\monster" />
+    <Folder Include="source\includes\images\effects" />
+    <Folder Include="source\includes\images\environment" />
+    <Folder Include="source\includes\images\environment\1x" />
+    <Folder Include="source\includes\images\environment\2x" />
+    <Folder Include="source\includes\images\environment\mobile" />
+    <Folder Include="source\includes\images\gradients" />
+    <Folder Include="source\includes\images\interface" />
+    <Folder Include="source\includes\images\sprites" />
+    <Folder Include="source\includes\images\sprites\mobile" />
+    <Folder Include="source\includes\images\textures" />
+    <Folder Include="source\includes\images\textures\mobile" />
+    <Folder Include="source\includes\lib" />
+    <Folder Include="source\includes\models" />
+    <Folder Include="source\js" />
+    <Folder Include="source\js\plain" />
+    <Folder Include="source\js\plain\fragment-shaders" />
+    <Folder Include="source\js\plain\vertex-shaders" />
+    <Folder Include="source\js\postprocessing" />
+    <Folder Include="source\js\postprocessing\shaders" />
+    <Folder Include="src" />
+    <Folder Include="src\engine" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <!--Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them.-->
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

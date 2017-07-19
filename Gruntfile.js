@@ -1,3 +1,4 @@
+/// <binding ProjectOpened='watch' />
 /** Lux Ahoy Dolby build scripts
 *   Duplicates makefile for Window development
 */
@@ -25,10 +26,16 @@ module.exports = function(grunt) {
         dest: '<%=dirs.dest %>/'         // destination folder
       },
       html: {
-        src: '<%=dirs.src %>/html/*.html',
+        cwd: '<%=dirs.src %>/html',
+        src: ['*.html', '**/*.html'],
         dest: '<%=dirs.dest %>/',
-        expand: true,
-        flatten: true
+        expand: true
+      },
+      tests: {
+        cwd: '<%=dirs.src %>/html/tests',
+        src: ['*', '**/*'],
+        dest: '<%=dirs.dest %>/tests',
+        expand: true
       },
       editor: {
         src: '<%=dirs.src %>/html/edit/*.php',
@@ -105,8 +112,12 @@ module.exports = function(grunt) {
         tasks: ['compass:editDev']
       },
       html: {
-        files: ['<%=dirs.src %>/html/*.html'],
+        files: ['<%=dirs.src %>/html/*.html', '<%=dirs.src %>/html/**/*.html'],
         tasks: ['copy:html']
+      },
+      tests: {
+        files: ['<%=dirs.src %>/html/tests/*', '<%=dirs.src %>/html/tests/**/*'],
+        tasks: ['copy:tests']
       },
       includes: {
         files: ['<%=dirs.src %>/includes/**/*'],

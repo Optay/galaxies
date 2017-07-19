@@ -2,7 +2,7 @@
 
 this.galaxies = this.galaxies || {};
 
-galaxies.LaserPellet = function () {
+galaxies.LaserPellet = function() {
     this.state = "inactive";
     this.velocity = new THREE.Vector3();
 
@@ -11,7 +11,7 @@ galaxies.LaserPellet = function () {
 
 galaxies.LaserPellet.prototype = {};
 
-galaxies.LaserPellet.prototype.addToScene = function (position, direction) {
+galaxies.LaserPellet.prototype.addToScene = function(position, direction) {
     this.state = "active";
 
     this.object.position.copy(position);
@@ -37,7 +37,7 @@ galaxies.LaserPellet.prototype.addToScene = function (position, direction) {
     }
 };
 
-galaxies.LaserPellet.prototype.impact = function (hitPlayer) {
+galaxies.LaserPellet.prototype.impact = function(hitPlayer) {
     this.state = "inactive";
 
     galaxies.FX.ShowHit(this.object.position, "heart");
@@ -51,19 +51,20 @@ galaxies.LaserPellet.prototype.impact = function (hitPlayer) {
     this.removeFromScene();
 };
 
-galaxies.LaserPellet.prototype.initModel = function () {
-    this.object = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), new THREE.MeshBasicMaterial({
-        color: 0xFF0000,
-        transparent: true,
-        blending: THREE.AdditiveBlending
-    }));
+galaxies.LaserPellet.prototype.initModel = function() {
+    this.object = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12),
+        new THREE.MeshBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            blending: THREE.AdditiveBlending
+        }));
 };
 
-galaxies.LaserPellet.prototype.removeFromScene = function () {
+galaxies.LaserPellet.prototype.removeFromScene = function() {
     galaxies.engine.rootObject.remove(this.object);
 };
 
-galaxies.LaserPellet.prototype.update = function (delta) {
+galaxies.LaserPellet.prototype.update = function(delta) {
     if (this.state === "inactive") {
         return;
     }
@@ -100,7 +101,7 @@ galaxies.LaserPellet.prototype.update = function (delta) {
                     if (Math.abs(galaxies.utils.normalizeAngle(angle - cloneAngle)) < 0.35) {
                         this.impact(false);
 
-                        galaxies.engine.setPowerup('');
+                        galaxies.engine.setPowerup("");
                     }
                 }
             }
