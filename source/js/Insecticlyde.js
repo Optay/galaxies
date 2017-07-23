@@ -211,6 +211,9 @@ galaxies.Insecticlyde.prototype.nextAvailableBody = function () {
 
     var newBody = new galaxies.InsectBody(this);
 
+    newBody.initModel();
+    newBody.initAudio();
+
     newBody.updateCoordinates(this.topEdge, this.bottomEdge, this.leftEdge, this.rightEdge, this.bodyScale, this.bodySpeed);
 
     this.bodies.push(newBody);

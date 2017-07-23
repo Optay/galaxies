@@ -130,7 +130,7 @@ galaxies.InsectBody.prototype.checkCollisions = function () {
         } else {
             this.disable();
 
-            if (this.owningBoss.activeBodies().length === 1) {
+            if (this.owningBoss.activeBodies().length === 0) {
                 pointValue = 8000;
 
                 this.owningBoss.disable();
